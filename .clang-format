@@ -1,0 +1,28 @@
+---
+Language: C++
+IndentWidth: 4
+UseTab: Always
+
+AlignAfterOpenBracket: BlockIndent
+AlignArrayOfStructures: Right
+AlignConsecutiveAssignments: None
+AlignConsecutiveBitFields: None
+AlignConsecutiveDeclarations: None
+AlignConsecutiveMacros: None
+AlignConsecutiveShortCaseStatements: None
+AlignConsecutiveTableGenBreakingDAGArgColons: None
+AlignConsecutiveTableGenCondOperatorColons: None
+AlignConsecutiveTableGenDefinitionColons: None
+AlignEscapedNewlines: Left
+AlignOperands: DontAlign
+AlignTrailingComments: Always
+
+AllowAllArgumentsOnNextLine: true
+AllowAllParametersOfDeclarationOnNextLine: true
+AllowBreakBeforeNoexceptSpecifier: Never
+
+---
+Language: C
+IndentWidth: 4
+UseTab: Always
+...

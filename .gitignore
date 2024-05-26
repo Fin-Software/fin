@@ -1,0 +1,6 @@
+**/.DS_Store
+**/.localized
+zig-cache/
+zig-out/
+vendor/
+libs/

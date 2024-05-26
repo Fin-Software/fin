@@ -1,0 +1,11 @@
+.{
+    .name = "whixy",
+    .version = "0.0.0",
+    .dependencies = .{
+        .cova = .{
+            .url = "https://github.com/00JCIV00/cova/archive/v0.10.0.tar.gz",
+            .hash = "12200ac5cfa52c6ed5df6cbbf6be03f5b5b4a95abe67b750f9f2b0216da11b21e70c",
+        },
+    },
+    .paths = .{ "src", "build.zig", "build.zig.zon", "libs.cmd", "libs.sh", "vendor.sh", "vendor.tzst" },
+}
