@@ -6,6 +6,10 @@
             .url = "https://github.com/00JCIV00/cova/archive/v0.10.1.tar.gz",
             .hash = "122043dfafc4e186356a1192b374afc5722228990e1640f89855cd3c0dd37ec71366",
         },
+        .unvendor = .{
+            .url = "https://github.com/p7r0x7/unvendor/archive/master.tar.gz",
+            .hash = "12200871ea3559fcf1c1ea5f9433d72cb0aaf451b9aa475fa0356c4eb90a09a57aed",
+        },
     },
     .paths = .{ "src", "build.zig", "build.zig.zon", "libs.cmd", "libs.sh", "vendor.sh", "vendor.tzst" },
 }

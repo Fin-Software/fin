@@ -45,13 +45,13 @@ pub fn build(b: *Build) !void {
 
         // Unvendor external dependency sources.
         if (b.build_root.handle.openDir("vendor", .{}) == error.FileNotFound) {
-            const unvendor = executable(b, "unvendor", "unvendor.zig", target, .ReleaseFast);
-            const run_unvendor = b.addRunArtifact(unvendor);
+            const unvendor = b.dependency("unvendor", .{ .target = target, .optimize = .ReleaseFast });
+            const run_unvendor = b.addRunArtifact(unvendor.artifact("unvendor"));
             {
                 var buf: [fs.max_path_bytes]u8 = undefined;
                 const cwd_path = try b.build_root.handle.realpath(".", buf[0..]);
                 run_unvendor.addArg(cwd_path);
-                run_unvendor.addArg("96aaac45e3dfd10ec34422cab74d6da7ca1fb591dfd58fe87e4467d285491ea6");
+                run_unvendor.addArg("068f38b573f00807c821df5970bdfd15c60124510172cce299227a9b41157035");
             }
             libs_step.step.dependOn(&run_unvendor.step);
         }
