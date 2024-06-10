@@ -3,7 +3,6 @@
 // Contributors responsible for this file:
 // @p7r0x7 <mattrbonnette@pm.me>
 
-const std = @import("std");
 const fs = @import("std").fs;
 const fmt = @import("std").fmt;
 const db = @import("std").debug;
@@ -51,7 +50,7 @@ pub fn build(b: *Build) !void {
                 var buf: [fs.max_path_bytes]u8 = undefined;
                 const cwd_path = try b.build_root.handle.realpath(".", buf[0..]);
                 run_unvendor.addArg(cwd_path);
-                run_unvendor.addArg("068f38b573f00807c821df5970bdfd15c60124510172cce299227a9b41157035");
+                run_unvendor.addArg("d83ee6fd2c20accf9da1d2d764a0665d5ee3203648785133925b483cee866e1f");
             }
             libs_step.step.dependOn(&run_unvendor.step);
         }
