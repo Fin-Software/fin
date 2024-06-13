@@ -1,5 +1,4 @@
 #!/bin/sh
-
 # SPDX-License-Identifier: Apache-2.0
 # Copyright © 2024 The Whixy Authors. All rights reserved.
 # Contributors responsible for this file:
@@ -21,13 +20,14 @@ startup()
 	install() { command install -dm 0744 "$@"; } && curl() { command curl -sL "$@"; }
 	readonly vendor=/tmp/vendor && readonly srcs=/tmp/srcs && readonly tarball=/tmp/vendor.tar && readonly tzst=vendor.tzst
 
-	# TODO(@p7r0x7): Make this pull from a file instead of being hard-coded.
-	readonly hash=d83ee6fd2c20accf9da1d2d764a0665d5ee3203648785133925b483cee866e1f
-	if [ ! "$(basename "$PWD")" = "whixy" ]; then printf "Please, execute %s from the Whixy source directory.\n" "$(basename "$0")" && exit 1; fi
+	readonly hash=94ac4302b729532255dd5798fa457e4e4234fa640f2a6f91894aafd12b76a0e5
+	if [ ! "$(basename "$PWD")" = "whixy" ]; then printf "Please, execute %s from the Whixy monorepo.\n" "$(basename "$0")" && exit 1; fi
 	if [ -f "$tzst" ] && [ "$(zstd -cd "$tzst" --long=28 | b3sum)" = "$hash  -" ]; then zstd -lv "$tzst" && exit 0; fi
 
 	# TODO(@p7r0x7): This could be improved, but it's probably fine...
-	os="$(uname)" && readonly os && if [ "$os" = Darwin ] || [ "$os" = FreeBSD ]; then tar() { command gtar "$@"; }; fi
+	case "$(uname)" in
+		Darwin | FreeBSD | OpenBSD | NetBSD | Dragonfly) tar() { command gtar "$@"; } ;;
+	esac
 	tar --version | awk '{exit ($4 >= 1.28) ? 0 : 1}' && if [ $? -eq 1 ]; then printf "GNU tar too old." && exit 1; fi
 
 	rm -rf "$vendor" "$srcs" "$tarball" "$tzst" >/dev/null
@@ -36,6 +36,7 @@ startup()
 
 finish()
 {
+	find "$vendor" -name '.[!.]*' -exec rm -rf {} +
 	gtar --pax-option=exthdr.name=%d/PaxHeaders/%f,delete=atime,delete=ctime --sort=name \
 		--mtime="@0" --owner=0 --group=0 --numeric-owner -S --no-seek -cf "$tarball" -C "$vendor" .
 
@@ -61,7 +62,7 @@ startup
 
 		for dep in $llvm_deps; do mv "$vendor/$dep" "$vendor/$dep-$llvm_semv"; done
 		cd "$vendor" && rm -rf -- \
-			*"-$llvm_semv/".[!.]* *"-$llvm_semv/docs" *"-$llvm_semv/examples" *"-$llvm_semv/benchmark"* *"-$llvm_semv/test" \
+			*"-$llvm_semv/docs" *"-$llvm_semv/examples" *"-$llvm_semv/benchmark"* *"-$llvm_semv/test" \
 			"llvm-$llvm_semv/bindings" "compiler-rt-$llvm_semv/www"
 	} &
 }
@@ -101,7 +102,7 @@ startup
 		install "$vendor/zstd-$zstd_semv"
 		zstdmt -cd "$srcs/$base" | tar -xf - --strip-components=1 -C "$vendor/zstd-$zstd_semv"
 
-		cd "$vendor/zstd-$zstd_semv" && rm -rf .[!.]* contrib doc examples programs zlibWrapper lib/legacy tests
+		cd "$vendor/zstd-$zstd_semv" && rm -rf contrib doc examples programs zlibWrapper lib/legacy tests
 	} &
 }
 wait
