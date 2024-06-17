@@ -22,7 +22,7 @@ startup()
 
 	readonly hash=94ac4302b729532255dd5798fa457e4e4234fa640f2a6f91894aafd12b76a0e5
 	if [ ! "$(basename "$PWD")" = "whixy" ]; then printf "Please, execute %s from the Whixy monorepo.\n" "$(basename "$0")" && exit 1; fi
-	if [ -f "$tzst" ] && [ "$(zstd -cd "$tzst" --long=28 | b3sum)" = "$hash  -" ]; then zstd -lv "$tzst" && exit 0; fi
+	if [ -f "$tzst" ] && [ "$(zstdmt -cd "$tzst" --long=28 | b3sum)" = "$hash  -" ]; then zstdmt -lv "$tzst" && exit 0; fi
 
 	# TODO(@p7r0x7): This could be improved, but it's probably fine...
 	case "$(uname)" in
@@ -37,14 +37,14 @@ startup()
 finish()
 {
 	find "$vendor" -name '.[!.]*' -exec rm -rf {} +
-	gtar --pax-option=exthdr.name=%d/PaxHeaders/%f,delete=atime,delete=ctime --sort=name \
+	tar --pax-option=exthdr.name=%d/PaxHeaders/%f,delete=atime,delete=ctime --sort=name \
 		--mtime="@0" --owner=0 --group=0 --numeric-owner -S --no-seek -cf "$tarball" -C "$vendor" .
 
 	b3sum "$tarball"
 	#brotli -q 11 --large_window=28 -n "$tarball" -o vendor.tbr
 	#7zz a -txz -mx9 -md=256m -mfb=273 -mpb=1 -mlp=0 -mlc=4 vendor.txz "$tarball"
 	zstdmt --ultra -22 --long=28 --no-check "$tarball" -o "$tzst"
-	zstd -lv "$tzst"
+	zstdmt -lv "$tzst"
 }
 
 startup
