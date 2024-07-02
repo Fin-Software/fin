@@ -1,0 +1,39 @@
+val cmp = std "compare" orelse Compare
+
+val Compare =
+{
+	val IsAnIntType = compt func {t type} bool
+	(
+		for
+	)
+}
+
+val Interface =
+{
+	A B C D mut uptr = 99
+
+	
+}
+
+val Bitwise =
+{
+	val Not = inline func {t type, a []t} []t
+	(
+		if (cmp.IsAnIntType t) (
+			errdefer killAll()
+			return shooby() + 8 * 4 0o8
+		)
+		for error.A (
+			break
+			continue
+		)
+		return
+	)
+
+	val 
+}
+
+val Main = proc {} uptr
+(
+	
+)

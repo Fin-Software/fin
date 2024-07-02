@@ -115,5 +115,30 @@ Arithmetic := {
 }
 
 Main := func [] ![] (
-    Arithmetic.Add 
+    Arithmetic.Add
 )
+
+
+
+Bitwise := struct {
+    Not := inline func {a: a.type} a.type ( return ! a )
+    Or := inline func {a b: a.type} a.type ( return | a b )
+    And := inline func {a b: a.type} a.type ( return & a b )
+    Xor := inline func {a b: a.type} a.type ( return ^ a b )
+    Shl := inline func {a b: a.type} a.type ( return < a b )
+    Shr := inline func {a b: a.type} a.type ( return > a b )
+    Rotl := inline func {a b: a.type} a.type ( return <% a b )
+    Rotr := inline func {a b: a.type} a.type ( return >% a b )
+}
+
+Bitwise
+{
+
+}
+
+
+
+Main := proc() uptr {
+
+	return 0
+}

@@ -20,7 +20,7 @@ startup()
 	install() { command install -dm 0744 "$@"; } && curl() { command curl -sL "$@"; }
 	readonly vendor=/tmp/vendor && readonly srcs=/tmp/srcs && readonly tarball=/tmp/vendor.tar && readonly tzst=vendor.tzst
 
-	readonly hash=94ac4302b729532255dd5798fa457e4e4234fa640f2a6f91894aafd12b76a0e5
+	readonly hash=e136fc3b85d8d9b7f95e7543a7c000de3fbdaca8df0e8e874f76802ae27f7ebc
 	if [ ! "$(basename "$PWD")" = "whixy" ]; then printf "Please, execute %s from the Whixy monorepo.\n" "$(basename "$0")" && exit 1; fi
 	if [ -f "$tzst" ] && [ "$(zstdmt -cd "$tzst" --long=28 | b3sum)" = "$hash  -" ]; then zstdmt -lv "$tzst" && exit 0; fi
 
@@ -48,8 +48,19 @@ finish()
 }
 
 startup
+#{
+#	readonly gcc_semv=14.1.0
+#	readonly gcc_url="https://ftp.gnu.org/gnu/gcc/gcc-$gcc_semv"
+#
+#	base="gcc-$gcc_semv.tar.xz"
+#	{
+#		if [ ! -f "$srcs/$base" ]; then curl "$gcc_url/$base" -o "$srcs/$base"; fi
+#		# TODO(@p7r0x7): Check the source's integrity and decompress with 7zz if available.
+#		tar -xJf "$srcs/$base" -C "$vendor" --strip-components=1
+#	}
+#}
 {
-	readonly llvm_semv=18.1.7
+	readonly llvm_semv=18.1.8
 	readonly llvm_url="https://github.com/llvm/llvm-project/releases/download/llvmorg-$llvm_semv"
 	readonly llvm_deps="cmake compiler-rt libunwind lld llvm mlir runtimes third-party"
 
@@ -75,10 +86,6 @@ startup
 		if [ ! -f "$srcs/$base" ]; then curl "$antlr_url/$base" -o "$srcs/$base"; fi
 		# TODO(@p7r0x7): Check the source's integrity.
 		unzip -q "$srcs/$base" -d "$vendor/antlr-$antlr_semv"
-		jar --no-compress --date 1980-01-01T00:00:02Z --main-class org.antlr.v4.Tool \
-			--create --file "$vendor/antlr-$antlr_semv.jar" -C "$vendor/antlr-$antlr_semv" .
-
-		rm -rf "$vendor/antlr-$antlr_semv"
 	} &
 
 	base="antlr4-cpp-runtime-$antlr_semv-source.zip"
