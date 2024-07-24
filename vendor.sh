@@ -17,17 +17,14 @@ teardown()
 
 startup()
 {
-	set -e && trap teardown INT HUP TERM EXIT
-	install() { command install -dm 0744 "$@"; } && curl() { command curl -sL "$@"; }
-	readonly vendor=/tmp/vendor srcs=/tmp/srcs tball=/tmp/vendor.tar tzst=vendor.tzst
+	set -eu && trap teardown INT HUP TERM EXIT && readonly vendor=/tmp/vendor srcs=/tmp/srcs tball=/tmp/vendor.tar tzst=vendor.tzst
 
 	readonly hash=5a78ce85329e9a937ca94a5e921b15c9ef2b4cf3677bb6dadbf757413b576516
 	[ "$(basename "$PWD")" = "whixy" ] || { printf "Please, execute %s from the Whixy monorepo.\n" "$(basename "$0")" && exit 1; }
 	[ -f "$tzst" ] && [ "$(zstdmt -cd "$tzst" --long=29 | b3sum)" = "$hash  -" ] && zstdmt -lv "$tzst" && exit 0
 
-	case "$(uname)" in
-		Darwin | FreeBSD | OpenBSD | NetBSD | Dragonfly) tar() { command gtar "$@"; } ;;
-	esac
+	command -v gtar >/dev/null && tar() { command gtar "$@"; }
+	install() { command install -dm 0744 "$@"; } && curl() { command curl -sL "$@"; }
 	tar --version | awk '{exit ($4 >= 1.28) ? 0 : 1}' || { printf "GNU tar too old." && exit 1; }
 
 	rm -rf "$vendor" "$srcs" "$tball" "$tzst" >/dev/null
