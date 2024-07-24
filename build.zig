@@ -50,7 +50,7 @@ pub fn build(b: *Build) !void {
                 var buf: [fs.max_path_bytes]u8 = undefined;
                 const cwd_path = try b.build_root.handle.realpath(".", buf[0..]);
                 run_unvendor.addArg(cwd_path);
-                run_unvendor.addArg("e136fc3b85d8d9b7f95e7543a7c000de3fbdaca8df0e8e874f76802ae27f7ebc");
+                run_unvendor.addArg("5a78ce85329e9a937ca94a5e921b15c9ef2b4cf3677bb6dadbf757413b576516");
             }
             libs_step.step.dependOn(&run_unvendor.step);
         }

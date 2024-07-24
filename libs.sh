@@ -18,9 +18,19 @@ set_dep_paths()
 	done && if [ "$status" -eq 1 ]; then printf "\n\n" && exit 1; fi
 }
 
-build_dynamic_host_llvm_bins()
+build_static_zstd()
 {
-	set_dep_paths cmake zig python3 ninja
+	set_dep_paths cmake ninja zig
+}
+
+build_static_antlr_runtime()
+{
+	set_dep_paths cmake java ninja zig
+}
+
+build_static_cross_llvm_libs()
+{
+	set_dep_paths cmake ninja python3 zig
 
 	read -r options <<-EOF
 		-B=llvm/llvm/build -S=llvm/llvm -DCMAKE_BUILD_TYPE=Release -DCMAKE_SYSTEM_NAME=$cmake_target
@@ -30,20 +40,16 @@ build_dynamic_host_llvm_bins()
 		-DCMAKE_RANLIB=$zig;ranlib;-fno-sanitize=all;-s;-target;$triple;-mcpu=$mcpu
 		-DCMAKE_AR=$zig;ar;-fno-sanitize=all;-s;-target;$triple;-mcpu=$mcpu
 		-DLLVM_DEFAULT_TARGET_TRIPLE=$triple -DLLVM_ENABLE_LTO=Thin -DLLVM_ENABLE_LLD=ON
-		-DLLVM_OPTIMIZED_TABLEGEN=ON -DLLVM_BUILD_STATIC=ON
+		-DLLVM_OPTIMIZED_TABLEGEN=ON -DLLVM_BUILD_STATIC=ON -DLLVM_UNREACHABLE_OPTIMIZE=ON
 	EOF
-	
+
 	if [ "$cmake_target" = "Windows" ]; then
 		options="$options -DCMAKE_RC_COMPILER=$zig;rc;-fno-sanitize=all;-s;-target;$triple;-mcpu=$mcpu"
 	fi
 
-	if [ "$safety" = safe ]; then
-		options="$options -DLLVM_ENABLE_EH=ON -DLLVM_ENABLE_RTTI=ON -DLLVM_ENABLE_UNWIND_TABLES=ON"
-		options="$options -DLLVM_ENABLE_PEDANTIC=ON -DLLVM_UNREACHABLE_OPTIMIZE=OFF"
-	elif [ "$safety" = fast ]; then
-		options="$options -DLLVM_ENABLE_EH=OFF -DLLVM_ENABLE_RTTI=OFF -DLLVM_ENABLE_UNWIND_TABLES=OFF"
-		options="$options -DLLVM_ENABLE_PEDANTIC=OFF -DLLVM_UNREACHABLE_OPTIMIZE=ON"
-	else printf "" && exit 1; fi
+	if [ "$safety" = safe ]; then safe=ON; elif [ "$safety" = fast ]; then safe=OFF; else printf "" && exit 1; fi
+	readonly safe
+	options="$options -DLLVM_ENABLE_EH=$safe -DLLVM_ENABLE_RTTI=$safe -DLLVM_ENABLE_UNWIND_TABLES=$safe -DLLVM_ENABLE_PEDANTIC=$safe"
 
 	for arg in $llvm_projects; do
 		if [ "$arg" = llvm ] || [ "$arg" = third-party ]; then continue; fi
@@ -75,21 +81,6 @@ build_dynamic_host_llvm_bins()
 	"$ninja" -C llvm/llvm/build
 }
 
-build_static_host_llvm_bins()
-{
-	set_dep_paths cmake python3 ninja
-}
-
-build_static_antlr_runtime()
-{
-	set_dep_paths cmake ninja
-}
-
-build_static_zstd()
-{
-	set_dep_paths cmake ninja
-}
-
 cleanup()
 {
 	rm -rf llvm >/dev/null &
@@ -100,8 +91,8 @@ if [ ! -d llvm ]; then
 	set -ex
 	trap cleanup INT HUP TERM
 
-	readonly llvm_runtimes="libunwind"     # to be used unquoted
-	readonly llvm_projects="llvm mlir lld" # to be used unquoted
+	readonly llvm_runtimes="compiler-rt libunwind" # to be used unquoted
+	readonly llvm_projects="clang lld llvm polly"  # to be used unquoted
 
 	readonly safety="$1"       # safe or fast
 	readonly triple="$2"       # Example: riscv64-linux-gnu
@@ -115,9 +106,7 @@ if [ ! -d llvm ]; then
 		native) cmake_target="" ;;
 	esac && readonly cmake_target
 
-	build_dynamic_host_llvm_bins   # with zig installation
-	build_static_cross_llvm_libs & # with dynamic host llvm for linking to
-	build_static_antlr_runtime &   # with dynamic host llvm for linking to
-	build_static_zstd &            # with dynamic host llvm for linking to
-	wait
+	build_static_zstd            # for linking
+	build_static_antlr_runtime   # for linking
+	build_static_cross_llvm_libs # for linking
 fi

@@ -20,9 +20,9 @@ startup()
 	install() { command install -dm 0744 "$@"; } && curl() { command curl -sL "$@"; }
 	readonly vendor=/tmp/vendor && readonly srcs=/tmp/srcs && readonly tarball=/tmp/vendor.tar && readonly tzst=vendor.tzst
 
-	readonly hash=e136fc3b85d8d9b7f95e7543a7c000de3fbdaca8df0e8e874f76802ae27f7ebc
+	readonly hash=5a78ce85329e9a937ca94a5e921b15c9ef2b4cf3677bb6dadbf757413b576516
 	if [ ! "$(basename "$PWD")" = "whixy" ]; then printf "Please, execute %s from the Whixy monorepo.\n" "$(basename "$0")" && exit 1; fi
-	if [ -f "$tzst" ] && [ "$(zstdmt -cd "$tzst" --long=28 | b3sum)" = "$hash  -" ]; then zstdmt -lv "$tzst" && exit 0; fi
+	if [ -f "$tzst" ] && [ "$(zstdmt -cd "$tzst" --long=29 | b3sum)" = "$hash  -" ]; then zstdmt -lv "$tzst" && exit 0; fi
 
 	# TODO(@p7r0x7): This could be improved, but it's probably fine...
 	case "$(uname)" in
@@ -43,7 +43,7 @@ finish()
 	b3sum "$tarball"
 	#brotli -q 11 --large_window=28 -n "$tarball" -o vendor.tbr
 	#7zz a -txz -mx9 -md=256m -mfb=273 -mpb=1 -mlp=0 -mlc=4 vendor.txz "$tarball"
-	zstdmt --ultra -22 --long=28 --no-check "$tarball" -o "$tzst"
+	zstdmt --ultra -22 --long=29 --no-check "$tarball" -o "$tzst"
 	zstdmt -lv "$tzst"
 }
 
@@ -62,7 +62,7 @@ startup
 {
 	readonly llvm_semv=18.1.8
 	readonly llvm_url="https://github.com/llvm/llvm-project/releases/download/llvmorg-$llvm_semv"
-	readonly llvm_deps="cmake compiler-rt libunwind lld llvm mlir runtimes third-party"
+	readonly llvm_deps="clang cmake compiler-rt libunwind lld llvm polly runtimes third-party"
 
 	base="llvm-project-$llvm_semv.src.tar.xz"
 	{

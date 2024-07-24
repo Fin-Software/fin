@@ -4,11 +4,11 @@
     .dependencies = .{
         .cova = .{
             .url = "https://github.com/00JCIV00/cova/archive/v0.10.1.tar.gz",
-            .hash = "1220dbe5c66d4395086aedde8ce288d7309d2e2847cabfad6b1d0f4affa6c00e45cc",
+            .hash = "122060e5f85a1691486c5ea7f1a802dc92cd7b93656c5c4354d17894be161ac8f8fa",
         },
         .unvendor = .{
             .url = "https://github.com/p7r0x7/unvendor/archive/master.tar.gz",
-            .hash = "12200871ea3559fcf1c1ea5f9433d72cb0aaf451b9aa475fa0356c4eb90a09a57aed",
+            .hash = "122066aae0df45d76ef0f627587832b0985824401f3807da9064b4d15d84fa01d3c4",
         },
     },
     .paths = .{ "src", "build.zig", "build.zig.zon", "libs.cmd", "libs.sh", "vendor.sh", "vendor.tzst" },

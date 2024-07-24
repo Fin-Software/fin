@@ -1,4 +1,7 @@
-val cmp = std "compare" orelse Compare
+val cmp = (std "compare") orelse Compare
+# equivalent to `val cmp = if (std "compare") != null |v| {v} else {Compare}`
+
+val item = 
 
 val Compare =
 {
@@ -10,7 +13,7 @@ val Compare =
 
 val Interface =
 {
-	A B C D mut uptr = 99
+	A B C D: mut uptr = 99
 
 	
 }
