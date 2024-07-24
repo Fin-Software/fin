@@ -25,7 +25,7 @@ build_static_zstd()
 
 build_static_antlr_runtime()
 {
-	set_dep_paths cmake java ninja zig
+	set_dep_paths cmake jar java ninja zig
 }
 
 build_static_cross_llvm_libs()
