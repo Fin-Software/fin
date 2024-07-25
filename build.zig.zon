@@ -8,7 +8,7 @@
         },
         .unvendor = .{
             .url = "https://github.com/p7r0x7/unvendor/archive/master.tar.gz",
-            .hash = "122066aae0df45d76ef0f627587832b0985824401f3807da9064b4d15d84fa01d3c4",
+            .hash = "1220e7e9ed60416f3737df223cdc188559d2d89fd6bd18654b21c629d889f827b2f8",
         },
     },
     .paths = .{ "src", "build.zig", "build.zig.zon", "libs.cmd", "libs.sh", "vendor.sh", "vendor.tzst" },
