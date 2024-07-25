@@ -26,7 +26,7 @@ install() { command install -dm 0755 "$@"; }
 curl() { command curl -sL "$@"; }
 
 readonly hash=fbecc9734c5e01a45b21261a9ad58a412390a675b3e47cd0517c104f92cf0efa
-[ -f "$tzst" ] && [ "$(7zz e -so "$tzst" | b3sum)" = "$hash  -" ] && zstd -lv "$tzst" && exit 0
+[ -f "$tzst" ] && [ "$(zstd -cd "$tzst" | b3sum)" = "$hash  -" ] && zstd -lv "$tzst" && exit 0
 
 command -v gtar >/dev/null && tar() { command gtar "$@"; }
 tar --version | awk '{exit ($4 >= 1.28) ? 0 : 1}' || { printf "GNU tar too old." && exit 1; }
@@ -91,7 +91,7 @@ base="zstd-$zstd_semv.tar.zst"
 	[ -f "$srcs/$base" ] || curl "$zstd_url/$base" -o "$srcs/$base"
 	# TODO(@p7r0x7): Check the source's integrity.
 	install "$vendor/zstd-$zstd_semv"
-	7zz e -so "$srcs/$base" | tar -xf - --strip-components=1 -C "$vendor/zstd-$zstd_semv"
+	zstd -cd "$srcs/$base" | tar -xf - --strip-components=1 -C "$vendor/zstd-$zstd_semv"
 	cd "$vendor/zstd-$zstd_semv" && rm -rf contrib doc examples programs zlibWrapper lib/legacy tests
 } &
 
