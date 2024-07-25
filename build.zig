@@ -43,14 +43,14 @@ pub fn build(b: *Build) !void {
         };
 
         // Unvendor external dependency sources.
-        if (b.build_root.handle.openDir("vendor", .{}) == error.FileNotFound) {
+        if (b.build_root.handle.openDir("vendor", .{ .access_sub_paths = true }) == error.FileNotFound) {
             const unvendor = b.dependency("unvendor", .{ .target = target, .optimize = .ReleaseFast });
             const run_unvendor = b.addRunArtifact(unvendor.artifact("unvendor"));
             {
                 var buf: [fs.max_path_bytes]u8 = undefined;
                 const cwd_path = try b.build_root.handle.realpath(".", buf[0..]);
                 run_unvendor.addArg(cwd_path);
-                run_unvendor.addArg("5a78ce85329e9a937ca94a5e921b15c9ef2b4cf3677bb6dadbf757413b576516");
+                run_unvendor.addArg("fbecc9734c5e01a45b21261a9ad58a412390a675b3e47cd0517c104f92cf0efa");
             }
             libs_step.step.dependOn(&run_unvendor.step);
         }
