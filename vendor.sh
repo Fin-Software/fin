@@ -23,7 +23,7 @@ startup()
 	install() { command install -dm 0755 "$@"; }
 	curl() { command curl -sL "$@"; }
 
-	readonly hash=fbecc9734c5e01a45b21261a9ad58a412390a675b3e47cd0517c104f92cf0efa
+	readonly hash=bab0fa6ecb28a9ca41d88ebde566c26325e0115c42a1bd79c5bb30f6d741a265
 	[ -f "$tzst" ] && [ "$(zstd -cd "$tzst" | b3sum)" = "$hash  -" ] && zstd -lv "$tzst" && exit 0
 
 	command -v gtar >/dev/null && tar() { command gtar "$@"; }
@@ -32,9 +32,9 @@ startup()
 	rm -rf "$vendor" "$srcs" "$tball" "$tzst" >/dev/null && install "$vendor" "$srcs"
 }
 
-jobs()
+vendor()
 {
-	readonly gcc_semv=14.1.0
+	readonly gcc_semv=14.2.0
 	readonly gcc_url="https://ftp.gnu.org/gnu/gcc/gcc-$gcc_semv"
 	base="gcc-$gcc_semv.tar.xz"
 	{
@@ -64,7 +64,7 @@ jobs()
 			"llvm-$llvm_semv/bindings" "compiler-rt-$llvm_semv/www"
 	} &
 	
-	readonly antlr_semv=4.13.1 antlr_url=https://www.antlr.org/download
+	readonly antlr_semv=4.13.2 antlr_url=https://www.antlr.org/download
 	base="antlr-$antlr_semv-complete.jar"
 	{
 		[ -f "$srcs/$base" ] || curl "$antlr_url/$base" -o "$srcs/$base"
@@ -106,4 +106,4 @@ finish()
 	#brotli -q 11 --large_window=28 -n "$tball" -o vendor.tbr
 }
 
-startup && jobs && finish
+startup && vendor && finish
