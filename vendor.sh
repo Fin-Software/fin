@@ -5,105 +5,101 @@
 # Contributors responsible for this file:
 # @p7r0x7 <mattrbonnette@pm.me>
 
-# vendor.tzst must be kept current in VCS with this file that publicly defines its deterministic generation.
-# And for security reasons, only @p7r0x7 may sign and push commits changing this script and vendor.tzst.
-# Because this script is not needed for the standard build process, it was not translated for Windows.
+# vendor/ must be kept current in VCS with this file that publicly defines its deterministic generation.
+# And for security reasons, only @p7r0x7 may sign and push commits changing vendor.sh and vendor/.
 
-teardown()
+gcc()
 {
-	rm -rf "$vendor" "$srcs" "$tball" >/dev/null &
-	exit
+	start gcc 001992d33a97297575e26bc6dfd40933c1e9794bd8eb427b9a21662031a9d435
+
+	semv=14.2.0; url="https://ftp.gnu.org/gnu/gcc/gcc-$semv"; base="gcc-$semv.tar.xz"
+	dl ffee29313fd417420454d985b6740be3755e6465e14173c420c02e3719a51539
+	7zz e -so "$srcs/$base" | tar -xf - -C "$pkg"
+	(
+		cd "$pkg/gcc-$semv"
+		rm -rf c++tools gotools libada libcpp libgfortran libgo libgrust libobjc libstdc++-v3 zlib \
+			gcc/ada gcc/cp gcc/d gcc/fortran gcc/go gcc/rust gcc/objc gcc/objcp
+		find . \( -type d -name 'tests*' -o -type d -name doc -o -name '*ChangeLog*' \) -exec rm -rf {} +
+	)
+	finish
 }
 
-startup()
+llvm()
 {
-	set -eu && trap teardown INT HUP TERM EXIT && umask 0022
-	readonly vendor=/tmp/vendor srcs=/tmp/srcs tball=/tmp/vendor.tar tzst=vendor.tzst
-	zstd() { command zstdmt --no-check --ultra -22 --long=30 "$@"; }
-	install() { command install -dm 0755 "$@"; }
-	curl() { command curl -sL "$@"; }
+	start llvm 0b2d32cf902882e080aa292ccd30b81b5814494d0042dce1ba89ca7703a05ba8
 
-	readonly hash=bab0fa6ecb28a9ca41d88ebde566c26325e0115c42a1bd79c5bb30f6d741a265
-	[ -f "$tzst" ] && [ "$(zstd -cd "$tzst" | b3sum)" = "$hash  -" ] && zstd -lv "$tzst" && exit 0
-
-	command -v gtar >/dev/null && tar() { command gtar "$@"; }
-	tar --version | awk '{exit ($4 >= 1.28) ? 0 : 1}' || { printf "GNU tar too old." && exit 1; }
-
-	rm -rf "$vendor" "$srcs" "$tball" "$tzst" >/dev/null && install "$vendor" "$srcs"
+	semv=18.1.8 deps="clang cmake compiler-rt libunwind lld llvm polly runtimes third-party"
+	url="https://github.com/llvm/llvm-project/releases/download/llvmorg-$semv"; base="llvm-project-$semv.src.tar.xz"
+	dl 450adbb7590dda12a622cb3d74a51cb101ac7eb58177b9e25b93b2abdfc5dcdc
+	7zz e -so "$srcs/$base" | tar -xf - -C "$pkg" --strip-components=1 \
+		$(for dep in $deps; do printf "llvm-project-%s.src/%s\n" "$semv" "$dep"; done)
+	(
+		cd "$pkg"
+		for dep in $deps; do mv "$dep" "$dep-$semv"; done
+		rm -rf -- */docs */examples */benchmark* */test "llvm-$semv/bindings" "compiler-rt-$semv/www"
+	)
+	finish
 }
 
-vendor()
+common()
 {
-	readonly gcc_semv=14.2.0
-	readonly gcc_url="https://ftp.gnu.org/gnu/gcc/gcc-$gcc_semv"
-	base="gcc-$gcc_semv.tar.xz"
-	{
-		[ -f "$srcs/$base" ] || curl "$gcc_url/$base" -o "$srcs/$base"
-		# TODO(@p7r0x7): Check the source's integrity.
-		7zz e -so "$srcs/$base" | tar -xf - -C "$vendor"
+	start common aca5484881e028b2a278b7025616f5fc462ceb52472e355d46dbee45f96931a9
 
-		cd "$vendor/gcc-$gcc_semv" && rm -rf c++tools gotools libada libcpp libgfortran libgo libgrust libobjc libstdc++-v3
-		cd gcc && rm -rf ada cp d fortran go rust objc objcp
-		find .. -name '*ChangeLog*' -exec rm -rf {} +
-		find .. -type d -name doc -exec rm -rf {} +
+	semv=4.13.2; base="antlr-$semv-complete.jar"; url=https://www.antlr.org/download
+	{
+		dl 3922e3a76a095b4d5b38573c28ea59dce5e7342a557f9fce0f5a6c58489aae7b
+		7zz x "$srcs/$base" -o"$pkg/antlr-$semv" >/dev/null
+	} &
+	base="antlr4-cpp-runtime-$semv-source.zip"
+	{
+		dl 0fac612afb44eb1e188f4de50f00ffd4972022480084cc6afb4d9222244aef6c
+		install "$pkg/antlr-cpp-runtime-$semv"; 7zz x "$srcs/$base" -o"$pkg/antlr-cpp-runtime-$semv" >/dev/null
+
+		rm -rf "$vendor/antlr-cpp-runtime-$semv/demo"
 	} &
 
-	readonly llvm_semv=18.1.8
-	readonly llvm_url="https://github.com/llvm/llvm-project/releases/download/llvmorg-$llvm_semv"
-	readonly llvm_deps="clang cmake compiler-rt libunwind lld llvm polly runtimes third-party"
-	base="llvm-project-$llvm_semv.src.tar.xz"
+	semv=1.5.6; base="zstd-$semv.tar.zst"; url="https://github.com/facebook/zstd/releases/download/v$semv"
 	{
-		[ -f "$srcs/$base" ] || curl "$llvm_url/$base" -o "$srcs/$base"
-		# TODO(@p7r0x7): Check the source's integrity.
-		7zz e -so "$srcs/$base" | tar -xf - -C "$vendor" --strip-components=1 \
-			$(for dep in $llvm_deps; do printf "llvm-project-%s.src/%s\n" "$llvm_semv" "$dep"; done)
+		dl eaec93bd5737d25a816d33f0cee57443230f0ecc980f0eb0573602239f3e484e
+		install "$pkg/zstd-$semv"; zstd -cd "$srcs/$base" | tar -xf - --strip-components=1 -C "$pkg/zstd-$semv"
 
-		for dep in $llvm_deps; do mv "$vendor/$dep" "$vendor/$dep-$llvm_semv"; done
-		cd "$vendor" && rm -rf -- \
-			*"-$llvm_semv/docs" *"-$llvm_semv/examples" *"-$llvm_semv/benchmark"* *"-$llvm_semv/test" \
-			"llvm-$llvm_semv/bindings" "compiler-rt-$llvm_semv/www"
-	} &
-	
-	readonly antlr_semv=4.13.2 antlr_url=https://www.antlr.org/download
-	base="antlr-$antlr_semv-complete.jar"
-	{
-		[ -f "$srcs/$base" ] || curl "$antlr_url/$base" -o "$srcs/$base"
-		# TODO(@p7r0x7): Check the source's integrity.
-		7zz x "$srcs/$base" -o"$vendor/antlr-$antlr_semv" >/dev/null
-	} &
-	base="antlr4-cpp-runtime-$antlr_semv-source.zip"
-	{
-		[ -f "$srcs/$base" ] || curl "$antlr_url/$base" -o "$srcs/$base"
-		# TODO(@p7r0x7): Check the source's integrity.
-		install "$vendor/antlr-cpp-runtime-$antlr_semv"
-		7zz x "$srcs/$base" -o"$vendor/antlr-cpp-runtime-$antlr_semv" >/dev/null
-	
-		rm -rf "$vendor/antlr-cpp-runtime-$antlr_semv/demo"
+		cd "$pkg/zstd-$semv"; rm -rf contrib doc examples programs zlibWrapper lib/legacy tests
 	} &
 
-	readonly zstd_semv=1.5.6
-	readonly zstd_url="https://github.com/facebook/zstd/releases/download/v$zstd_semv"
-	base="zstd-$zstd_semv.tar.zst"
-	{
-		[ -f "$srcs/$base" ] || curl "$zstd_url/$base" -o "$srcs/$base"
-		# TODO(@p7r0x7): Check the source's integrity.
-		install "$vendor/zstd-$zstd_semv"
-		zstd -cd "$srcs/$base" | tar -xf - --strip-components=1 -C "$vendor/zstd-$zstd_semv"
-		cd "$vendor/zstd-$zstd_semv" && rm -rf contrib doc examples programs zlibWrapper lib/legacy tests
-	} &
+	wait && finish
+}
 
-	wait
+start()
+{
+	trap clean INT HUP TERM EXIT; . ../vendor.sh # Borrows $@
+	name="$1" hash="$2"; pkg=/tmp/"$name" tar=/tmp/"$name".tar tzst=/tmp/"$name".tzst
+	[ -f "$name".tzst ] && [ "$(zstd -cd "$name".tzst | b3sum)" = "$hash  -" ] \
+		&& { zstd -lv "$name".tzst; exit 0; } || install "$pkg"
+}
+
+dl()
+{
+	hash="$1"; [ -f "$srcs/$base" ] || curl "$url/$base" -o "$srcs/$base"
+	[ "$(b3sum < "$srcs/$base")" = "$hash  -" ] \
+		|| { printf 'Resource %s could not be validated against hash\n%s' "$base" "$hash"; return 1; }
 }
 
 finish()
 {
-	find "$vendor" -name '.[!.]*' -exec rm -rf {} +
+	find "$pkg" \( -name '.[!.]*' -o -empty \) -exec rm -rf {} +
 	tar --pax-option=exthdr.name=%d/PaxHeaders/%f,delete=atime,delete=ctime --sort=name \
-		--mtime="@0" --owner=0 --group=0 --numeric-owner -S --no-seek -cf "$tball" -C "$vendor" .
+		--mtime="@0" --owner=0 --group=0 --numeric-owner -S --no-seek -cf "$tar" -C "$pkg" .
 
-	b3sum "$tball" && zstd "$tball" -o "$tzst" && zstd -lv "$tzst"
-	#7zz a -txz -mx9 -md=256m -mfb=273 -mpb=1 -mlp=0 -mlc=4 vendor.txz "$tball"
-	#brotli -q 11 --large_window=28 -n "$tball" -o vendor.tbr
+	b3sum "$tar"; zstd "$tar" -o "$tzst"; zstd -lv "$tzst"; mv "$tzst" .
 }
 
-startup && vendor && finish
+set -e; umask 0022; srcs=/tmp/srcs; command -v gtar >/dev/null && tar() { command gtar "$@"; }
+tar --version | awk '{exit ($4 >= 1.28) ? 0 : 1}' || { printf 'GNU tar too old.'; return 1; }
+zstd() { command zstdmt --ultra -22 --long=29 --no-check --no-progress "$@"; }
+clean() { command rm -rf "$pkg"* >/dev/null & }
+install() { command install -dm 0755 "$@"; }
+curl() { command curl -sL "$@"; }
+[ -n "$1" ] && return 0 # Sourcing mode ends here.
+
+for dir in "$srcs" vendor; do [ -d "$dir" ] || install "$dir"; done; cd vendor
+gcc & llvm & common & wait
