@@ -10,39 +10,40 @@
 
 gcc()
 {
-	start gcc 001992d33a97297575e26bc6dfd40933c1e9794bd8eb427b9a21662031a9d435
+	start gcc fa1004800b7a1bf71397c2d4f5ac0e86583c24675fc9fe07d13c4bb1105de39d
 
 	semv=14.2.0; url="https://ftp.gnu.org/gnu/gcc/gcc-$semv"; base="gcc-$semv.tar.xz"
 	dl ffee29313fd417420454d985b6740be3755e6465e14173c420c02e3719a51539
 	7zz e -so "$srcs/$base" | tar -xf - -C "$pkg"
 	(
-		cd "$pkg/gcc-$semv"
-		rm -rf c++tools gotools libada libcpp libgfortran libgo libgrust libobjc libstdc++-v3 zlib \
-			gcc/ada gcc/cp gcc/d gcc/fortran gcc/go gcc/rust gcc/objc gcc/objcp
-		find . \( -type d -name 'tests*' -o -type d -name doc -o -name '*ChangeLog*' \) -exec rm -rf {} +
+		cd "$pkg/gcc-$semv"; rm -rf c++tools gotools INSTALL libada libcpp libgfortran libgo libgrust libobjc \
+			libstdc++-v3 maintainer-scripts zlib gcc/ada gcc/cp gcc/d gcc/fortran gcc/go gcc/rust gcc/objc gcc/objcp
+		find . \( -type d -name examples -o -type d -name doc -o -type d -name docs -o -type d -name test \
+			-o -type d -name tests -o -type d -name testsuite \) -exec rm -rf {} +
 	)
 	finish
 }
 
 llvm()
 {
-	start llvm 0b2d32cf902882e080aa292ccd30b81b5814494d0042dce1ba89ca7703a05ba8
+	start llvm 14d60e280426faf2ae09c9bbf68d14574740533c0db6d556762e80a15546b1b4
 
-	semv=18.1.8 deps="clang cmake compiler-rt libunwind lld llvm polly runtimes third-party"
+	semv=19.1.0 deps="clang cmake compiler-rt libunwind lld llvm polly runtimes"
 	url="https://github.com/llvm/llvm-project/releases/download/llvmorg-$semv"; base="llvm-project-$semv.src.tar.xz"
-	dl 450adbb7590dda12a622cb3d74a51cb101ac7eb58177b9e25b93b2abdfc5dcdc
+	dl fbbbaeea01cc9b9f45adc8bd16f909d2a10b1496605f18f0a8db9a154d3924ce
 	7zz e -so "$srcs/$base" | tar -xf - --strip-components=1 -C "$pkg" $(printf "llvm-project-$semv.src/%s\n" $deps)
 	(
-		cd "$pkg"
-		for dep in $deps; do mv "$dep" "$dep-$semv"; done
-		rm -rf -- */docs */examples */benchmark* */test "llvm-$semv/bindings" "compiler-rt-$semv/www"
+		cd "$pkg"; for dep in $deps; do mv "$dep" "$dep-$semv"; done
+		rm -rf -- */benchmark* llvm-*/bindings polly-*/lib/External/isl/test_inputs
+		find . \( -type d -name examples -o -type d -name doc -o -type d -name docs -o -type d -name test \
+			-o -type d -name tests -o -type d -name unittests -o -type d -name www \) -exec rm -rf {} +
 	)
 	finish
 }
 
 common()
 {
-	start common 37579a5ceee6bd3fc1a6ad89174948bdc5dccdc2f1d7ef49d1c820ee8a11a5a6
+	start common 0231b288195e0836b9f60998024f9cf62fd54736abaf37529f5486fb455a95ad
 
 	semv=4.13.2; base="antlr-$semv-complete.jar"; url=https://www.antlr.org/download
 	{
@@ -74,22 +75,21 @@ start()
 	trap clean INT HUP TERM EXIT; . ../vendor.sh # Borrows $@
 	name="$1" hash="$2"; pkg=/tmp/"$name" tar=/tmp/"$name".tar tzst=/tmp/"$name".tzst
 	[ -f "$name".tzst ] && [ "$(zstd -cd "$name".tzst | b3sum)" = "$hash  -" ] \
-		&& { zstd -lv "$name".tzst; exit 0; } || install "$pkg"
+		&& { zstd -lv "$name".tzst; exit 0; } || { rm -rf "$pkg"; install "$pkg"; }
 }
 
 dl()
 {
 	hash="$1"; [ -f "$srcs/$base" ] || curl "$url/$base" -o "$srcs/$base"
-	[ "$(b3sum < "$srcs/$base")" = "$hash  -" ] \
-		|| { printf 'Resource %s could not be validated against hash\n%s' "$base" "$hash"; return 1; }
+	actual="$(b3sum < "$srcs/$base")"; [ "$actual" = "$hash  -" ] \
+		|| { printf '%s !=\n%s\n' "$hash" ${actual%  -}; rm -rf "$srcs/$base" & return 1; }
 }
 
 finish()
 {
-	find "$pkg" \( -name '.[!.]*' -o -empty \) -exec rm -rf {} +
+	find "$pkg" \( -name '.[!.]*' -o -empty -o -iname '*changelog*' -o -iname '*bazel*' \) -exec rm -rf {} +
 	tar --pax-option=exthdr.name=%d/PaxHeaders/%f,delete=atime,delete=ctime --sort=name \
 		--mtime="@0" --owner=0 --group=0 --numeric-owner -S --no-seek -cf "$tar" -C "$pkg" .
-
 	b3sum "$tar"; zstd "$tar" -o "$tzst"; zstd -lv "$tzst"; mv "$tzst" .
 }
 
@@ -101,5 +101,5 @@ clean() { rm -rf "$pkg"* >/dev/null & }
 curl() { command curl -sL "$@"; }
 [ $# = 0 ] || return 0 # Sourcing mode ends here.
 
-for dir in "$srcs" vendor; do [ -d "$dir" ] || install "$dir"; done; cd vendor
+install "$srcs" vendor; cd vendor
 gcc & llvm & common & wait
