@@ -10,16 +10,16 @@
 
 gcc()
 {
-	start gcc fa1004800b7a1bf71397c2d4f5ac0e86583c24675fc9fe07d13c4bb1105de39d
+	start gcc 7fb9a7d5bf5b39faed2ac705aa60225480aefc06be9460a481c1243357db95e3
 
 	semv=14.2.0; url="https://ftp.gnu.org/gnu/gcc/gcc-$semv"; base="gcc-$semv.tar.xz"
 	dl ffee29313fd417420454d985b6740be3755e6465e14173c420c02e3719a51539
 	7zz e -so "$srcs/$base" | tar -xf - -C "$pkg"
 	(
-		cd "$pkg/gcc-$semv"; rm -rf c++tools gotools INSTALL libada libcpp libgfortran libgo libgrust libobjc \
+		cd "$pkg/gcc-$semv"; rm -rf c++tools gotools INSTALL libada libcpp libffi/man libgfortran libgo libgrust libobjc \
 			libstdc++-v3 maintainer-scripts zlib gcc/ada gcc/cp gcc/d gcc/fortran gcc/go gcc/rust gcc/objc gcc/objcp
 		find . \( -type d -name examples -o -type d -name doc -o -type d -name docs -o -type d -name test \
-			-o -type d -name tests -o -type d -name testsuite \) -exec rm -rf {} +
+			-o -type d -name tests -o -type d -name testsuite -o -type d -name testdata \) -exec rm -rf {} +
 	)
 	finish
 }
@@ -43,7 +43,7 @@ llvm()
 
 common()
 {
-	start common 0231b288195e0836b9f60998024f9cf62fd54736abaf37529f5486fb455a95ad
+	start common 022b2ef2bac36d6da3120a3bd0350139fb95ef1552886f8ce0df19b7b1ba717a
 
 	semv=4.13.2; base="antlr-$semv-complete.jar"; url=https://www.antlr.org/download
 	{
@@ -63,8 +63,8 @@ common()
 		dl eaec93bd5737d25a816d33f0cee57443230f0ecc980f0eb0573602239f3e484e
 		install "$pkg/zstd-$semv"; zstd -cd "$srcs/$base" | tar -xf - --strip-components=1 -C "$pkg/zstd-$semv"
 
-		cd "$pkg/zstd-$semv"; rm -rf contrib doc programs zlibWrapper lib/legacy tests
-		find . -type d -name examples -exec rm -rf {} +
+		cd "$pkg/zstd-$semv"; rm -rf contrib build/meson build/VS* doc lib/legacy programs tests zlibWrapper
+		find . \( -type d -name example -o -type d -name examples \) -exec rm -rf {} +
 	} &
 
 	wait && finish
