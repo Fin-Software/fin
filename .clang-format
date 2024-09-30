@@ -1,7 +1,8 @@
 ---
-Language: C++
+Language: Cpp
 IndentWidth: 4
 UseTab: Always
+ColumnLimit: 100
 
 AlignAfterOpenBracket: BlockIndent
 AlignArrayOfStructures: Right
@@ -9,7 +10,8 @@ AlignConsecutiveAssignments: None
 AlignConsecutiveBitFields: None
 AlignConsecutiveDeclarations: None
 AlignConsecutiveMacros: None
-AlignConsecutiveShortCaseStatements: None
+AlignConsecutiveShortCaseStatements:
+	Enabled: false
 AlignConsecutiveTableGenBreakingDAGArgColons: None
 AlignConsecutiveTableGenCondOperatorColons: None
 AlignConsecutiveTableGenDefinitionColons: None
@@ -20,9 +22,3 @@ AlignTrailingComments: Always
 AllowAllArgumentsOnNextLine: true
 AllowAllParametersOfDeclarationOnNextLine: true
 AllowBreakBeforeNoexceptSpecifier: Never
-
----
-Language: C
-IndentWidth: 4
-UseTab: Always
-...
