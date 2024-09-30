@@ -1,0 +1,34 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright © 2024 The Whixy Authors. All rights reserved.
+# Contributors responsible for this file:
+# @p7r0x7 <mattrbonnette@pm.me>
+
+syntax "Whixy"		"\.wx$$"
+comment "#"
+
+color sky			"\<(align|break|catch|compt|continue|inline|mut|orelse|return|threadlocal|try|unroll|volatile)\>"
+
+color blue			"\<(defer|else|enum|errdefer|for|func|if|import|is|proc|std|test|union|val|while)\>"
+
+color orange		"(true|false|null|undefined)"
+
+color mint			"\<(0[xob])?([0-9]_?)+\>"
+
+color peach			"\<([iu]ptr|[iu][0-9]{1,5}|f16|f32|f64|f128|type|bool)\>"
+
+
+color italic,normal	"\<([A-Z][a-z]*)+\>"
+color orange		"\<error\.([A-Z][a-z]*)+\>"
+
+color orange			"\"[^\"]*\""
+
+color #ccd			"(\{|\}|\(|\)|\[|\])"
+
+# Conditional Operators
+color #ffb			"\<(==|>|<|>=|<=|&&|\|\||and|or)\>"
+color #ffb			"(=|\+|-|\*|\^|&|\|)"
+color #ffb			"(\+%|-%|\*%|/|%)"
+color #ffb			"\.(\*|type|len|name|filter)"
+
+color ,bold			"\<{.*}\>"
+color gray			"#.*$$"

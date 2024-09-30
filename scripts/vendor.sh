@@ -23,7 +23,6 @@ gcc()
 	)
 	finish
 }
-
 llvm()
 {
 	start llvm 14d60e280426faf2ae09c9bbf68d14574740533c0db6d556762e80a15546b1b4
@@ -40,7 +39,6 @@ llvm()
 	)
 	finish
 }
-
 common()
 {
 	start common 022b2ef2bac36d6da3120a3bd0350139fb95ef1552886f8ce0df19b7b1ba717a
@@ -72,19 +70,17 @@ common()
 
 start()
 {
-	trap clean INT HUP TERM EXIT; . ../vendor.sh # Borrows $@
+	trap clean INT HUP TERM EXIT; . ../scripts/vendor.sh # Borrows $@
 	name="$1" hash="$2"; pkg=/tmp/"$name" tar=/tmp/"$name".tar tzst=/tmp/"$name".tzst
 	[ -f "$name".tzst ] && [ "$(zstd -cd "$name".tzst | b3sum)" = "$hash  -" ] \
 		&& { zstd -lv "$name".tzst; exit 0; } || { rm -rf "$pkg"; install "$pkg"; }
 }
-
 dl()
 {
 	hash="$1"; [ -f "$srcs/$base" ] || curl "$url/$base" -o "$srcs/$base"
 	actual="$(b3sum < "$srcs/$base")"; [ "$actual" = "$hash  -" ] \
-		|| { printf '%s !=\n%s\n' "$hash" ${actual%  -}; rm -rf "$srcs/$base" & return 1; }
+		|| { printf '%s !=\n%s\n' "$hash" "${actual%  -}"; rm -rf "$srcs/$base" & return 1; }
 }
-
 finish()
 {
 	find "$pkg" \( -name '.[!.]*' -o -empty -o -iname '*changelog*' -o -iname '*bazel*' \) -exec rm -rf {} +

@@ -16,7 +16,7 @@
 # influencing or being influenced by any mutable values that have existed before that code was
 # called), or, respectively, does not. The compiler will attempt to catch referential transparency
 # violations at compiletime. Any expressions meeting the following criteria-as a compiletime
-# optimization-may be lazily evaluated: all top-level parameters must have been sourced from pure
+# optimization-must be lazily evaluated: all top-level parameters must have been sourced from pure
 # functions. All other expressions cannot be reordered for *this* reason (but may be by language-
 # agnostic optimization passes). Given this logic: funcs MAY INCLUDE proc calls, but only those
 # whose side-effects only impact the calling scope; examples include all language prodecures.
