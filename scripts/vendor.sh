@@ -14,7 +14,7 @@ gcc()
 
 	semv=14.2.0; url="https://ftp.gnu.org/gnu/gcc/gcc-$semv"; base="gcc-$semv.tar.xz"
 	dl ffee29313fd417420454d985b6740be3755e6465e14173c420c02e3719a51539
-	7zz e -so "$srcs/$base" | tar -xf - -C "$pkg"
+	dec e -so "$srcs/$base" | tar -xf - -C "$pkg"
 	(
 		cd "$pkg/gcc-$semv"; rm -rf c++tools gotools INSTALL libada libcpp libffi/man libgfortran libgo libgrust libobjc \
 			libstdc++-v3 maintainer-scripts zlib gcc/ada gcc/cp gcc/d gcc/fortran gcc/go gcc/rust gcc/objc gcc/objcp
@@ -25,12 +25,12 @@ gcc()
 }
 llvm()
 {
-	start llvm 14d60e280426faf2ae09c9bbf68d14574740533c0db6d556762e80a15546b1b4
+	start llvm bd2581d9e68eb99bfec7fb6e9457fce960ea056236ec8764ef7bd577604188e4
 
-	semv=19.1.0 deps="clang cmake compiler-rt libunwind lld llvm polly runtimes"
+	semv=19.1.1 deps="clang cmake compiler-rt libunwind lld llvm polly runtimes"
 	url="https://github.com/llvm/llvm-project/releases/download/llvmorg-$semv"; base="llvm-project-$semv.src.tar.xz"
-	dl fbbbaeea01cc9b9f45adc8bd16f909d2a10b1496605f18f0a8db9a154d3924ce
-	7zz e -so "$srcs/$base" | tar -xf - --strip-components=1 -C "$pkg" $(printf "llvm-project-$semv.src/%s\n" $deps)
+	dl ccbdab2893baa203f3d3cc44656fd4ef61efddaeac1dd6035f9232144404ef9c
+	dec e -so "$srcs/$base" | tar -xf - --strip-components=1 -C "$pkg" $(printf "llvm-project-$semv.src/%s\n" $deps)
 	(
 		cd "$pkg"; for dep in $deps; do mv "$dep" "$dep-$semv"; done
 		rm -rf -- */benchmark* llvm-*/bindings polly-*/lib/External/isl/test_inputs
@@ -46,12 +46,12 @@ common()
 	semv=4.13.2; base="antlr-$semv-complete.jar"; url=https://www.antlr.org/download
 	{
 		dl 3922e3a76a095b4d5b38573c28ea59dce5e7342a557f9fce0f5a6c58489aae7b
-		7zz x "$srcs/$base" -o"$pkg/antlr-$semv" >/dev/null
+		dec x "$srcs/$base" -o"$pkg/antlr-$semv" >/dev/null
 	} &
 	base="antlr4-cpp-runtime-$semv-source.zip"
 	{
 		dl 0fac612afb44eb1e188f4de50f00ffd4972022480084cc6afb4d9222244aef6c
-		install "$pkg/antlr-cpp-runtime-$semv"; 7zz x "$srcs/$base" -o"$pkg/antlr-cpp-runtime-$semv" >/dev/null
+		install "$pkg/antlr-cpp-runtime-$semv"; dec x "$srcs/$base" -o"$pkg/antlr-cpp-runtime-$semv" >/dev/null
 
 		rm -rf "$pkg/antlr-cpp-runtime-$semv/demo"
 	} &
@@ -91,11 +91,13 @@ finish()
 
 set -eu; umask 0022; srcs=/tmp/srcs; command -v gtar >/dev/null && tar() { gtar "$@"; }
 tar --version | awk '{exit ($4 >= 1.28) ? 0 : 1}' || { printf 'GNU tar too old.'; return 1; }
-zstd() { zstdmt --ultra -22 --long=29 --no-check --no-progress "$@"; }
+zstd() { command zstd --ultra -22 --long=29 --no-check --no-progress "$@"; }
+command -v 7zz >/dev/null && dec() { 7zz "$@"; }
+command -v 7z >/dev/null && dec() { 7z "$@"; }
 install() { command install -dm 0755 "$@"; }
 clean() { rm -rf "$pkg"* >/dev/null & }
 curl() { command curl -sL "$@"; }
-[ $# = 0 ] || return 0 # Sourcing mode ends here.
 
+[ $# = 0 ] || return 0 # Sourcing mode ends here.
 install "$srcs" vendor; cd vendor
 gcc & llvm & common & wait
