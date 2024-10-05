@@ -1,20 +1,56 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright © 2024 The Whixy Authors. All rights reserved.
+// Contributors responsible for this file:
+// @p7r0x7 <mattrbonnette@pm.me>
+
 parser grammar WhixyParser; // $antlr-format off
 options { tokenVocab = WhixyLexer; }
 
-srcFile: statement+;
+srcFile: stmt+;
 
-statement: valStmt | blockExpr;
+stmt:
+	VAL valsExpr stmtSep  #valStmt
+	| RETURN expr stmtSep #returnStmt
+	| blockExpr stmtSep   #blockStmt
+	| callExpr stmtSep    #callStmt;
 
-valStmt: VAL valsExpr endOfStmt;
+expr: callExpr | valsExpr | blockExpr | tupleExpr | typeExpr | routineExpr | unaryExpr | binaryExpr | literalExpr;
 
-expression: blockExpr | valsExpr | procedureExpr | functionExpr | typeExpr | tupleExpr | callExpr;
+callExpr: expr (ID | tupleExpr);
+valsExpr: ID+ (COLON expr)? (EQ expr)?;
+blockExpr: OBRACE (stmt (stmtSep stmt)* stmtSep?)? CBRACE;
+tupleExpr: OPAREN (expr (exprSep expr)* exprSep?)? CPAREN;
+typeExpr: OBRACE (valsExpr (exprSep valsExpr)* exprSep?)? CBRACE;
 
-blockExpr: OBRACE ((statement endOfStmt)* statement endOfStmt?)? CBRACE;
-valsExpr: ID+ (COLON expression)? (EQ expression)?;
-procedureExpr: PROC typeExpr expression blockExpr;
-functionExpr: FUNC typeExpr expression blockExpr;
-typeExpr: OBRACE ((valsExpr endOfExp)* valsExpr endOfExp?)? CBRACE;
-tupleExpr: OPAREN ((expression endOfExp)* expression endOfExp?)? CPAREN;
-callExpr: ID tupleExpr;
+routineExpr:
+	FUNC typeExpr expr blockExpr   #functionExpr
+	| PROC typeExpr expr blockExpr #procedureExpr;
 
-endOfExp: EXP_SEP | NL; endOfStmt: STMT_SEP | NL;
+unaryExpr:
+	OPAREN expr CPAREN  #parentheticExpr
+	| EXCLAMATION expr  #notExpr
+	| MINUS expr        #negationExpr
+	| AMPERSAND expr    #addressOfExpr
+	| expr DOT ASTERISK #dereferencingMethodExpr
+	| expr DOT TYPE     #typeOfMethodExpr
+	| expr DOT LEN      #lengthOfMethodExpr;
+
+binaryExpr:
+	expr AS expr                 #asExpr
+	| expr PLUSPLUS expr         #concatenationExpr
+	| expr ASTERISKASTERISK expr #repititionExpr
+	| expr PLUS expr             #additionExpr
+	| expr MINUS expr            #subtractionExpr
+	| expr ASTERISK expr         #multiplicationExpr
+	| expr FSLASH expr           #divisionExpr
+	| expr LTLT expr             #leftShiftingExpr
+	| expr GTGT expr             #rightShiftingExpr
+	| expr PERCENTPLUS expr      #wrappingAdditionExpr
+	| expr PERCENTMINUS expr     #wrappingSubtrationExpr
+	| expr PERCENTASTERISK expr  #wrappingMultiplicationExpr
+	| expr PERCENTLTLT expr      #leftRotationExpr
+	| expr PERCENTGTGT expr      #rightRotationExpr;
+
+literalExpr: ID | INTEGER | STRING;
+
+stmtSep: SEMICOLON | NL; exprSep: COMMA | NL; 
