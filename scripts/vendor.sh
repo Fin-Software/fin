@@ -25,11 +25,11 @@ gcc()
 }
 llvm()
 {
-	start llvm bd2581d9e68eb99bfec7fb6e9457fce960ea056236ec8764ef7bd577604188e4
+	start llvm ad91b5b196896e1e751632cf69324f4a08026b741847fe9c170f40a4b7d37d8e
 
-	semv=19.1.1 deps="clang cmake compiler-rt libunwind lld llvm polly runtimes"
+	semv=19.1.2 deps="clang cmake compiler-rt libunwind lld llvm polly runtimes"
 	url="https://github.com/llvm/llvm-project/releases/download/llvmorg-$semv"; base="llvm-project-$semv.src.tar.xz"
-	dl ccbdab2893baa203f3d3cc44656fd4ef61efddaeac1dd6035f9232144404ef9c
+	dl 271d00ad19a69ec2293b358a93bbc6b8306c990928ead4f84a4a31b6decd408c
 	dec e -so "$srcs/$base" | tar -xf - --strip-components=1 -C "$pkg" $(printf "llvm-project-$semv.src/%s\n" $deps)
 	(
 		cd "$pkg"; for dep in $deps; do mv "$dep" "$dep-$semv"; done
