@@ -1,56 +1,78 @@
+// $antlr-format alignTrailingComments true, allowShortRulesOnASingleLine true, minEmptyLines 0
+// $antlr-format useTab false, maxEmptyLinesToKeep 1, alignSemicolons none, alignColons hanging
+// $antlr-format reflowComments false, alignFirstTokens true, columnLimit 100
+
 // SPDX-License-Identifier: Apache-2.0
 // Copyright © 2024 The Whixy Authors. All rights reserved.
 // Contributors responsible for this file:
 // @p7r0x7 <mattrbonnette@pm.me>
 
-parser grammar WhixyParser; // $antlr-format off
-options { tokenVocab = WhixyLexer; }
+parser grammar WhixyParser;
+options {
+    tokenVocab = WhixyLexer;
+}
 
-srcFile: stmt+;
+srcFile: stmt+ EOF;
 
-stmt:
-	VAL valsExpr stmtSep  #valStmt
-	| RETURN expr stmtSep #returnStmt
-	| blockExpr stmtSep   #blockStmt
-	| callExpr stmtSep    #callStmt;
+stmt
+    : DEF valsExpr stmtSep # valStmt
+    | RETURN expr stmtSep  # returnStmt
+    | blockExpr stmtSep    # blockStmt
+    | callExpr stmtSep     # callStmt;
 
-expr: callExpr | valsExpr | blockExpr | tupleExpr | typeExpr | routineExpr | unaryExpr | binaryExpr | literalExpr;
+expr
+    : callExpr
+    | valsExpr
+    | blockExpr
+    | tupleExpr
+    | typeExpr
+    | routineExpr
+    | unaryExpr
+    | binaryExpr
+    | literalExpr;
 
-callExpr: expr (ID | tupleExpr);
-valsExpr: ID+ (COLON expr)? (EQ expr)?;
-blockExpr: OBRACE (stmt (stmtSep stmt)* stmtSep?)? CBRACE;
-tupleExpr: OPAREN (expr (exprSep expr)* exprSep?)? CPAREN;
-typeExpr: OBRACE (valsExpr (exprSep valsExpr)* exprSep?)? CBRACE;
+callExpr: expr (TOKEN | tupleExpr);
 
-routineExpr:
-	FUNC typeExpr expr blockExpr   #functionExpr
-	| PROC typeExpr expr blockExpr #procedureExpr;
+valsExpr: TOKEN+ (COLON expr)? (EQUAL expr)?;
 
-unaryExpr:
-	OPAREN expr CPAREN  #parentheticExpr
-	| EXCLAMATION expr  #notExpr
-	| MINUS expr        #negationExpr
-	| AMPERSAND expr    #addressOfExpr
-	| expr DOT ASTERISK #dereferencingMethodExpr
-	| expr DOT TYPE     #typeOfMethodExpr
-	| expr DOT LEN      #lengthOfMethodExpr;
+blockExpr
+    : OPENBRACE (stmt (stmtSep stmt)* stmtSep?)? CLOSEDBRACE;
 
-binaryExpr:
-	expr AS expr                 #asExpr
-	| expr PLUSPLUS expr         #concatenationExpr
-	| expr ASTERISKASTERISK expr #repititionExpr
-	| expr PLUS expr             #additionExpr
-	| expr MINUS expr            #subtractionExpr
-	| expr ASTERISK expr         #multiplicationExpr
-	| expr FSLASH expr           #divisionExpr
-	| expr LTLT expr             #leftShiftingExpr
-	| expr GTGT expr             #rightShiftingExpr
-	| expr PERCENTPLUS expr      #wrappingAdditionExpr
-	| expr PERCENTMINUS expr     #wrappingSubtrationExpr
-	| expr PERCENTASTERISK expr  #wrappingMultiplicationExpr
-	| expr PERCENTLTLT expr      #leftRotationExpr
-	| expr PERCENTGTGT expr      #rightRotationExpr;
+tupleExpr
+    : OPENPARENTHESIS (expr (exprSep expr)* exprSep?)? CLOSEDPARENTHESIS;
 
-literalExpr: ID | INTEGER | STRING;
+typeExpr
+    : OPENBRACE (valsExpr (exprSep valsExpr)* exprSep?)? CLOSEDBRACE;
 
-stmtSep: SEMICOLON | NL; exprSep: COMMA | NL; 
+routineExpr
+    : FUNC typeExpr expr blockExpr # functionExpr
+    | PROC typeExpr expr blockExpr # procedureExpr;
+
+unaryExpr
+    : OPENPARENTHESIS expr CLOSEDPARENTHESIS # parentheticExpr
+    | EXCLAMATION expr                       # notExpr
+    | MINUS expr                             # negationExpr
+    | AMPERSAND expr                         # addressOfExpr
+    | expr DOT_ASTERISK                      # dereferencingMethodExpr
+    | expr DOT_TYPE                          # typeOfMethodExpr
+    | expr DOT_LEN                           # lengthOfMethodExpr;
+
+binaryExpr
+    : expr AS expr                              # asExpr
+    | expr PLUS_PLUS expr                       # concatenationExpr
+    | expr ASTERISK_ASTERISK expr               # repititionExpr
+    | expr PLUS expr                            # additionExpr
+    | expr MINUS expr                           # subtractionExpr
+    | expr ASTERISK expr                        # multiplicationExpr
+    | expr SLASH expr                           # divisionExpr
+    | expr LESSTHAN expr                        # leftShiftingExpr
+    | expr GREATERTHAN expr                     # rightShiftingExpr
+    | expr PLUS_PERCENT expr                    # wrappingAdditionExpr
+    | expr MINUS_PERCENT expr                   # wrappingSubtrationExpr
+    | expr ASTERISK_PERCENT expr                # wrappingMultiplicationExpr
+    | expr LESSTHAN_LESSTHAN_PERCENT expr       # leftRotationExpr
+    | expr GREATERTHAN_GREATERTHAN_PERCENT expr # rightRotationExpr;
+
+literalExpr: TOKEN | DOUBLEQUOTESTRING | BACKTICKSTRING;
+stmtSep:     SEMICOLON | NEWLINE;
+exprSep:     COMMA | NEWLINE;

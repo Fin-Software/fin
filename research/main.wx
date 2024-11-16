@@ -1,4 +1,4 @@
-cmp := (std "compare") orelse Compare
+def cmp = (std "compare") orelse Compare
 # equivalent to `cmp := if (std "compare") != null |v| {v} else {Compare}`
 
 Compare :=
@@ -11,13 +11,13 @@ Compare :=
 
 Interface :=
 {
-	A B C D: mut uptr = 99, x := 9
-	z: *ptr
+	mut A B C D: uptr = 99, let x = 9
+	let z: *ptr
 }
 
-val Bitwise =
+def Bitwise =
 {
-	val Not = inline func {t: type, a: []t} []t
+	def Not = inline func {t: type, a: []t} []t
 	(
 		if (cmp.IsAnIntType t) (
 			errdefer killAll()
@@ -29,11 +29,14 @@ val Bitwise =
 		)
 		return
 	)
-
-	val
 }
 
-val Main = proc {} uptr
+def Main = proc void uptr
 (
 	
+)
+
+proc Main void uptr
+(
+
 )

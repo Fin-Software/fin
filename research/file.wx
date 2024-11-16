@@ -3,12 +3,10 @@
 # Contributors responsible for this file:
 # @p7r0x7 <mattrbonnette@pm.me>
 #
-# THE FOLLOWING LOGIC MAY BE FLAWED IN PROPOSED IMPLEMENTATION:
-# ()                 == block of statements expression syntax
-# id                 == func or proc call statement syntax
-# id@arity_if_finite == func or proc value syntax
-# {}                 == container expression literal syntax
-# []                 == type or type indexing syntax
+# ( stmt* expression? ) endStmt == block expression or statement syntax
+# id tuple endStmt              == func or proc call statement syntax
+# { endExpr } endStmt           == 
+# []                            == type or type indexing syntax
 #
 # THE FOLLOWING LOGIC MAY BE FLAWED IN PROPOSED IMPLEMENTATION:
 # When programmers employ `func`, and separately, `proc`, in their code, they guarantee to the
@@ -77,29 +75,29 @@
 # variadic callables: `is` `==` `!=` `_` `+` `+%` `-` `-%` `*` `*%` `~` `&` `|` `^`
 
 
-Bitwise := {
-    Not := inline func [a: a.type] a.type ( ret ! a )
-    Or := inline func [a b: a.type] a.type ( ret | a b )
-    And := inline func [a b: a.type] a.type ( ret & a b )
-    Xor := inline func [a b: a.type] a.type ( ret ^ a b )
-    Shl := inline func [a b: a.type] a.type ( ret < a b )
-    Shr := inline func [a b: a.type] a.type ( ret > a b )
-    Rotl := inline func [a b: a.type] a.type ( ret <% a b )
-    Rotr := inline func [a b: a.type] a.type ( ret >% a b )
+Bitwise = {
+    Not = inline func [a: a.type] a.type ( ret ! a )
+    Or = inline func [a b: a.type] a.type ( ret | a b )
+    And = inline func [a b: a.type] a.type ( ret & a b )
+    Xor = inline func [a b: a.type] a.type ( ret ^ a b )
+    Shl = inline func [a b: a.type] a.type ( ret < a b )
+    Shr = inline func [a b: a.type] a.type ( ret > a b )
+    Rotl = inline func [a b: a.type] a.type ( ret <% a b )
+    Rotr = inline func [a b: a.type] a.type ( ret >% a b )
 }
 
-Arithmetic := {
-    OverflowBehavior := enum {WrapOnOverflow PanicOnOverflow: []u8}
+Arithmetic = {
+    OverflowBehavior = enum {WrapOnOverflow PanicOnOverflow: {}u8}
     #
     # The following functions are generic and improper usage will be caught at comptime:
     #
-    Add := inline func [a b: a.type, of: compt OverflowBehavior] a.type (
+    Add = inline func {a b: a.type, of: compt OverflowBehavior} a.type (
         ret is of == {.WrapOnOverflow, ( +% a b )} {.PanicOnOverflow, ( + a b )}
     )
-    Sub := inline func [a b: a.type, of: compt OverflowBehavior] a.type (
+    Sub = inline func {a b: a.type, of: compt OverflowBehavior} a.type (
         ret is of == {.WrapOnOverflow, ( -% a b )} {.PanicOnOverflow, ( - a b )}
     )
-    Mul := inline func [a b: a.type, of: compt OverflowBehavior] a.type (
+    Mul = inline func {a b: a.type, of: compt OverflowBehavior} a.type (
         ret is of == {
             .WrapOnOverflow, (
                 *% a b
@@ -109,26 +107,25 @@ Arithmetic := {
             ( * a b )
         }
     )
-    Div := inline func [a b: a.type] a.type ( ret / a b )
-    Mod := inline func [a b: a.type] a.type ( ret % a b )
-    Neg := inline func [a: a.type] a.type ( ret _ a )
+    Div = inline func [a b: a.type] a.type ( ret / a b )
+    Mod = inline func [a b: a.type] a.type ( ret % a b )
+    Neg = inline func [a: a.type] a.type ( ret _ a )
 }
 
-Main := func [] ![] (
+Main = func {} !{} (
     Arithmetic.Add
 )
 
 
-
-Bitwise := struct {
-    Not := inline func {a: a.type} a.type ( return ! a )
-    Or := inline func {a b: a.type} a.type ( return | a b )
-    And := inline func {a b: a.type} a.type ( return & a b )
-    Xor := inline func {a b: a.type} a.type ( return ^ a b )
-    Shl := inline func {a b: a.type} a.type ( return < a b )
-    Shr := inline func {a b: a.type} a.type ( return > a b )
-    Rotl := inline func {a b: a.type} a.type ( return <% a b )
-    Rotr := inline func {a b: a.type} a.type ( return >% a b )
+Bitwise = struct {
+    Not = inline func {a: a.type} a.type ( return ! a )
+    Or = inline func {a b: a.type} a.type ( return | a b )
+    And = inline func {a b: a.type} a.type ( return & a b )
+    Xor = inline func {a b: a.type} a.type ( return ^ a b )
+    Shl = inline func {a b: a.type} a.type ( return < a b )
+    Shr = inline func {a b: a.type} a.type ( return > a b )
+    Rotl = inline func {a b: a.type} a.type ( return <% a b )
+    Rotr = inline func {a b: a.type} a.type ( return >% a b )
 }
 
 Bitwise
@@ -136,9 +133,7 @@ Bitwise
 
 }
 
-
-
-Main := proc() uptr {
-
-	return 0
-}
+proc Main {} uptr
+(
+    return 0
+)
