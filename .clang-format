@@ -1,7 +1,8 @@
----
-IndentWidth: 4
-UseTab: Never
 ColumnLimit: 120
+IndentWidth: 4
+InsertNewlineAtEOF: true
+SortIncludes: CaseInsensitive
+UseTab: Never
 ---
 Language: Cpp
 AlignAfterOpenBracket: BlockIndent
@@ -11,17 +12,28 @@ AlignConsecutiveBitFields: None
 AlignConsecutiveDeclarations: None
 AlignConsecutiveMacros: None
 AlignConsecutiveShortCaseStatements:
-	Enabled: false
+    Enabled: false
 AlignConsecutiveTableGenBreakingDAGArgColons: None
 AlignConsecutiveTableGenCondOperatorColons: None
 AlignConsecutiveTableGenDefinitionColons: None
 AlignEscapedNewlines: Left
-AlignOperands: DontAlign
 AlignTrailingComments: Always
-
 AllowAllArgumentsOnNextLine: true
 AllowAllParametersOfDeclarationOnNextLine: true
 AllowBreakBeforeNoexceptSpecifier: Never
+AllowShortBlocksOnASingleLine: true
+AllowShortCaseLabelsOnASingleLine: true
+AllowShortEnumsOnASingleLine: true
+AllowShortFunctionsOnASingleLine: All
+AllowShortIfStatementsOnASingleLine: true
+AllowShortLoopsOnASingleLine: true
+BreakAfterReturnType: None
+BreakBeforeBraces: WebKit
+BreakBeforeBinaryOperators: NonAssignment
+BreakInheritanceList: AfterColon
+BreakStringLiterals: true
+IndentPPDirectives: None
+PointerAlignment: Left
 ReflowComments: false
 SpaceAfterCStyleCast: false
 SpaceAfterLogicalNot: false
@@ -38,11 +50,3 @@ SpaceBeforeSquareBrackets: false
 SpaceInEmptyBlock: false
 SpacesInAngles: false
 SpacesInContainerLiterals: false
-
-BreakStringLiterals: true
-IndentPPDirectives: None
-BreakInheritanceList: AfterColon
-BreakBeforeBraces: WebKit
-PointerAlignment: Left
-InsertNewlineAtEOF: true
-SortIncludes: CaseInsensitive

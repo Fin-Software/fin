@@ -19,18 +19,19 @@ WHITESPACE:        [ \t]+ -> channel(HIDDEN);
 
 // SORTED ^^
 
-COLON:                     ':';                   // type specifier
-COMMA:                     ',';                   // expression separator
-SEMICOLON:                 ';';                   // statement separator
-QUESTION:                  '?';                   // Type modifier (optional types)
-OPENPARENTHESIS:           NEWLINE? '(' NEWLINE?; // open group expression
-CLOSEDPARENTHESIS:         NEWLINE? ')' NEWLINE?; // close group expression
-OPENBRACE:                 NEWLINE? '{' NEWLINE?; // open block or type expression
-CLOSEDBRACE:               NEWLINE? '}' NEWLINE?; // close block or type expression
-LESSTHAN_OPENBRACKET:      '<[' NEWLINE?;         // open indexing expression
-CLOSEDBRACKET_GREATERTHAN: NEWLINE? ']>';         // close indexing expression
-OPENBRACKET:               '[' NEWLINE?;          // open indexing expression
-CLOSEDBRACKET:             NEWLINE? ']';          // close indexing expression
+COLON_EQUAL:               ':=';
+COLON:                     ':';  // type specifier
+COMMA:                     ',';  // expression separator
+SEMICOLON:                 ';';  // statement separator
+QUESTION:                  '?';  // Type modifier (optional types)
+OPENPARENTHESIS:           '(';  // open group expression
+CLOSEDPARENTHESIS:         ')';  // close group expression
+OPENBRACE:                 '{';  // open block or type expression
+CLOSEDBRACE:               '}';  // close block or type expression
+LESSTHAN_OPENBRACKET:      '<['; // open indexing expression
+CLOSEDBRACKET_GREATERTHAN: ']>'; // close indexing expression
+OPENBRACKET:               '[';  // open indexing expression
+CLOSEDBRACKET:             ']';  // close indexing expression
 
 DOT_TYPE:      '.type'; // postfix op: access comptime type
 DOT_LEN:       '.len';  // postfix op: access length
@@ -39,88 +40,79 @@ DOT_AMPERSAND: '.&';    // postfix op: access address-of
 DOT_QUESTION:  '.?';    // postfix op: explicitly unwrap optional
 DOT:           '.';     // postfix op: access field (after DOT...)
 
-GREATERTHAN_GREATERTHAN_PERCENT_EQUAL: NEWLINE? '>>%=' NEWLINE?; // combined assignment: rotr
-GREATERTHAN_GREATERTHAN_PERCENT:       NEWLINE? '>>%' NEWLINE?;  //
-GREATERTHAN_GREATERTHAN_EQUAL:         NEWLINE? '>>=' NEWLINE?;  // combined assignment: right shift
-GREATERTHAN_GREATERTHAN:               NEWLINE? '>>' NEWLINE?;   //
-GREATERTHAN_EQUAL:                     NEWLINE? '>=' NEWLINE?;   // infix op: greater than or equal to comparison
-GREATERTHAN:                           NEWLINE? '>' NEWLINE?;    // infix op: greater than comparison
-LESSTHAN_LESSTHAN_PERCENT_EQUAL:       NEWLINE? '<<%=' NEWLINE?; // combined assignment: rotl
-LESSTHAN_LESSTHAN_PERCENT:             NEWLINE? '<<%' NEWLINE?;  // rotl
-LESSTHAN_LESSTHAN_EQUAL:               NEWLINE? '<<=' NEWLINE?;  // combined assignment: left shift
-LESSTHAN_LESSTHAN:                     NEWLINE? '<<' NEWLINE?;   // left shift
-LESSTHAN_EQUAL:                        NEWLINE? '<=' NEWLINE?;   // infix op: less than or equal to comparison
-LESSTHAN:                              NEWLINE? '<' NEWLINE?;    // infix op: less than comparison
+GREATERTHAN_GREATERTHAN_PERCENT_EQUAL: '>>%='; // combined assignment: rotr
+GREATERTHAN_GREATERTHAN_PERCENT:       '>>%';  //
+GREATERTHAN_GREATERTHAN_EQUAL:         '>>=';  // combined assignment: right shift
+GREATERTHAN_GREATERTHAN:               '>>';   //
+GREATERTHAN_EQUAL:                     '>=';   // infix op: greater than or equal to comparison
+GREATERTHAN:                           '>';    // infix op: greater than comparison
+LESSTHAN_LESSTHAN_PERCENT_EQUAL:       '<<%='; // combined assignment: rotl
+LESSTHAN_LESSTHAN_PERCENT:             '<<%';  // rotl
+LESSTHAN_LESSTHAN_EQUAL:               '<<=';  // combined assignment: left shift
+LESSTHAN_LESSTHAN:                     '<<';   // left shift
+LESSTHAN_EQUAL:                        '<=';   // infix op: less than or equal to comparison
+LESSTHAN:                              '<';    // infix op: less than comparison
+ASTERISK_PERCENT_EQUAL:                '*%=';  // combined wrapping assignment: multiplication
+ASTERISK_PERCENT:                      '*%';   //
+ASTERISK_EQUAL:                        '*=';   // combined assignment: multiplication
+ASTERISK_ASTERISK:                     '**';   // infix op: comptime value repetition
+ASTERISK:                              '*';    // (after ASTERISK...)
+PLUS_PERCENT_EQUAL:                    '+%=';  // combined wrapping assignment: addition
+PLUS_PERCENT:                          '+%';   //
+PLUS_EQUAL:                            '+=';   // combined assignment: addition
+PLUS_PLUS:                             '++';   // infix op: comptime value concatenation
+PLUS:                                  '+';    // infix op: addition (after PLUS...)
+MINUS_PERCENT_EQUAL:                   '-%=';  // combined wrapping assignment: subtraction
+MINUS_PERCENT:                         '-%';   //
+MINUS_EQUAL:                           '-=';   // combined assignment: subtraction
+MINUS:                                 '-';    // infix op: subtraction; prefix: negation (after MINUS...)
+EXCLAMATION_EQUAL:                     '!=';   // infix op: inequality comparison
+EXCLAMATION:                           '!';    // infix op: logical NOT; bitwise NOT (after EXCLAMATION...)
+AMPERSAND_EQUAL:                       '&=';   // combined assignment: bitwise AND
+AMPERSAND:                             '&';    // infix op: logical AND; bitwise AND (after AMPERSAND...)
+PERCENT_EQUAL:                         '%=';   // combined assignment: modulus
+PERCENT:                               '%';    // (after PERCENT...)
+CARROT_EQUAL:                          '^=';   // combined assignment: bitwise XOR
+CARROT:                                '^';    // infix op: logical XOR bitwise XOR (after CARROT...)
+SLASH_EQUAL:                           '/=';   // combined assignment: division
+SLASH:                                 '/';    // (after SLASH...)
+EQUAL_EQUAL:                           '==';   // infix op: equality comparison
+EQUAL:                                 '=';    // infix op: assign type instance to value; declare default type instance of value (after EQUAL...)
+PIPE_EQUAL:                            '|=';   // combined assignment: bitwise OR
+PIPE:                                  '|';    // infix op: logical OR; bitwise OR; routine overloading (after PIPE...)
 
-ASTERISK_PERCENT_EQUAL: NEWLINE? '*%=' NEWLINE?; // combined wrapping assignment: multiplication
-ASTERISK_PERCENT:       NEWLINE? '*%' NEWLINE?;  //
-ASTERISK_EQUAL:         NEWLINE? '*=' NEWLINE?;  // combined assignment: multiplication
-ASTERISK_ASTERISK:      NEWLINE? '**' NEWLINE?;  // infix op: comptime value repetition
-ASTERISK:               NEWLINE? '*' NEWLINE?;   // (after ASTERISK...)
-PLUS_PERCENT_EQUAL:     NEWLINE? '+%=' NEWLINE?; // combined wrapping assignment: addition
-PLUS_PERCENT:           NEWLINE? '+%' NEWLINE?;  //
-PLUS_EQUAL:             NEWLINE? '+=' NEWLINE?;  // combined assignment: addition
-PLUS_PLUS:              NEWLINE? '++' NEWLINE?;  // infix op: comptime value concatenation
-PLUS:                   NEWLINE? '+' NEWLINE?;   // infix op: addition (after PLUS...)
-
-MINUS_PERCENT_EQUAL: NEWLINE? '-%=' NEWLINE?; // combined wrapping assignment: subtraction
-MINUS_PERCENT:       NEWLINE? '-%' NEWLINE?;  //
-MINUS_EQUAL:         NEWLINE? '-=' NEWLINE?;  // combined assignment: subtraction
-MINUS:               NEWLINE? '-' NEWLINE?;   // infix op: subtraction; prefix: negation (after MINUS...)
-
-EXCLAMATION_EQUAL: NEWLINE? '!=' NEWLINE?; // infix op: inequality comparison
-EXCLAMATION:       NEWLINE? '!' NEWLINE?;  // infix op: logical NOT; bitwise NOT (after EXCLAMATION...)
-
-AMPERSAND_EQUAL: NEWLINE? '&=' NEWLINE?; // combined assignment: bitwise AND
-AMPERSAND:       NEWLINE? '&' NEWLINE?;  // infix op: logical AND; bitwise AND (after AMPERSAND...)
-
-PERCENT_EQUAL: NEWLINE? '%=' NEWLINE?; // combined assignment: modulus
-PERCENT:       NEWLINE? '%' NEWLINE?;  // (after PERCENT...)
-
-CARROT_EQUAL: NEWLINE? '^=' NEWLINE?; // combined assignment: bitwise XOR
-CARROT:       NEWLINE? '^' NEWLINE?;  // infix op: logical XOR bitwise XOR (after CARROT...)
-
-SLASH_EQUAL: NEWLINE? '/=' NEWLINE?; // combined assignment: division
-SLASH:       NEWLINE? '/' NEWLINE?;  // (after SLASH...)
-
-EQUAL_EQUAL: NEWLINE? '==' NEWLINE?; // infix op: equality comparison
-EQUAL:       NEWLINE? '=' NEWLINE?;  // infix op: assign type instance to value; declare default type instance of value (after EQUAL...)
-
-PIPE_EQUAL: NEWLINE? '|=' NEWLINE?; // combined assignment: bitwise OR
-PIPE:       NEWLINE? '|' NEWLINE?;  // infix op: logical OR; bitwise OR; routine overloading (after PIPE...)
-
-DEF:         'def';         //
-PROC:        'proc';        // Routine keyword (procedure)
-FUNC:        'func';        // Routine keyword (function)
-MUT:         'mut';         // Type modifier (mutable)
-INLINE:      'inline';      // Inline optimization hint
-RETURN:      'return';      // Return statement
-BREAK:       'break';       // Break from loop
-CONTINUE:    'continue';    // Continue loop iteration
-WHILE:       'while';       // Loop control structure
-FOR:         'for';         // Loop control structure
-IF:          'if';          // Conditional structure
-ELSEIF:      'elseif';      // Else if statement
-ELSE:        'else';        // Conditional alternative
-MATCH:       'match';       // Pattern matching
-IS:          'is';          // Enhanced switch statement
-DEFER:       'defer';       // Defer execution until scope ends
-ERRDEFER:    'errdefer';    // Error handling with defer
-ORELSE:      'orelse';      // Alternate error handling
-TRY:         'try';         // Error handling structure
-CATCH:       'catch';       // Error handling structure
-IMPORT:      'import';      // Import modules
-ALIGN:       'align';       // Type alignment modifier
-THREADLOCAL: 'threadlocal'; // Type modifier (thread-local storage)
-UNREACHABLE: 'unreachable'; //
-VOLATILE:    'volatile';    // Type modifier (volatile)
-UNROLL:      'unroll';      // Loop optimization hint
-COMPT:       'compt';       // Type modifier (comptime/compile-time)
-TEST:        'test';        // Unit test declaration
-ENUM:        'enum';        // Enumeration type
-UNION:       'union';       // Union type
-STD:         'std';         // Standard library access
-AS:          'as';          // infix op: Type casting
+PROC:         'proc';         // Routine keyword (procedure)
+FUNC:         'func';         // Routine keyword (function)
+MUT:          'mut';          // Type modifier (mutable)
+INLINE:       'inline';       // Inline optimization hint
+RETURN:       'return';       // Return statement
+GOTOCONTINUE: 'gotocontinue'; // Continue loop iteration
+GOTOBREAK:    'gotobreak';    // Break from loop
+GOTO:         'goto';         // Goto
+WHILE:        'while';        // Loop control structure
+FOR:          'for';          // Loop control structure
+IF:           'if';           // Conditional structure
+ELSEIF:       'elseif';       // Else if statement
+ELSE:         'else';         // Conditional alternative
+MATCH:        'match';        // Pattern matching
+IS:           'is';           // Enhanced switch statement
+DEFER:        'defer';        // Defer execution until scope ends
+ERRDEFER:     'errdefer';     // Error handling with defer
+ORELSE:       'orelse';       // Alternate error handling
+TRY:          'try';          // Error handling structure
+CATCH:        'catch';        // Error handling structure
+IMPORT:       'import';       // Import modules
+ALIGN:        'align';        // Type alignment modifier
+THREADLOCAL:  'threadlocal';  // Type modifier (thread-local storage)
+UNREACHABLE:  'unreachable';  //
+VOLATILE:     'volatile';     // Type modifier (volatile)
+UNROLL:       'unroll';       // Loop optimization hint
+COMPT:        'compt';        // Type modifier (comptime/compile-time)
+TEST:         'test';         // Unit test declaration
+ENUM:         'enum';         // Enumeration type
+UNION:        'union';        // Union type
+STD:          'std';          // Standard library access
+AS:           'as';           // infix op: Type casting
 
 // SORTED vv
 
