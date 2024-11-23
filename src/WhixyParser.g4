@@ -7,8 +7,6 @@
 // Contributors responsible for this file:
 // @p7r0x7 <mattrbonnette@pm.me>
 
-// Statement and expression IDs each end as such; punctuation IDs do not.
-
 parser grammar WhixyParser;
 options {
     tokenVocab = WhixyLexer;
@@ -20,47 +18,41 @@ srcFile: stmt (stmtSep stmt)* eof;
 //    Statements
 //
 
-stmt
-    : fieldExpr   # defStmt
-    | blockStmt   # blockStmt
-    | callExpr    # callStmt
-    | RETURN expr # returnStmt
-    |             # procStmt
-    |             # funcStmt
-    |             # ifStmt
-    |             # forStmt
-    |             # whileStmt;
+stmt: valsStmt | callStmt | blockStmt | returnStmt | functionStmt | procedureStmt | ifStmt | whileStmt | forStmt;
 
-blockStmt: oParen (stmt (stmtSep stmt)* NEWLINE?)? cParen;
+valsStmt: TOKEN+ COLON (expr EQUAL | EQUAL)? expr;
+
+callStmt: atom expr+;
+
+blockStmt: oParen (stmt (stmtSep stmt)*)? cParen;
+
+returnStmt: RETURN expr+;
+
+functionStmt: INLINE? FUNC TOKEN expr expr blockStmt;
+
+procedureStmt: INLINE? PROC TOKEN expr expr blockStmt;
+
+ifStmt: IF expr blockStmt (ELSEIF expr blockStmt)* (ELSE blockStmt)?;
+
+whileStmt: UNROLL? WHILE expr? expr? blockStmt;
+
+forStmt: UNROLL? FOR expr? expr? blockStmt;
 
 //
 //    Expressions
 //
 
-rootExpr: TOKEN # token | DOUBLEQUOTESTRING # doubleQuoteString | BACKTICKSTRING # backtickString;
+expr: valsStmt | callStmt | typeExpr | tupleExpr | ifExpr | functionExpr | procedureExpr | unaryExpr | binaryExpr | atom;
 
-expr
-    : callExpr    # j
-    | fieldExpr   # j
-    | blockExpr   # j
-    | tupleExpr   # j
-    | typeExpr    # typeExpr
-    | routineExpr # routineExpr
-    | unaryExpr   # unaryExpr
-    | binaryExpr  # binaryExpr
-    | rootExpr    # rootExpr;
+typeExpr: oBrace (valsStmt (exprSep valsStmt)*)? cBrace;
 
-callExpr: expr (rootExpr | tupleExpr);
+tupleExpr: oParen (expr (exprSep expr)*)? cParen;
 
-fieldExpr: TOKEN+ (COLON expr)? (EQUAL expr)?;
+ifExpr: IF expr expr (ELSEIF expr expr)* (ELSE expr)?;
 
-tupleExpr: oParen (expr (exprSep expr)* exprSep?)? cParen;
+functionExpr: INLINE? FUNC expr expr blockStmt;
 
-typeExpr: oBrace (fieldExpr (exprSep fieldExpr)* exprSep?)? cBrace;
-
-blockExpr: oParen ((stmt (stmtSep stmt)* stmtSep)? expr NEWLINE?)? cParen;
-
-routineExpr: FUNC typeExpr expr blockExpr # functionExpr | PROC typeExpr expr blockExpr # procedureExpr;
+procedureExpr: INLINE? PROC expr expr blockStmt;
 
 unaryExpr
     : EXCLAMATION expr  # notExpr
@@ -86,15 +78,22 @@ binaryExpr
     | expr LESSTHAN_LESSTHAN_PERCENT expr       # leftRotationExpr
     | expr GREATERTHAN_GREATERTHAN_PERCENT expr # rightRotationExpr;
 
-//
-//    Flexibiliy
-//
+// Atoms are a grammatical destinction necessary only for preventing left recursion in implementation.
+atom
+    : oParen ((stmt (stmtSep stmt)* stmtSep)? expr)? cParen # blockExpr
+    | DOUBLEQUOTESTRING                                     # doubleQuoteStringExpr
+    | BACKTICKSTRING                                        # backtickStringExpr
+    | TOKEN                                                 # token;
 
-stmtSep: SEMICOLON | NEWLINE;
-exprSep: COMMA | NEWLINE;
+//
+//    Flexibility
+//
 
 // NL? ID
 eof: NEWLINE? EOF;
+
+// ID NL?
+equal: EQUAL NEWLINE?;
 
 // ID NL?; NL? ID
 oBracket:      OPENBRACKET NEWLINE?;
@@ -103,48 +102,50 @@ oAngleBracket: LESSTHAN_OPENBRACKET NEWLINE?;
 cAngleBracket: NEWLINE? CLOSEDBRACKET_GREATERTHAN;
 
 // NL? ID NL?
-oParen:               NEWLINE? OPENPARENTHESIS NEWLINE?;
-cParen:               NEWLINE? CLOSEDPARENTHESIS NEWLINE?;
-oBrace:               NEWLINE? OPENBRACE NEWLINE?;
-cBrace:               NEWLINE? CLOSEDBRACE NEWLINE?;
-gtGtPercentEqual:     NEWLINE? GREATERTHAN_GREATERTHAN_PERCENT_EQUAL NEWLINE?;
-gtGtPercent:          NEWLINE? GREATERTHAN_GREATERTHAN_PERCENT NEWLINE?;
-gtGtEqual:            NEWLINE? GREATERTHAN_GREATERTHAN_EQUAL NEWLINE?;
-gtGt:                 NEWLINE? GREATERTHAN_GREATERTHAN NEWLINE?;
-gtEqual:              NEWLINE? GREATERTHAN_EQUAL NEWLINE?;
-gt:                   NEWLINE? GREATERTHAN NEWLINE?;
-ltLtPercentEqual:     NEWLINE? LESSTHAN_LESSTHAN_PERCENT_EQUAL NEWLINE?;
-ltLtPercent:          NEWLINE? LESSTHAN_LESSTHAN_PERCENT NEWLINE?;
-ltLtEqual:            NEWLINE? LESSTHAN_LESSTHAN_EQUAL NEWLINE?;
-ltLt:                 NEWLINE? LESSTHAN_LESSTHAN NEWLINE?;
-ltEqual:              NEWLINE? LESSTHAN_EQUAL NEWLINE?;
-lt:                   NEWLINE? LESSTHAN NEWLINE?;
-asteriskPercentEqual: NEWLINE? ASTERISK_PERCENT_EQUAL NEWLINE?;
-asteriskPercent:      NEWLINE? ASTERISK_PERCENT NEWLINE?;
-asteriskEqual:        NEWLINE? ASTERISK_EQUAL NEWLINE?;
-asteriskAsterisk:     NEWLINE? ASTERISK_ASTERISK NEWLINE?;
-asterisk:             NEWLINE? ASTERISK NEWLINE?;
-plusPercentEqual:     NEWLINE? PLUS_PERCENT_EQUAL NEWLINE?;
-plusPercent:          NEWLINE? PLUS_PERCENT NEWLINE?;
-plusEqual:            NEWLINE? PLUS_EQUAL NEWLINE?;
-plusPlus:             NEWLINE? PLUS_PLUS NEWLINE?;
-plus:                 NEWLINE? PLUS NEWLINE?;
-minusPercentEqual:    NEWLINE? MINUS_PERCENT_EQUAL NEWLINE?;
-minusPercent:         NEWLINE? MINUS_PERCENT NEWLINE?;
-minusEqual:           NEWLINE? MINUS_EQUAL NEWLINE?;
-minus:                NEWLINE? MINUS NEWLINE?;
-exclamationEqual:     NEWLINE? EXCLAMATION_EQUAL NEWLINE?;
-exclamation:          NEWLINE? EXCLAMATION NEWLINE?;
-ampersandEqual:       NEWLINE? AMPERSAND_EQUAL NEWLINE?;
-ampersand:            NEWLINE? AMPERSAND NEWLINE?;
-percentEqual:         NEWLINE? PERCENT_EQUAL NEWLINE?;
-percent:              NEWLINE? PERCENT NEWLINE?;
-carrotEqual:          NEWLINE? CARROT_EQUAL NEWLINE?;
-carrot:               NEWLINE? CARROT NEWLINE?;
-slashEqual:           NEWLINE? SLASH_EQUAL NEWLINE?;
-slash:                NEWLINE? SLASH NEWLINE?;
-equalEqual:           NEWLINE? EQUAL_EQUAL NEWLINE?;
-equal:                NEWLINE? EQUAL NEWLINE?;
-pipeEqual:            NEWLINE? PIPE_EQUAL NEWLINE?;
-pipe:                 NEWLINE? PIPE NEWLINE?;
-as:                   NEWLINE? AS NEWLINE?;
+oParen:         NEWLINE? OPENPARENTHESIS NEWLINE?;
+cParen:         NEWLINE? CLOSEDPARENTHESIS NEWLINE?;
+oBrace:         NEWLINE? OPENBRACE NEWLINE?;
+cBrace:         NEWLINE? CLOSEDBRACE NEWLINE?;
+gtGtPercentEq:  NEWLINE? GREATERTHAN_GREATERTHAN_PERCENT_EQUAL NEWLINE?;
+gtGtPercent:    NEWLINE? GREATERTHAN_GREATERTHAN_PERCENT NEWLINE?;
+gtGtEq:         NEWLINE? GREATERTHAN_GREATERTHAN_EQUAL NEWLINE?;
+gtGt:           NEWLINE? GREATERTHAN_GREATERTHAN NEWLINE?;
+gtEq:           NEWLINE? GREATERTHAN_EQUAL NEWLINE?;
+gt:             NEWLINE? GREATERTHAN NEWLINE?;
+ltLtPercentEq:  NEWLINE? LESSTHAN_LESSTHAN_PERCENT_EQUAL NEWLINE?;
+ltLtPercent:    NEWLINE? LESSTHAN_LESSTHAN_PERCENT NEWLINE?;
+ltLtEq:         NEWLINE? LESSTHAN_LESSTHAN_EQUAL NEWLINE?;
+ltLt:           NEWLINE? LESSTHAN_LESSTHAN NEWLINE?;
+ltEq:           NEWLINE? LESSTHAN_EQUAL NEWLINE?;
+lt:             NEWLINE? LESSTHAN NEWLINE?;
+starPercentEq:  NEWLINE? ASTERISK_PERCENT_EQUAL NEWLINE?;
+starPercent:    NEWLINE? ASTERISK_PERCENT NEWLINE?;
+starEq:         NEWLINE? ASTERISK_EQUAL NEWLINE?;
+starStar:       NEWLINE? ASTERISK_ASTERISK NEWLINE?;
+star:           NEWLINE? ASTERISK NEWLINE?;
+plusPercentEq:  NEWLINE? PLUS_PERCENT_EQUAL NEWLINE?;
+plusPercent:    NEWLINE? PLUS_PERCENT NEWLINE?;
+plusEq:         NEWLINE? PLUS_EQUAL NEWLINE?;
+plusPlus:       NEWLINE? PLUS_PLUS NEWLINE?;
+plus:           NEWLINE? PLUS NEWLINE?;
+minusPercentEq: NEWLINE? MINUS_PERCENT_EQUAL NEWLINE?;
+minusPercent:   NEWLINE? MINUS_PERCENT NEWLINE?;
+minusEq:        NEWLINE? MINUS_EQUAL NEWLINE?;
+minus:          NEWLINE? MINUS NEWLINE?;
+exclamationEq:  NEWLINE? EXCLAMATION_EQUAL NEWLINE?;
+exclamation:    NEWLINE? EXCLAMATION NEWLINE?;
+ampersandEq:    NEWLINE? AMPERSAND_EQUAL NEWLINE?;
+ampersand:      NEWLINE? AMPERSAND NEWLINE?;
+percentEq:      NEWLINE? PERCENT_EQUAL NEWLINE?;
+percent:        NEWLINE? PERCENT NEWLINE?;
+carrotEq:       NEWLINE? CARROT_EQUAL NEWLINE?;
+carrot:         NEWLINE? CARROT NEWLINE?;
+slashEq:        NEWLINE? SLASH_EQUAL NEWLINE?;
+slash:          NEWLINE? SLASH NEWLINE?;
+equalEq:        NEWLINE? EQUAL_EQUAL NEWLINE?;
+pipeEq:         NEWLINE? PIPE_EQUAL NEWLINE?;
+pipe:           NEWLINE? PIPE NEWLINE?;
+as:             NEWLINE? AS NEWLINE?;
+
+stmtSep: SEMICOLON | NEWLINE;
+exprSep: COMMA | NEWLINE;

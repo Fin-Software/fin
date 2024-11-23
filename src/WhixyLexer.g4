@@ -19,7 +19,6 @@ WHITESPACE:        [ \t]+ -> channel(HIDDEN);
 
 // SORTED ^^
 
-COLON_EQUAL:               ':=';
 COLON:                     ':';  // type specifier
 COMMA:                     ',';  // expression separator
 SEMICOLON:                 ';';  // statement separator
@@ -81,38 +80,38 @@ EQUAL:                                 '=';    // infix op: assign type instance
 PIPE_EQUAL:                            '|=';   // combined assignment: bitwise OR
 PIPE:                                  '|';    // infix op: logical OR; bitwise OR; routine overloading (after PIPE...)
 
-PROC:         'proc';         // Routine keyword (procedure)
-FUNC:         'func';         // Routine keyword (function)
-MUT:          'mut';          // Type modifier (mutable)
-INLINE:       'inline';       // Inline optimization hint
-RETURN:       'return';       // Return statement
-GOTOCONTINUE: 'gotocontinue'; // Continue loop iteration
-GOTOBREAK:    'gotobreak';    // Break from loop
-GOTO:         'goto';         // Goto
-WHILE:        'while';        // Loop control structure
-FOR:          'for';          // Loop control structure
-IF:           'if';           // Conditional structure
-ELSEIF:       'elseif';       // Else if statement
-ELSE:         'else';         // Conditional alternative
-MATCH:        'match';        // Pattern matching
-IS:           'is';           // Enhanced switch statement
-DEFER:        'defer';        // Defer execution until scope ends
-ERRDEFER:     'errdefer';     // Error handling with defer
-ORELSE:       'orelse';       // Alternate error handling
-TRY:          'try';          // Error handling structure
-CATCH:        'catch';        // Error handling structure
-IMPORT:       'import';       // Import modules
-ALIGN:        'align';        // Type alignment modifier
-THREADLOCAL:  'threadlocal';  // Type modifier (thread-local storage)
-UNREACHABLE:  'unreachable';  //
-VOLATILE:     'volatile';     // Type modifier (volatile)
-UNROLL:       'unroll';       // Loop optimization hint
-COMPT:        'compt';        // Type modifier (comptime/compile-time)
-TEST:         'test';         // Unit test declaration
-ENUM:         'enum';         // Enumeration type
-UNION:        'union';        // Union type
-STD:          'std';          // Standard library access
-AS:           'as';           // infix op: Type casting
+PROC:        'proc';        // Routine keyword (procedure)
+FUNC:        'func';        // Routine keyword (function)
+MUT:         'mut';         // Type modifier (mutable)
+INLINE:      'inline';      // Inline optimization hint
+RETURN:      'return';      // Return statement
+CONTINUE:    'continue';    // Continue loop iteration
+BREAK:       'break';       // Break from loop
+GOTO:        'goto';        // Goto
+WHILE:       'while';       // Loop control structure
+FOR:         'for';         // Loop control structure
+IF:          'if';          // Conditional structure
+ELSEIF:      'elseif';      // Else if statement
+ELSE:        'else';        // Conditional alternative
+MATCH:       'match';       // Pattern matching
+IS:          'is';          // Enhanced switch statement
+DEFER:       'defer';       // Defer execution until scope ends
+ERRDEFER:    'errdefer';    // Error handling with defer
+ORELSE:      'orelse';      // Alternate error handling
+TRY:         'try';         // Error handling structure
+CATCH:       'catch';       // Error handling structure
+IMPORT:      'import';      // Import modules
+ALIGN:       'align';       // Type alignment modifier
+THREADLOCAL: 'threadlocal'; // Type modifier (thread-local storage)
+UNREACHABLE: 'unreachable'; //
+VOLATILE:    'volatile';    // Type modifier (volatile)
+UNROLL:      'unroll';      // Loop optimization hint
+COMPT:       'compt';       // Type modifier (comptime/compile-time)
+TEST:        'test';        // Unit test declaration
+ENUM:        'enum';        // Enumeration type
+UNION:       'union';       // Union type
+STD:         'std';         // Standard library access
+AS:          'as';          // infix op: Type casting
 
 // SORTED vv
 

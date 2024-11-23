@@ -28,7 +28,25 @@ AllowShortFunctionsOnASingleLine: All
 AllowShortIfStatementsOnASingleLine: true
 AllowShortLoopsOnASingleLine: true
 BreakAfterReturnType: None
-BreakBeforeBraces: WebKit
+BreakBeforeBraces: Custom
+BraceWrapping:
+    IndentBraces: false
+    BeforeWhile: true
+    AfterEnum: false
+    AfterStruct: false
+    SplitEmptyFunction: false
+    SplitEmptyNamespace: false
+    SplitEmptyRecord: false
+    AfterClass: false
+    AfterCaseLabel: false
+    AfterControlStatement: Never
+    AfterFunction: true
+    AfterNamespace: false
+    AfterUnion: false
+    AfterExternBlock: false
+    BeforeCatch: false
+    BeforeElse: true
+    BeforeLambdaBody: true
 BreakBeforeBinaryOperators: NonAssignment
 BreakInheritanceList: AfterColon
 BreakStringLiterals: true
@@ -43,7 +61,6 @@ SpaceBeforeCaseColon: false
 SpaceBeforeCpp11BracedList: false
 SpaceBeforeCtorInitializerColon: false
 SpaceBeforeInheritanceColon: false
-SpaceBeforeJsonColon: false
 SpaceBeforeParens: ControlStatementsExceptControlMacros
 SpaceBeforeRangeBasedForLoopColon: false
 SpaceBeforeSquareBrackets: false
