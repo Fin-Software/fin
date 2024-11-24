@@ -130,67 +130,69 @@ class WhixyParser: public antlr4::Parser {
         RuleIfExpr = 17,
         RuleIsExpr = 18,
         RuleMatchExpr = 19,
-        RuleFuncExpr = 20,
-        RuleProcExpr = 21,
-        RuleComptExpr = 22,
-        RuleString = 23,
-        RuleAtom = 24,
-        RuleBlockExpr = 25,
-        RuleTypeExpr = 26,
-        RuleTupleExpr = 27,
-        RuleToken = 28,
-        RuleEof = 29,
-        RuleEqual = 30,
-        RuleOBracket = 31,
-        RuleCBracket = 32,
-        RuleOAngleBracket = 33,
-        RuleCAngleBracket = 34,
-        RuleOParen = 35,
-        RuleCParen = 36,
-        RuleOBrace = 37,
-        RuleCBrace = 38,
-        RuleGtGtPercentEq = 39,
-        RuleGtGtPercent = 40,
-        RuleGtGtEq = 41,
-        RuleGtGt = 42,
-        RuleGtEq = 43,
-        RuleGt = 44,
-        RuleLtLtPercentEq = 45,
-        RuleLtLtPercent = 46,
-        RuleLtLtEq = 47,
-        RuleLtLt = 48,
-        RuleLtEq = 49,
-        RuleLt = 50,
-        RuleStarPercentEq = 51,
-        RuleStarPercent = 52,
-        RuleStarEq = 53,
-        RuleStarStar = 54,
-        RuleStar = 55,
-        RulePlusPercentEq = 56,
-        RulePlusPercent = 57,
-        RulePlusEq = 58,
-        RulePlusPlus = 59,
-        RulePlus = 60,
-        RuleMinusPercentEq = 61,
-        RuleMinusPercent = 62,
-        RuleMinusEq = 63,
-        RuleMinus = 64,
-        RuleExclamationEq = 65,
-        RuleExclamation = 66,
-        RuleAmpersandEq = 67,
-        RuleAmpersand = 68,
-        RulePercentEq = 69,
-        RulePercent = 70,
-        RuleCarrotEq = 71,
-        RuleCarrot = 72,
-        RuleSlashEq = 73,
-        RuleSlash = 74,
-        RuleEqualEq = 75,
-        RulePipeEq = 76,
-        RulePipe = 77,
-        RuleAs = 78,
-        RuleStmtSep = 79,
-        RuleExprSep = 80
+        RuleWhileExpr = 20,
+        RuleForExpr = 21,
+        RuleFuncExpr = 22,
+        RuleProcExpr = 23,
+        RuleComptExpr = 24,
+        RuleString = 25,
+        RuleAtom = 26,
+        RuleBlockExpr = 27,
+        RuleTypeExpr = 28,
+        RuleTupleExpr = 29,
+        RuleToken = 30,
+        RuleEof = 31,
+        RuleEqual = 32,
+        RuleOBracket = 33,
+        RuleCBracket = 34,
+        RuleOAngleBracket = 35,
+        RuleCAngleBracket = 36,
+        RuleOParen = 37,
+        RuleCParen = 38,
+        RuleOBrace = 39,
+        RuleCBrace = 40,
+        RuleGtGtPercentEq = 41,
+        RuleGtGtPercent = 42,
+        RuleGtGtEq = 43,
+        RuleGtGt = 44,
+        RuleGtEq = 45,
+        RuleGt = 46,
+        RuleLtLtPercentEq = 47,
+        RuleLtLtPercent = 48,
+        RuleLtLtEq = 49,
+        RuleLtLt = 50,
+        RuleLtEq = 51,
+        RuleLt = 52,
+        RuleStarPercentEq = 53,
+        RuleStarPercent = 54,
+        RuleStarEq = 55,
+        RuleStarStar = 56,
+        RuleStar = 57,
+        RulePlusPercentEq = 58,
+        RulePlusPercent = 59,
+        RulePlusEq = 60,
+        RulePlusPlus = 61,
+        RulePlus = 62,
+        RuleMinusPercentEq = 63,
+        RuleMinusPercent = 64,
+        RuleMinusEq = 65,
+        RuleMinus = 66,
+        RuleExclamationEq = 67,
+        RuleExclamation = 68,
+        RuleAmpersandEq = 69,
+        RuleAmpersand = 70,
+        RulePercentEq = 71,
+        RulePercent = 72,
+        RuleCarrotEq = 73,
+        RuleCarrot = 74,
+        RuleSlashEq = 75,
+        RuleSlash = 76,
+        RuleEqualEq = 77,
+        RulePipeEq = 78,
+        RulePipe = 79,
+        RuleAs = 80,
+        RuleStmtSep = 81,
+        RuleExprSep = 82
     };
 
     explicit WhixyParser(antlr4::TokenStream* input);
@@ -229,6 +231,8 @@ class WhixyParser: public antlr4::Parser {
     class IfExprContext;
     class IsExprContext;
     class MatchExprContext;
+    class WhileExprContext;
+    class ForExprContext;
     class FuncExprContext;
     class ProcExprContext;
     class ComptExprContext;
@@ -534,6 +538,8 @@ class WhixyParser: public antlr4::Parser {
         IfExprContext* ifExpr();
         IsExprContext* isExpr();
         MatchExprContext* matchExpr();
+        WhileExprContext* whileExpr();
+        ForExprContext* forExpr();
         FuncExprContext* funcExpr();
         ProcExprContext* procExpr();
         ComptExprContext* comptExpr();
@@ -584,6 +590,34 @@ class WhixyParser: public antlr4::Parser {
     };
 
     MatchExprContext* matchExpr();
+
+    class WhileExprContext: public antlr4::ParserRuleContext {
+      public:
+        WhileExprContext(antlr4::ParserRuleContext* parent, size_t invokingState);
+        virtual size_t getRuleIndex() const override;
+        antlr4::tree::TerminalNode* WHILE();
+        std::vector<BlockExprContext*> blockExpr();
+        BlockExprContext* blockExpr(size_t i);
+        antlr4::tree::TerminalNode* UNROLL();
+
+        virtual std::any accept(antlr4::tree::ParseTreeVisitor* visitor) override;
+    };
+
+    WhileExprContext* whileExpr();
+
+    class ForExprContext: public antlr4::ParserRuleContext {
+      public:
+        ForExprContext(antlr4::ParserRuleContext* parent, size_t invokingState);
+        virtual size_t getRuleIndex() const override;
+        antlr4::tree::TerminalNode* FOR();
+        std::vector<BlockExprContext*> blockExpr();
+        BlockExprContext* blockExpr(size_t i);
+        antlr4::tree::TerminalNode* UNROLL();
+
+        virtual std::any accept(antlr4::tree::ParseTreeVisitor* visitor) override;
+    };
+
+    ForExprContext* forExpr();
 
     class FuncExprContext: public antlr4::ParserRuleContext {
       public:

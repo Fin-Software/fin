@@ -54,6 +54,10 @@ class WhixyParserBaseVisitor: public WhixyParserVisitor {
 
     virtual std::any visitMatchExpr(WhixyParser::MatchExprContext* ctx) override { return visitChildren(ctx); }
 
+    virtual std::any visitWhileExpr(WhixyParser::WhileExprContext* ctx) override { return visitChildren(ctx); }
+
+    virtual std::any visitForExpr(WhixyParser::ForExprContext* ctx) override { return visitChildren(ctx); }
+
     virtual std::any visitFuncExpr(WhixyParser::FuncExprContext* ctx) override { return visitChildren(ctx); }
 
     virtual std::any visitProcExpr(WhixyParser::ProcExprContext* ctx) override { return visitChildren(ctx); }

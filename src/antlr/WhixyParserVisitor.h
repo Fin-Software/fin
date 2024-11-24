@@ -57,6 +57,10 @@ class WhixyParserVisitor: public antlr4::tree::AbstractParseTreeVisitor {
 
     virtual std::any visitMatchExpr(WhixyParser::MatchExprContext* context) = 0;
 
+    virtual std::any visitWhileExpr(WhixyParser::WhileExprContext* context) = 0;
+
+    virtual std::any visitForExpr(WhixyParser::ForExprContext* context) = 0;
+
     virtual std::any visitFuncExpr(WhixyParser::FuncExprContext* context) = 0;
 
     virtual std::any visitProcExpr(WhixyParser::ProcExprContext* context) = 0;

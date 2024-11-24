@@ -72,6 +72,8 @@ expr
     | ifExpr
     | isExpr
     | matchExpr
+    | whileExpr
+    | forExpr
     | funcExpr
     | procExpr //| unaryExpr | binaryExpr
     | comptExpr
@@ -83,6 +85,10 @@ ifExpr: IF blockExpr expr (ELSEIF blockExpr expr)* (ELSE expr)?;
 isExpr: IS;
 
 matchExpr: MATCH;
+
+whileExpr: UNROLL? WHILE blockExpr? blockExpr? blockExpr;
+
+forExpr: UNROLL? FOR blockExpr? blockExpr? blockExpr;
 
 funcExpr: INLINE? FUNC typeExpr tupleExpr blockStmt;
 
