@@ -20,70 +20,78 @@ srcFile: stmt (stmtSep stmt)* eof;
 
 stmt: valsStmt | callStmt | blockStmt | returnStmt | functionStmt | procedureStmt | ifStmt | whileStmt | forStmt;
 
-valsStmt: TOKEN+ COLON (expr EQUAL | EQUAL)? expr;
+valsStmt: token+ COLON (expr EQUAL | EQUAL)? expr;
 
-callStmt: atom expr+;
+callStmt: atom+;
 
 blockStmt: oParen (stmt (stmtSep stmt)*)? cParen;
 
-returnStmt: RETURN expr+;
+returnStmt: RETURN atom+;
 
-functionStmt: INLINE? FUNC TOKEN expr expr blockStmt;
+functionStmt: INLINE? FUNC token typeExpr tupleExpr blockStmt;
 
-procedureStmt: INLINE? PROC TOKEN expr expr blockStmt;
+procedureStmt: INLINE? PROC token typeExpr tupleExpr blockStmt;
 
-ifStmt: IF expr blockStmt (ELSEIF expr blockStmt)* (ELSE blockStmt)?;
+ifStmt: IF blockExpr blockStmt (ELSEIF blockExpr blockStmt)* (ELSE blockStmt)?;
 
-whileStmt: UNROLL? WHILE expr? expr? blockStmt;
+whileStmt: UNROLL? WHILE blockExpr? blockExpr? blockStmt;
 
-forStmt: UNROLL? FOR expr? expr? blockStmt;
+forStmt: UNROLL? FOR blockExpr? blockExpr? blockStmt;
 
 //
 //    Expressions
 //
 
-expr: valsStmt | callStmt | typeExpr | tupleExpr | ifExpr | functionExpr | procedureExpr | unaryExpr | binaryExpr | atom;
+expr
+    : valsStmt
+    | callStmt
+    | ifExpr
+    | functionExpr
+    | procedureExpr //| unaryExpr | binaryExpr
+    | string
+    | atom;
+
+ifExpr: IF blockExpr expr (ELSEIF blockExpr expr)* (ELSE expr)?;
+
+functionExpr: INLINE? FUNC typeExpr tupleExpr blockStmt;
+
+procedureExpr: INLINE? PROC typeExpr tupleExpr blockStmt;
+
+string: DOUBLEQUOTESTRING # doubleQuoteStringExpr | BACKTICKSTRING # backTickStringExpr;
+
+//unaryExpr
+//    : EXCLAMATION expr  # notExpr
+//    | MINUS expr        # negationExpr
+//    | AMPERSAND expr    # addressOfExpr
+//    | expr DOT_ASTERISK # dereferencingMethodExpr
+//    | expr DOT_TYPE     # typeOfMethodExpr
+//    | expr DOT_LEN      # lengthOfMethodExpr;
+//
+//binaryExpr
+//    : expr AS expr                              # asExpr
+//    | expr PLUS_PLUS expr                       # concatenationExpr
+//    | expr ASTERISK_ASTERISK expr               # repititionExpr
+//    | expr PLUS expr                            # additionExpr
+//    | expr MINUS expr                           # subtractionExpr
+//    | expr ASTERISK expr                        # multiplicationExpr
+//    | expr SLASH expr                           # divisionExpr
+//    | expr LESSTHAN expr                        # leftShiftingExpr
+//    | expr GREATERTHAN expr                     # rightShiftingExpr
+//    | expr PLUS_PERCENT expr                    # wrappingAdditionExpr
+//    | expr MINUS_PERCENT expr                   # wrappingSubtrationExpr
+//    | expr ASTERISK_PERCENT expr                # wrappingMultiplicationExpr
+//    | expr LESSTHAN_LESSTHAN_PERCENT expr       # leftRotationExpr
+//    | expr GREATERTHAN_GREATERTHAN_PERCENT expr # rightRotationExpr;
+
+atom: blockExpr | typeExpr | tupleExpr | token;
+
+blockExpr: oParen ((stmt (stmtSep stmt)* stmtSep)? expr)? cParen;
 
 typeExpr: oBrace (valsStmt (exprSep valsStmt)*)? cBrace;
 
 tupleExpr: oParen (expr (exprSep expr)*)? cParen;
 
-ifExpr: IF expr expr (ELSEIF expr expr)* (ELSE expr)?;
-
-functionExpr: INLINE? FUNC expr expr blockStmt;
-
-procedureExpr: INLINE? PROC expr expr blockStmt;
-
-unaryExpr
-    : EXCLAMATION expr  # notExpr
-    | MINUS expr        # negationExpr
-    | AMPERSAND expr    # addressOfExpr
-    | expr DOT_ASTERISK # dereferencingMethodExpr
-    | expr DOT_TYPE     # typeOfMethodExpr
-    | expr DOT_LEN      # lengthOfMethodExpr;
-
-binaryExpr
-    : expr AS expr                              # asExpr
-    | expr PLUS_PLUS expr                       # concatenationExpr
-    | expr ASTERISK_ASTERISK expr               # repititionExpr
-    | expr PLUS expr                            # additionExpr
-    | expr MINUS expr                           # subtractionExpr
-    | expr ASTERISK expr                        # multiplicationExpr
-    | expr SLASH expr                           # divisionExpr
-    | expr LESSTHAN expr                        # leftShiftingExpr
-    | expr GREATERTHAN expr                     # rightShiftingExpr
-    | expr PLUS_PERCENT expr                    # wrappingAdditionExpr
-    | expr MINUS_PERCENT expr                   # wrappingSubtrationExpr
-    | expr ASTERISK_PERCENT expr                # wrappingMultiplicationExpr
-    | expr LESSTHAN_LESSTHAN_PERCENT expr       # leftRotationExpr
-    | expr GREATERTHAN_GREATERTHAN_PERCENT expr # rightRotationExpr;
-
-// Atoms are a grammatical destinction necessary only for preventing left recursion in implementation.
-atom
-    : oParen ((stmt (stmtSep stmt)* stmtSep)? expr)? cParen # blockExpr
-    | DOUBLEQUOTESTRING                                     # doubleQuoteStringExpr
-    | BACKTICKSTRING                                        # backtickStringExpr
-    | TOKEN                                                 # token;
+token: TOKEN;
 
 //
 //    Flexibility
