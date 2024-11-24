@@ -18,7 +18,21 @@ srcFile: stmt (stmtSep stmt)* eof;
 //    Statements
 //
 
-stmt: valsStmt | callStmt | blockStmt | returnStmt | functionStmt | procedureStmt | ifStmt | whileStmt | forStmt;
+stmt
+    : valsStmt
+    | callStmt
+    | blockStmt
+    | returnStmt
+    | funcStmt
+    | procStmt
+    | ifStmt
+    | isStmt
+    | matchStmt
+    | whileStmt
+    | forStmt
+    | comptStmt
+    | deferStmt
+    | errdeferStmt;
 
 valsStmt: token+ COLON (expr EQUAL | EQUAL)? expr;
 
@@ -28,15 +42,25 @@ blockStmt: oParen (stmt (stmtSep stmt)*)? cParen;
 
 returnStmt: RETURN atom+;
 
-functionStmt: INLINE? FUNC token typeExpr tupleExpr blockStmt;
+funcStmt: INLINE? FUNC token typeExpr tupleExpr blockStmt;
 
-procedureStmt: INLINE? PROC token typeExpr tupleExpr blockStmt;
+procStmt: INLINE? PROC token typeExpr tupleExpr blockStmt;
 
 ifStmt: IF blockExpr blockStmt (ELSEIF blockExpr blockStmt)* (ELSE blockStmt)?;
+
+isStmt: IS;
+
+matchStmt: MATCH;
 
 whileStmt: UNROLL? WHILE blockExpr? blockExpr? blockStmt;
 
 forStmt: UNROLL? FOR blockExpr? blockExpr? blockStmt;
+
+comptStmt: COMPT stmt;
+
+deferStmt: DEFER stmt;
+
+errdeferStmt: ERRDEFER stmt;
 
 //
 //    Expressions
@@ -46,18 +70,23 @@ expr
     : valsStmt
     | callStmt
     | ifExpr
-    | functionExpr
-    | procedureExpr //| unaryExpr | binaryExpr
+    | isExpr
+    | matchExpr
+    | funcExpr
+    | procExpr //| unaryExpr | binaryExpr
+    | comptExpr
     | string
     | atom;
 
 ifExpr: IF blockExpr expr (ELSEIF blockExpr expr)* (ELSE expr)?;
 
-functionExpr: INLINE? FUNC typeExpr tupleExpr blockStmt;
+isExpr: IS;
 
-procedureExpr: INLINE? PROC typeExpr tupleExpr blockStmt;
+matchExpr: MATCH;
 
-string: DOUBLEQUOTESTRING # doubleQuoteStringExpr | BACKTICKSTRING # backTickStringExpr;
+funcExpr: INLINE? FUNC typeExpr tupleExpr blockStmt;
+
+procExpr: INLINE? PROC typeExpr tupleExpr blockStmt;
 
 //unaryExpr
 //    : EXCLAMATION expr  # notExpr
@@ -82,6 +111,10 @@ string: DOUBLEQUOTESTRING # doubleQuoteStringExpr | BACKTICKSTRING # backTickStr
 //    | expr ASTERISK_PERCENT expr                # wrappingMultiplicationExpr
 //    | expr LESSTHAN_LESSTHAN_PERCENT expr       # leftRotationExpr
 //    | expr GREATERTHAN_GREATERTHAN_PERCENT expr # rightRotationExpr;
+
+comptExpr: COMPT expr;
+
+string: DOUBLEQUOTESTRING # dQStringExpr | BACKTICKSTRING # bTStringExpr;
 
 atom: blockExpr | typeExpr | tupleExpr | token;
 
