@@ -69,16 +69,22 @@ errdeferStmt: ERRDEFER stmt;
 expr
     : valsStmt
     | callStmt
+    | accessExpr
     | ifExpr
     | isExpr
     | matchExpr
     | whileExpr
     | forExpr
     | funcExpr
-    | procExpr //| unaryExpr | binaryExpr
+    | procExpr //| unaryExpr
+    | binaryOpExpr
     | comptExpr
+    | preOpExpr
+    | postOpExpr
     | string
     | atom;
+
+accessExpr: atom DOT atom;
 
 ifExpr: IF blockExpr expr (ELSEIF blockExpr expr)* (ELSE expr)?;
 
@@ -94,31 +100,63 @@ funcExpr: INLINE? FUNC typeExpr tupleExpr blockStmt;
 
 procExpr: INLINE? PROC typeExpr tupleExpr blockStmt;
 
-//unaryExpr
-//    : EXCLAMATION expr  # notExpr
-//    | MINUS expr        # negationExpr
-//    | AMPERSAND expr    # addressOfExpr
-//    | expr DOT_ASTERISK # dereferencingMethodExpr
-//    | expr DOT_TYPE     # typeOfMethodExpr
-//    | expr DOT_LEN      # lengthOfMethodExpr;
-//
-//binaryExpr
-//    : expr AS expr                              # asExpr
-//    | expr PLUS_PLUS expr                       # concatenationExpr
-//    | expr ASTERISK_ASTERISK expr               # repititionExpr
-//    | expr PLUS expr                            # additionExpr
-//    | expr MINUS expr                           # subtractionExpr
-//    | expr ASTERISK expr                        # multiplicationExpr
-//    | expr SLASH expr                           # divisionExpr
-//    | expr LESSTHAN expr                        # leftShiftingExpr
-//    | expr GREATERTHAN expr                     # rightShiftingExpr
-//    | expr PLUS_PERCENT expr                    # wrappingAdditionExpr
-//    | expr MINUS_PERCENT expr                   # wrappingSubtrationExpr
-//    | expr ASTERISK_PERCENT expr                # wrappingMultiplicationExpr
-//    | expr LESSTHAN_LESSTHAN_PERCENT expr       # leftRotationExpr
-//    | expr GREATERTHAN_GREATERTHAN_PERCENT expr # rightRotationExpr;
+binaryOpExpr: atom NEWLINE? binaryOp NEWLINE? atom;
+
+binaryOp
+    : AS                                    # asOp
+    | PLUS_PLUS                             # concatenationOp
+    | ASTERISK_ASTERISK                     # repetitionOp
+    | PLUS                                  # additionOp
+    | MINUS                                 # subtractionOp
+    | ASTERISK                              # multiplicationOp
+    | SLASH                                 # divisionOp
+    | LESSTHAN                              # lessThanOp
+    | GREATERTHAN                           # greaterThanOp
+    | LESSTHAN_EQUAL                        # lessThanEqualOp
+    | GREATERTHAN_EQUAL                     # greaterThanEqualOp
+    | PLUS_PERCENT                          # wrappingAdditionOp
+    | MINUS_PERCENT                         # wrappingSubtractionOp
+    | ASTERISK_PERCENT                      # wrappingMultiplicationOp
+    | LESSTHAN_LESSTHAN                     # leftShiftOp
+    | GREATERTHAN_GREATERTHAN               # rightShiftOp
+    | LESSTHAN_LESSTHAN_PERCENT             # leftRotationOp
+    | GREATERTHAN_GREATERTHAN_PERCENT       # rightRotationOp
+    | EQUAL_EQUAL                           # equalityOp
+    | EXCLAMATION_EQUAL                     # inequalityOp
+    | AMPERSAND                             # AndOp
+    | AMPERSAND_EQUAL                       # AndAssignOp
+    | PIPE                                  # OrOp
+    | PIPE_EQUAL                            # OrAssignOp
+    | PERCENT                               # modulusOp
+    | PERCENT_EQUAL                         # modulusAssignOp
+    | CARROT                                # XorOp
+    | CARROT_EQUAL                          # XorAssignOp
+    | SLASH_EQUAL                           # divisionAssignOp
+    | PLUS_EQUAL                            # additionAssignOp
+    | MINUS_EQUAL                           # subtractionAssignOp
+    | ASTERISK_EQUAL                        # multiplicationAssignOp
+    | LESSTHAN_LESSTHAN_EQUAL               # leftShiftAssignOp
+    | GREATERTHAN_GREATERTHAN_EQUAL         # rightShiftAssignOp
+    | ASTERISK_PERCENT_EQUAL                # wrappingMultiplicationAssignOp
+    | PLUS_PERCENT_EQUAL                    # wrappingAdditionAssignOp
+    | MINUS_PERCENT_EQUAL                   # wrappingSubtractionAssignOp
+    | GREATERTHAN_GREATERTHAN_PERCENT_EQUAL # rightRotationAssignOp
+    | LESSTHAN_LESSTHAN_PERCENT_EQUAL       # leftRotationAssignOp;
 
 comptExpr: COMPT expr;
+
+preOpExpr: preOp atom;
+
+preOp: EXCLAMATION # notOp | MINUS # negateOp;
+
+postOpExpr: atom postOp;
+
+postOp
+    : DOT_TYPE      # accessTypeOp
+    | DOT_LEN       # accessLengthOp
+    | DOT_ASTERISK  # dereferencePointerOp
+    | DOT_AMPERSAND # addressOfOp
+    | DOT_QUESTION  # unwrapOptionalOp;
 
 string: DOUBLEQUOTESTRING # dQStringExpr | BACKTICKSTRING # bTStringExpr;
 
@@ -149,50 +187,10 @@ oAngleBracket: LESSTHAN_OPENBRACKET NEWLINE?;
 cAngleBracket: NEWLINE? CLOSEDBRACKET_GREATERTHAN;
 
 // NL? ID NL?
-oParen:         NEWLINE? OPENPARENTHESIS NEWLINE?;
-cParen:         NEWLINE? CLOSEDPARENTHESIS NEWLINE?;
-oBrace:         NEWLINE? OPENBRACE NEWLINE?;
-cBrace:         NEWLINE? CLOSEDBRACE NEWLINE?;
-gtGtPercentEq:  NEWLINE? GREATERTHAN_GREATERTHAN_PERCENT_EQUAL NEWLINE?;
-gtGtPercent:    NEWLINE? GREATERTHAN_GREATERTHAN_PERCENT NEWLINE?;
-gtGtEq:         NEWLINE? GREATERTHAN_GREATERTHAN_EQUAL NEWLINE?;
-gtGt:           NEWLINE? GREATERTHAN_GREATERTHAN NEWLINE?;
-gtEq:           NEWLINE? GREATERTHAN_EQUAL NEWLINE?;
-gt:             NEWLINE? GREATERTHAN NEWLINE?;
-ltLtPercentEq:  NEWLINE? LESSTHAN_LESSTHAN_PERCENT_EQUAL NEWLINE?;
-ltLtPercent:    NEWLINE? LESSTHAN_LESSTHAN_PERCENT NEWLINE?;
-ltLtEq:         NEWLINE? LESSTHAN_LESSTHAN_EQUAL NEWLINE?;
-ltLt:           NEWLINE? LESSTHAN_LESSTHAN NEWLINE?;
-ltEq:           NEWLINE? LESSTHAN_EQUAL NEWLINE?;
-lt:             NEWLINE? LESSTHAN NEWLINE?;
-starPercentEq:  NEWLINE? ASTERISK_PERCENT_EQUAL NEWLINE?;
-starPercent:    NEWLINE? ASTERISK_PERCENT NEWLINE?;
-starEq:         NEWLINE? ASTERISK_EQUAL NEWLINE?;
-starStar:       NEWLINE? ASTERISK_ASTERISK NEWLINE?;
-star:           NEWLINE? ASTERISK NEWLINE?;
-plusPercentEq:  NEWLINE? PLUS_PERCENT_EQUAL NEWLINE?;
-plusPercent:    NEWLINE? PLUS_PERCENT NEWLINE?;
-plusEq:         NEWLINE? PLUS_EQUAL NEWLINE?;
-plusPlus:       NEWLINE? PLUS_PLUS NEWLINE?;
-plus:           NEWLINE? PLUS NEWLINE?;
-minusPercentEq: NEWLINE? MINUS_PERCENT_EQUAL NEWLINE?;
-minusPercent:   NEWLINE? MINUS_PERCENT NEWLINE?;
-minusEq:        NEWLINE? MINUS_EQUAL NEWLINE?;
-minus:          NEWLINE? MINUS NEWLINE?;
-exclamationEq:  NEWLINE? EXCLAMATION_EQUAL NEWLINE?;
-exclamation:    NEWLINE? EXCLAMATION NEWLINE?;
-ampersandEq:    NEWLINE? AMPERSAND_EQUAL NEWLINE?;
-ampersand:      NEWLINE? AMPERSAND NEWLINE?;
-percentEq:      NEWLINE? PERCENT_EQUAL NEWLINE?;
-percent:        NEWLINE? PERCENT NEWLINE?;
-carrotEq:       NEWLINE? CARROT_EQUAL NEWLINE?;
-carrot:         NEWLINE? CARROT NEWLINE?;
-slashEq:        NEWLINE? SLASH_EQUAL NEWLINE?;
-slash:          NEWLINE? SLASH NEWLINE?;
-equalEq:        NEWLINE? EQUAL_EQUAL NEWLINE?;
-pipeEq:         NEWLINE? PIPE_EQUAL NEWLINE?;
-pipe:           NEWLINE? PIPE NEWLINE?;
-as:             NEWLINE? AS NEWLINE?;
+oParen: NEWLINE? OPENPARENTHESIS NEWLINE?;
+cParen: NEWLINE? CLOSEDPARENTHESIS NEWLINE?;
+oBrace: NEWLINE? OPENBRACE NEWLINE?;
+cBrace: NEWLINE? CLOSEDBRACE NEWLINE?;
 
 stmtSep: SEMICOLON | NEWLINE;
 exprSep: COMMA | NEWLINE;

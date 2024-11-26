@@ -51,6 +51,8 @@ class WhixyParserVisitor: public antlr4::tree::AbstractParseTreeVisitor {
 
     virtual std::any visitExpr(WhixyParser::ExprContext* context) = 0;
 
+    virtual std::any visitAccessExpr(WhixyParser::AccessExprContext* context) = 0;
+
     virtual std::any visitIfExpr(WhixyParser::IfExprContext* context) = 0;
 
     virtual std::any visitIsExpr(WhixyParser::IsExprContext* context) = 0;
@@ -65,7 +67,106 @@ class WhixyParserVisitor: public antlr4::tree::AbstractParseTreeVisitor {
 
     virtual std::any visitProcExpr(WhixyParser::ProcExprContext* context) = 0;
 
+    virtual std::any visitBinaryOpExpr(WhixyParser::BinaryOpExprContext* context) = 0;
+
+    virtual std::any visitAsOp(WhixyParser::AsOpContext* context) = 0;
+
+    virtual std::any visitConcatenationOp(WhixyParser::ConcatenationOpContext* context) = 0;
+
+    virtual std::any visitRepetitionOp(WhixyParser::RepetitionOpContext* context) = 0;
+
+    virtual std::any visitAdditionOp(WhixyParser::AdditionOpContext* context) = 0;
+
+    virtual std::any visitSubtractionOp(WhixyParser::SubtractionOpContext* context) = 0;
+
+    virtual std::any visitMultiplicationOp(WhixyParser::MultiplicationOpContext* context) = 0;
+
+    virtual std::any visitDivisionOp(WhixyParser::DivisionOpContext* context) = 0;
+
+    virtual std::any visitLessThanOp(WhixyParser::LessThanOpContext* context) = 0;
+
+    virtual std::any visitGreaterThanOp(WhixyParser::GreaterThanOpContext* context) = 0;
+
+    virtual std::any visitLessThanEqualOp(WhixyParser::LessThanEqualOpContext* context) = 0;
+
+    virtual std::any visitGreaterThanEqualOp(WhixyParser::GreaterThanEqualOpContext* context) = 0;
+
+    virtual std::any visitWrappingAdditionOp(WhixyParser::WrappingAdditionOpContext* context) = 0;
+
+    virtual std::any visitWrappingSubtractionOp(WhixyParser::WrappingSubtractionOpContext* context) = 0;
+
+    virtual std::any visitWrappingMultiplicationOp(WhixyParser::WrappingMultiplicationOpContext* context) = 0;
+
+    virtual std::any visitLeftShiftOp(WhixyParser::LeftShiftOpContext* context) = 0;
+
+    virtual std::any visitRightShiftOp(WhixyParser::RightShiftOpContext* context) = 0;
+
+    virtual std::any visitLeftRotationOp(WhixyParser::LeftRotationOpContext* context) = 0;
+
+    virtual std::any visitRightRotationOp(WhixyParser::RightRotationOpContext* context) = 0;
+
+    virtual std::any visitEqualityOp(WhixyParser::EqualityOpContext* context) = 0;
+
+    virtual std::any visitInequalityOp(WhixyParser::InequalityOpContext* context) = 0;
+
+    virtual std::any visitAndOp(WhixyParser::AndOpContext* context) = 0;
+
+    virtual std::any visitAndAssignOp(WhixyParser::AndAssignOpContext* context) = 0;
+
+    virtual std::any visitOrOp(WhixyParser::OrOpContext* context) = 0;
+
+    virtual std::any visitOrAssignOp(WhixyParser::OrAssignOpContext* context) = 0;
+
+    virtual std::any visitModulusOp(WhixyParser::ModulusOpContext* context) = 0;
+
+    virtual std::any visitModulusAssignOp(WhixyParser::ModulusAssignOpContext* context) = 0;
+
+    virtual std::any visitXorOp(WhixyParser::XorOpContext* context) = 0;
+
+    virtual std::any visitXorAssignOp(WhixyParser::XorAssignOpContext* context) = 0;
+
+    virtual std::any visitDivisionAssignOp(WhixyParser::DivisionAssignOpContext* context) = 0;
+
+    virtual std::any visitAdditionAssignOp(WhixyParser::AdditionAssignOpContext* context) = 0;
+
+    virtual std::any visitSubtractionAssignOp(WhixyParser::SubtractionAssignOpContext* context) = 0;
+
+    virtual std::any visitMultiplicationAssignOp(WhixyParser::MultiplicationAssignOpContext* context) = 0;
+
+    virtual std::any visitLeftShiftAssignOp(WhixyParser::LeftShiftAssignOpContext* context) = 0;
+
+    virtual std::any visitRightShiftAssignOp(WhixyParser::RightShiftAssignOpContext* context) = 0;
+
+    virtual std::any visitWrappingMultiplicationAssignOp(WhixyParser::WrappingMultiplicationAssignOpContext* context
+    ) = 0;
+
+    virtual std::any visitWrappingAdditionAssignOp(WhixyParser::WrappingAdditionAssignOpContext* context) = 0;
+
+    virtual std::any visitWrappingSubtractionAssignOp(WhixyParser::WrappingSubtractionAssignOpContext* context) = 0;
+
+    virtual std::any visitRightRotationAssignOp(WhixyParser::RightRotationAssignOpContext* context) = 0;
+
+    virtual std::any visitLeftRotationAssignOp(WhixyParser::LeftRotationAssignOpContext* context) = 0;
+
     virtual std::any visitComptExpr(WhixyParser::ComptExprContext* context) = 0;
+
+    virtual std::any visitPreOpExpr(WhixyParser::PreOpExprContext* context) = 0;
+
+    virtual std::any visitNotOp(WhixyParser::NotOpContext* context) = 0;
+
+    virtual std::any visitNegateOp(WhixyParser::NegateOpContext* context) = 0;
+
+    virtual std::any visitPostOpExpr(WhixyParser::PostOpExprContext* context) = 0;
+
+    virtual std::any visitAccessTypeOp(WhixyParser::AccessTypeOpContext* context) = 0;
+
+    virtual std::any visitAccessLengthOp(WhixyParser::AccessLengthOpContext* context) = 0;
+
+    virtual std::any visitDereferencePointerOp(WhixyParser::DereferencePointerOpContext* context) = 0;
+
+    virtual std::any visitAddressOfOp(WhixyParser::AddressOfOpContext* context) = 0;
+
+    virtual std::any visitUnwrapOptionalOp(WhixyParser::UnwrapOptionalOpContext* context) = 0;
 
     virtual std::any visitDQStringExpr(WhixyParser::DQStringExprContext* context) = 0;
 
@@ -100,86 +201,6 @@ class WhixyParserVisitor: public antlr4::tree::AbstractParseTreeVisitor {
     virtual std::any visitOBrace(WhixyParser::OBraceContext* context) = 0;
 
     virtual std::any visitCBrace(WhixyParser::CBraceContext* context) = 0;
-
-    virtual std::any visitGtGtPercentEq(WhixyParser::GtGtPercentEqContext* context) = 0;
-
-    virtual std::any visitGtGtPercent(WhixyParser::GtGtPercentContext* context) = 0;
-
-    virtual std::any visitGtGtEq(WhixyParser::GtGtEqContext* context) = 0;
-
-    virtual std::any visitGtGt(WhixyParser::GtGtContext* context) = 0;
-
-    virtual std::any visitGtEq(WhixyParser::GtEqContext* context) = 0;
-
-    virtual std::any visitGt(WhixyParser::GtContext* context) = 0;
-
-    virtual std::any visitLtLtPercentEq(WhixyParser::LtLtPercentEqContext* context) = 0;
-
-    virtual std::any visitLtLtPercent(WhixyParser::LtLtPercentContext* context) = 0;
-
-    virtual std::any visitLtLtEq(WhixyParser::LtLtEqContext* context) = 0;
-
-    virtual std::any visitLtLt(WhixyParser::LtLtContext* context) = 0;
-
-    virtual std::any visitLtEq(WhixyParser::LtEqContext* context) = 0;
-
-    virtual std::any visitLt(WhixyParser::LtContext* context) = 0;
-
-    virtual std::any visitStarPercentEq(WhixyParser::StarPercentEqContext* context) = 0;
-
-    virtual std::any visitStarPercent(WhixyParser::StarPercentContext* context) = 0;
-
-    virtual std::any visitStarEq(WhixyParser::StarEqContext* context) = 0;
-
-    virtual std::any visitStarStar(WhixyParser::StarStarContext* context) = 0;
-
-    virtual std::any visitStar(WhixyParser::StarContext* context) = 0;
-
-    virtual std::any visitPlusPercentEq(WhixyParser::PlusPercentEqContext* context) = 0;
-
-    virtual std::any visitPlusPercent(WhixyParser::PlusPercentContext* context) = 0;
-
-    virtual std::any visitPlusEq(WhixyParser::PlusEqContext* context) = 0;
-
-    virtual std::any visitPlusPlus(WhixyParser::PlusPlusContext* context) = 0;
-
-    virtual std::any visitPlus(WhixyParser::PlusContext* context) = 0;
-
-    virtual std::any visitMinusPercentEq(WhixyParser::MinusPercentEqContext* context) = 0;
-
-    virtual std::any visitMinusPercent(WhixyParser::MinusPercentContext* context) = 0;
-
-    virtual std::any visitMinusEq(WhixyParser::MinusEqContext* context) = 0;
-
-    virtual std::any visitMinus(WhixyParser::MinusContext* context) = 0;
-
-    virtual std::any visitExclamationEq(WhixyParser::ExclamationEqContext* context) = 0;
-
-    virtual std::any visitExclamation(WhixyParser::ExclamationContext* context) = 0;
-
-    virtual std::any visitAmpersandEq(WhixyParser::AmpersandEqContext* context) = 0;
-
-    virtual std::any visitAmpersand(WhixyParser::AmpersandContext* context) = 0;
-
-    virtual std::any visitPercentEq(WhixyParser::PercentEqContext* context) = 0;
-
-    virtual std::any visitPercent(WhixyParser::PercentContext* context) = 0;
-
-    virtual std::any visitCarrotEq(WhixyParser::CarrotEqContext* context) = 0;
-
-    virtual std::any visitCarrot(WhixyParser::CarrotContext* context) = 0;
-
-    virtual std::any visitSlashEq(WhixyParser::SlashEqContext* context) = 0;
-
-    virtual std::any visitSlash(WhixyParser::SlashContext* context) = 0;
-
-    virtual std::any visitEqualEq(WhixyParser::EqualEqContext* context) = 0;
-
-    virtual std::any visitPipeEq(WhixyParser::PipeEqContext* context) = 0;
-
-    virtual std::any visitPipe(WhixyParser::PipeContext* context) = 0;
-
-    virtual std::any visitAs(WhixyParser::AsContext* context) = 0;
 
     virtual std::any visitStmtSep(WhixyParser::StmtSepContext* context) = 0;
 

@@ -48,6 +48,8 @@ class WhixyParserBaseVisitor: public WhixyParserVisitor {
 
     virtual std::any visitExpr(WhixyParser::ExprContext* ctx) override { return visitChildren(ctx); }
 
+    virtual std::any visitAccessExpr(WhixyParser::AccessExprContext* ctx) override { return visitChildren(ctx); }
+
     virtual std::any visitIfExpr(WhixyParser::IfExprContext* ctx) override { return visitChildren(ctx); }
 
     virtual std::any visitIsExpr(WhixyParser::IsExprContext* ctx) override { return visitChildren(ctx); }
@@ -62,7 +64,178 @@ class WhixyParserBaseVisitor: public WhixyParserVisitor {
 
     virtual std::any visitProcExpr(WhixyParser::ProcExprContext* ctx) override { return visitChildren(ctx); }
 
+    virtual std::any visitBinaryOpExpr(WhixyParser::BinaryOpExprContext* ctx) override { return visitChildren(ctx); }
+
+    virtual std::any visitAsOp(WhixyParser::AsOpContext* ctx) override { return visitChildren(ctx); }
+
+    virtual std::any visitConcatenationOp(WhixyParser::ConcatenationOpContext* ctx) override
+    {
+        return visitChildren(ctx);
+    }
+
+    virtual std::any visitRepetitionOp(WhixyParser::RepetitionOpContext* ctx) override { return visitChildren(ctx); }
+
+    virtual std::any visitAdditionOp(WhixyParser::AdditionOpContext* ctx) override { return visitChildren(ctx); }
+
+    virtual std::any visitSubtractionOp(WhixyParser::SubtractionOpContext* ctx) override { return visitChildren(ctx); }
+
+    virtual std::any visitMultiplicationOp(WhixyParser::MultiplicationOpContext* ctx) override
+    {
+        return visitChildren(ctx);
+    }
+
+    virtual std::any visitDivisionOp(WhixyParser::DivisionOpContext* ctx) override { return visitChildren(ctx); }
+
+    virtual std::any visitLessThanOp(WhixyParser::LessThanOpContext* ctx) override { return visitChildren(ctx); }
+
+    virtual std::any visitGreaterThanOp(WhixyParser::GreaterThanOpContext* ctx) override { return visitChildren(ctx); }
+
+    virtual std::any visitLessThanEqualOp(WhixyParser::LessThanEqualOpContext* ctx) override
+    {
+        return visitChildren(ctx);
+    }
+
+    virtual std::any visitGreaterThanEqualOp(WhixyParser::GreaterThanEqualOpContext* ctx) override
+    {
+        return visitChildren(ctx);
+    }
+
+    virtual std::any visitWrappingAdditionOp(WhixyParser::WrappingAdditionOpContext* ctx) override
+    {
+        return visitChildren(ctx);
+    }
+
+    virtual std::any visitWrappingSubtractionOp(WhixyParser::WrappingSubtractionOpContext* ctx) override
+    {
+        return visitChildren(ctx);
+    }
+
+    virtual std::any visitWrappingMultiplicationOp(WhixyParser::WrappingMultiplicationOpContext* ctx) override
+    {
+        return visitChildren(ctx);
+    }
+
+    virtual std::any visitLeftShiftOp(WhixyParser::LeftShiftOpContext* ctx) override { return visitChildren(ctx); }
+
+    virtual std::any visitRightShiftOp(WhixyParser::RightShiftOpContext* ctx) override { return visitChildren(ctx); }
+
+    virtual std::any visitLeftRotationOp(WhixyParser::LeftRotationOpContext* ctx) override
+    {
+        return visitChildren(ctx);
+    }
+
+    virtual std::any visitRightRotationOp(WhixyParser::RightRotationOpContext* ctx) override
+    {
+        return visitChildren(ctx);
+    }
+
+    virtual std::any visitEqualityOp(WhixyParser::EqualityOpContext* ctx) override { return visitChildren(ctx); }
+
+    virtual std::any visitInequalityOp(WhixyParser::InequalityOpContext* ctx) override { return visitChildren(ctx); }
+
+    virtual std::any visitAndOp(WhixyParser::AndOpContext* ctx) override { return visitChildren(ctx); }
+
+    virtual std::any visitAndAssignOp(WhixyParser::AndAssignOpContext* ctx) override { return visitChildren(ctx); }
+
+    virtual std::any visitOrOp(WhixyParser::OrOpContext* ctx) override { return visitChildren(ctx); }
+
+    virtual std::any visitOrAssignOp(WhixyParser::OrAssignOpContext* ctx) override { return visitChildren(ctx); }
+
+    virtual std::any visitModulusOp(WhixyParser::ModulusOpContext* ctx) override { return visitChildren(ctx); }
+
+    virtual std::any visitModulusAssignOp(WhixyParser::ModulusAssignOpContext* ctx) override
+    {
+        return visitChildren(ctx);
+    }
+
+    virtual std::any visitXorOp(WhixyParser::XorOpContext* ctx) override { return visitChildren(ctx); }
+
+    virtual std::any visitXorAssignOp(WhixyParser::XorAssignOpContext* ctx) override { return visitChildren(ctx); }
+
+    virtual std::any visitDivisionAssignOp(WhixyParser::DivisionAssignOpContext* ctx) override
+    {
+        return visitChildren(ctx);
+    }
+
+    virtual std::any visitAdditionAssignOp(WhixyParser::AdditionAssignOpContext* ctx) override
+    {
+        return visitChildren(ctx);
+    }
+
+    virtual std::any visitSubtractionAssignOp(WhixyParser::SubtractionAssignOpContext* ctx) override
+    {
+        return visitChildren(ctx);
+    }
+
+    virtual std::any visitMultiplicationAssignOp(WhixyParser::MultiplicationAssignOpContext* ctx) override
+    {
+        return visitChildren(ctx);
+    }
+
+    virtual std::any visitLeftShiftAssignOp(WhixyParser::LeftShiftAssignOpContext* ctx) override
+    {
+        return visitChildren(ctx);
+    }
+
+    virtual std::any visitRightShiftAssignOp(WhixyParser::RightShiftAssignOpContext* ctx) override
+    {
+        return visitChildren(ctx);
+    }
+
+    virtual std::any visitWrappingMultiplicationAssignOp(WhixyParser::WrappingMultiplicationAssignOpContext* ctx
+    ) override
+    {
+        return visitChildren(ctx);
+    }
+
+    virtual std::any visitWrappingAdditionAssignOp(WhixyParser::WrappingAdditionAssignOpContext* ctx) override
+    {
+        return visitChildren(ctx);
+    }
+
+    virtual std::any visitWrappingSubtractionAssignOp(WhixyParser::WrappingSubtractionAssignOpContext* ctx) override
+    {
+        return visitChildren(ctx);
+    }
+
+    virtual std::any visitRightRotationAssignOp(WhixyParser::RightRotationAssignOpContext* ctx) override
+    {
+        return visitChildren(ctx);
+    }
+
+    virtual std::any visitLeftRotationAssignOp(WhixyParser::LeftRotationAssignOpContext* ctx) override
+    {
+        return visitChildren(ctx);
+    }
+
     virtual std::any visitComptExpr(WhixyParser::ComptExprContext* ctx) override { return visitChildren(ctx); }
+
+    virtual std::any visitPreOpExpr(WhixyParser::PreOpExprContext* ctx) override { return visitChildren(ctx); }
+
+    virtual std::any visitNotOp(WhixyParser::NotOpContext* ctx) override { return visitChildren(ctx); }
+
+    virtual std::any visitNegateOp(WhixyParser::NegateOpContext* ctx) override { return visitChildren(ctx); }
+
+    virtual std::any visitPostOpExpr(WhixyParser::PostOpExprContext* ctx) override { return visitChildren(ctx); }
+
+    virtual std::any visitAccessTypeOp(WhixyParser::AccessTypeOpContext* ctx) override { return visitChildren(ctx); }
+
+    virtual std::any visitAccessLengthOp(WhixyParser::AccessLengthOpContext* ctx) override
+    {
+        return visitChildren(ctx);
+    }
+
+    virtual std::any visitDereferencePointerOp(WhixyParser::DereferencePointerOpContext* ctx) override
+    {
+        return visitChildren(ctx);
+    }
+
+    virtual std::any visitAddressOfOp(WhixyParser::AddressOfOpContext* ctx) override { return visitChildren(ctx); }
+
+    virtual std::any visitUnwrapOptionalOp(WhixyParser::UnwrapOptionalOpContext* ctx) override
+    {
+        return visitChildren(ctx);
+    }
 
     virtual std::any visitDQStringExpr(WhixyParser::DQStringExprContext* ctx) override { return visitChildren(ctx); }
 
@@ -97,89 +270,6 @@ class WhixyParserBaseVisitor: public WhixyParserVisitor {
     virtual std::any visitOBrace(WhixyParser::OBraceContext* ctx) override { return visitChildren(ctx); }
 
     virtual std::any visitCBrace(WhixyParser::CBraceContext* ctx) override { return visitChildren(ctx); }
-
-    virtual std::any visitGtGtPercentEq(WhixyParser::GtGtPercentEqContext* ctx) override { return visitChildren(ctx); }
-
-    virtual std::any visitGtGtPercent(WhixyParser::GtGtPercentContext* ctx) override { return visitChildren(ctx); }
-
-    virtual std::any visitGtGtEq(WhixyParser::GtGtEqContext* ctx) override { return visitChildren(ctx); }
-
-    virtual std::any visitGtGt(WhixyParser::GtGtContext* ctx) override { return visitChildren(ctx); }
-
-    virtual std::any visitGtEq(WhixyParser::GtEqContext* ctx) override { return visitChildren(ctx); }
-
-    virtual std::any visitGt(WhixyParser::GtContext* ctx) override { return visitChildren(ctx); }
-
-    virtual std::any visitLtLtPercentEq(WhixyParser::LtLtPercentEqContext* ctx) override { return visitChildren(ctx); }
-
-    virtual std::any visitLtLtPercent(WhixyParser::LtLtPercentContext* ctx) override { return visitChildren(ctx); }
-
-    virtual std::any visitLtLtEq(WhixyParser::LtLtEqContext* ctx) override { return visitChildren(ctx); }
-
-    virtual std::any visitLtLt(WhixyParser::LtLtContext* ctx) override { return visitChildren(ctx); }
-
-    virtual std::any visitLtEq(WhixyParser::LtEqContext* ctx) override { return visitChildren(ctx); }
-
-    virtual std::any visitLt(WhixyParser::LtContext* ctx) override { return visitChildren(ctx); }
-
-    virtual std::any visitStarPercentEq(WhixyParser::StarPercentEqContext* ctx) override { return visitChildren(ctx); }
-
-    virtual std::any visitStarPercent(WhixyParser::StarPercentContext* ctx) override { return visitChildren(ctx); }
-
-    virtual std::any visitStarEq(WhixyParser::StarEqContext* ctx) override { return visitChildren(ctx); }
-
-    virtual std::any visitStarStar(WhixyParser::StarStarContext* ctx) override { return visitChildren(ctx); }
-
-    virtual std::any visitStar(WhixyParser::StarContext* ctx) override { return visitChildren(ctx); }
-
-    virtual std::any visitPlusPercentEq(WhixyParser::PlusPercentEqContext* ctx) override { return visitChildren(ctx); }
-
-    virtual std::any visitPlusPercent(WhixyParser::PlusPercentContext* ctx) override { return visitChildren(ctx); }
-
-    virtual std::any visitPlusEq(WhixyParser::PlusEqContext* ctx) override { return visitChildren(ctx); }
-
-    virtual std::any visitPlusPlus(WhixyParser::PlusPlusContext* ctx) override { return visitChildren(ctx); }
-
-    virtual std::any visitPlus(WhixyParser::PlusContext* ctx) override { return visitChildren(ctx); }
-
-    virtual std::any visitMinusPercentEq(WhixyParser::MinusPercentEqContext* ctx) override
-    {
-        return visitChildren(ctx);
-    }
-
-    virtual std::any visitMinusPercent(WhixyParser::MinusPercentContext* ctx) override { return visitChildren(ctx); }
-
-    virtual std::any visitMinusEq(WhixyParser::MinusEqContext* ctx) override { return visitChildren(ctx); }
-
-    virtual std::any visitMinus(WhixyParser::MinusContext* ctx) override { return visitChildren(ctx); }
-
-    virtual std::any visitExclamationEq(WhixyParser::ExclamationEqContext* ctx) override { return visitChildren(ctx); }
-
-    virtual std::any visitExclamation(WhixyParser::ExclamationContext* ctx) override { return visitChildren(ctx); }
-
-    virtual std::any visitAmpersandEq(WhixyParser::AmpersandEqContext* ctx) override { return visitChildren(ctx); }
-
-    virtual std::any visitAmpersand(WhixyParser::AmpersandContext* ctx) override { return visitChildren(ctx); }
-
-    virtual std::any visitPercentEq(WhixyParser::PercentEqContext* ctx) override { return visitChildren(ctx); }
-
-    virtual std::any visitPercent(WhixyParser::PercentContext* ctx) override { return visitChildren(ctx); }
-
-    virtual std::any visitCarrotEq(WhixyParser::CarrotEqContext* ctx) override { return visitChildren(ctx); }
-
-    virtual std::any visitCarrot(WhixyParser::CarrotContext* ctx) override { return visitChildren(ctx); }
-
-    virtual std::any visitSlashEq(WhixyParser::SlashEqContext* ctx) override { return visitChildren(ctx); }
-
-    virtual std::any visitSlash(WhixyParser::SlashContext* ctx) override { return visitChildren(ctx); }
-
-    virtual std::any visitEqualEq(WhixyParser::EqualEqContext* ctx) override { return visitChildren(ctx); }
-
-    virtual std::any visitPipeEq(WhixyParser::PipeEqContext* ctx) override { return visitChildren(ctx); }
-
-    virtual std::any visitPipe(WhixyParser::PipeContext* ctx) override { return visitChildren(ctx); }
-
-    virtual std::any visitAs(WhixyParser::AsContext* ctx) override { return visitChildren(ctx); }
 
     virtual std::any visitStmtSep(WhixyParser::StmtSepContext* ctx) override { return visitChildren(ctx); }
 
