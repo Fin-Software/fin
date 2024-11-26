@@ -3,8 +3,8 @@
     .version = "0.0.0",
     .dependencies = .{
         .cova = .{
-            .url = "https://github.com/00JCIV00/cova/archive/v0.10.1.tar.gz",
-            .hash = "12202782cc66e88f0c15b9acea9d6d1d50dbe941d68b5297927243f6d0377dbb1123",
+            .url = "https://github.com/Beyley/cova/archive/main.tar.gz",
+            .hash = "12205af19f0a80248621b2fd75e8506dbda0c84a65f61c54f2e5a645942d40d04561",
         },
         .unvendor = .{
             .url = "https://github.com/p7r0x7/unvendor/archive/master.tar.gz",
