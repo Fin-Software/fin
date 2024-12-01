@@ -8,28 +8,13 @@
 # vendor/ must be kept current in VCS with this file that publicly defines its deterministic generation.
 # And for security reasons, only @p7r0x7 may sign and push commits changing vendor.sh and vendor/.
 
-gcc()
-{
-	start gcc 7fb9a7d5bf5b39faed2ac705aa60225480aefc06be9460a481c1243357db95e3
-
-	semv=14.2.0; url="https://ftp.gnu.org/gnu/gcc/gcc-$semv"; base="gcc-$semv.tar.xz"
-	dl ffee29313fd417420454d985b6740be3755e6465e14173c420c02e3719a51539
-	dec e -so "$srcs/$base" | tar -xf - -C "$pkg"
-	(
-		cd "$pkg/gcc-$semv"; rm -rf c++tools gotools INSTALL libada libcpp libffi/man libgfortran libgo libgrust libobjc \
-			libstdc++-v3 maintainer-scripts zlib gcc/ada gcc/cp gcc/d gcc/fortran gcc/go gcc/rust gcc/objc gcc/objcp
-		find . \( -type d -name examples -o -type d -name doc -o -type d -name docs -o -type d -name test \
-			-o -type d -name tests -o -type d -name testsuite -o -type d -name testdata \) -exec rm -rf {} +
-	)
-	finish
-}
 llvm()
 {
-	start llvm ad91b5b196896e1e751632cf69324f4a08026b741847fe9c170f40a4b7d37d8e
+	start llvm f750c540fb1aea578da42dba4feed3bd5440d06a9174456d777dea6d3d68eb1f
 
-	semv=19.1.2 deps="clang cmake compiler-rt libunwind lld llvm polly runtimes"
+	semv=19.1.4 deps="clang cmake compiler-rt libunwind lld llvm openmp polly"
 	url="https://github.com/llvm/llvm-project/releases/download/llvmorg-$semv"; base="llvm-project-$semv.src.tar.xz"
-	dl 271d00ad19a69ec2293b358a93bbc6b8306c990928ead4f84a4a31b6decd408c
+	dl ca26803168af5ee675bde53177382e3aca45dba5f01884933690500af9b71d12
 	dec e -so "$srcs/$base" | tar -xf - --strip-components=1 -C "$pkg" $(printf "llvm-project-$semv.src/%s\n" $deps)
 	(
 		cd "$pkg"; for dep in $deps; do mv "$dep" "$dep-$semv"; done
@@ -100,4 +85,4 @@ curl() { command curl -sL "$@"; }
 
 [ $# = 0 ] || return 0 # Sourcing mode ends here.
 install "$srcs" vendor; cd vendor
-gcc & llvm & common & wait
+llvm & common & wait
