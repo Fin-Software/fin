@@ -20,6 +20,7 @@ srcFile: stmt (stmtSep stmt)* eof;
 
 stmt
     : valsStmt
+    | assignOpStmt
     | callStmt
     | blockStmt
     | returnStmt
@@ -36,6 +37,24 @@ stmt
 
 valsStmt: token+ COLON (expr EQUAL | EQUAL)? expr;
 
+assignOpStmt: atom+ assignOp atom+;
+assignOp
+    : AMPERSAND_EQUAL                       # andAssignOp
+    | PIPE_EQUAL                            # orAssignOp
+    | PERCENT_EQUAL                         # modulusAssignOp
+    | CARROT_EQUAL                          # xorAssignOp
+    | SLASH_EQUAL                           # divisionAssignOp
+    | PLUS_EQUAL                            # additionAssignOp
+    | MINUS_EQUAL                           # subtractionAssignOp
+    | ASTERISK_EQUAL                        # multiplicationAssignOp
+    | LESSTHAN_LESSTHAN_EQUAL               # leftShiftAssignOp
+    | GREATERTHAN_GREATERTHAN_EQUAL         # rightShiftAssignOp
+    | ASTERISK_PERCENT_EQUAL                # wrappingMultiplicationAssignOp
+    | PLUS_PERCENT_EQUAL                    # wrappingAdditionAssignOp
+    | MINUS_PERCENT_EQUAL                   # wrappingSubtractionAssignOp
+    | GREATERTHAN_GREATERTHAN_PERCENT_EQUAL # rightRotationAssignOp
+    | LESSTHAN_LESSTHAN_PERCENT_EQUAL       # leftRotationAssignOp;
+
 callStmt: atom+;
 
 blockStmt: oParen (stmt (stmtSep stmt)*)? cParen;
@@ -46,15 +65,15 @@ funcStmt: INLINE? FUNC token typeExpr tupleExpr blockStmt;
 
 procStmt: INLINE? PROC token typeExpr tupleExpr blockStmt;
 
-ifStmt: IF blockExpr blockStmt (ELSEIF blockExpr blockStmt)* (ELSE blockStmt)?;
+ifStmt: IF atom blockStmt (ELSEIF atom blockStmt)* (ELSE blockStmt)?;
 
 isStmt: IS;
 
 matchStmt: MATCH;
 
-whileStmt: UNROLL? WHILE blockExpr? blockExpr? blockStmt;
+whileStmt: UNROLL? WHILE atom? atom? stmt;
 
-forStmt: UNROLL? FOR blockExpr? blockExpr? blockStmt;
+forStmt: UNROLL? FOR atom? atom? stmt;
 
 comptStmt: COMPT stmt;
 
@@ -86,7 +105,7 @@ expr
 
 accessExpr: atom DOT atom;
 
-ifExpr: IF blockExpr expr (ELSEIF blockExpr expr)* (ELSE expr)?;
+ifExpr: IF atom expr (ELSEIF atom expr)* (ELSE expr)?;
 
 isExpr: IS;
 
@@ -101,56 +120,38 @@ funcExpr: INLINE? FUNC typeExpr tupleExpr blockStmt;
 procExpr: INLINE? PROC typeExpr tupleExpr blockStmt;
 
 binaryOpExpr: atom NEWLINE? binaryOp NEWLINE? atom;
-
 binaryOp
-    : AS                                    # asOp
-    | PLUS_PLUS                             # concatenationOp
-    | ASTERISK_ASTERISK                     # repetitionOp
-    | PLUS                                  # additionOp
-    | MINUS                                 # subtractionOp
-    | ASTERISK                              # multiplicationOp
-    | SLASH                                 # divisionOp
-    | LESSTHAN                              # lessThanOp
-    | GREATERTHAN                           # greaterThanOp
-    | LESSTHAN_EQUAL                        # lessThanEqualOp
-    | GREATERTHAN_EQUAL                     # greaterThanEqualOp
-    | PLUS_PERCENT                          # wrappingAdditionOp
-    | MINUS_PERCENT                         # wrappingSubtractionOp
-    | ASTERISK_PERCENT                      # wrappingMultiplicationOp
-    | LESSTHAN_LESSTHAN                     # leftShiftOp
-    | GREATERTHAN_GREATERTHAN               # rightShiftOp
-    | LESSTHAN_LESSTHAN_PERCENT             # leftRotationOp
-    | GREATERTHAN_GREATERTHAN_PERCENT       # rightRotationOp
-    | EQUAL_EQUAL                           # equalityOp
-    | EXCLAMATION_EQUAL                     # inequalityOp
-    | AMPERSAND                             # AndOp
-    | AMPERSAND_EQUAL                       # AndAssignOp
-    | PIPE                                  # OrOp
-    | PIPE_EQUAL                            # OrAssignOp
-    | PERCENT                               # modulusOp
-    | PERCENT_EQUAL                         # modulusAssignOp
-    | CARROT                                # XorOp
-    | CARROT_EQUAL                          # XorAssignOp
-    | SLASH_EQUAL                           # divisionAssignOp
-    | PLUS_EQUAL                            # additionAssignOp
-    | MINUS_EQUAL                           # subtractionAssignOp
-    | ASTERISK_EQUAL                        # multiplicationAssignOp
-    | LESSTHAN_LESSTHAN_EQUAL               # leftShiftAssignOp
-    | GREATERTHAN_GREATERTHAN_EQUAL         # rightShiftAssignOp
-    | ASTERISK_PERCENT_EQUAL                # wrappingMultiplicationAssignOp
-    | PLUS_PERCENT_EQUAL                    # wrappingAdditionAssignOp
-    | MINUS_PERCENT_EQUAL                   # wrappingSubtractionAssignOp
-    | GREATERTHAN_GREATERTHAN_PERCENT_EQUAL # rightRotationAssignOp
-    | LESSTHAN_LESSTHAN_PERCENT_EQUAL       # leftRotationAssignOp;
+    : AS                              # asOp
+    | PLUS_PLUS                       # concatenationOp
+    | ASTERISK_ASTERISK               # repetitionOp
+    | PLUS                            # additionOp
+    | MINUS                           # subtractionOp
+    | ASTERISK                        # multiplicationOp
+    | SLASH                           # divisionOp
+    | LESSTHAN                        # lessThanOp
+    | GREATERTHAN                     # greaterThanOp
+    | LESSTHAN_EQUAL                  # lessThanEqualOp
+    | GREATERTHAN_EQUAL               # greaterThanEqualOp
+    | PLUS_PERCENT                    # wrappingAdditionOp
+    | MINUS_PERCENT                   # wrappingSubtractionOp
+    | ASTERISK_PERCENT                # wrappingMultiplicationOp
+    | LESSTHAN_LESSTHAN               # leftShiftOp
+    | GREATERTHAN_GREATERTHAN         # rightShiftOp
+    | LESSTHAN_LESSTHAN_PERCENT       # leftRotationOp
+    | GREATERTHAN_GREATERTHAN_PERCENT # rightRotationOp
+    | EQUAL_EQUAL                     # equalityOp
+    | EXCLAMATION_EQUAL               # inequalityOp
+    | AMPERSAND                       # andOp
+    | PIPE                            # orOp
+    | PERCENT                         # modulusOp
+    | CARROT                          # xorOp;
 
 comptExpr: COMPT expr;
 
 preOpExpr: preOp atom;
-
-preOp: EXCLAMATION # notOp | MINUS # negateOp;
+preOp:     EXCLAMATION # notOp | MINUS # negateOp;
 
 postOpExpr: atom postOp;
-
 postOp
     : DOT_TYPE      # accessTypeOp
     | DOT_LEN       # accessLengthOp

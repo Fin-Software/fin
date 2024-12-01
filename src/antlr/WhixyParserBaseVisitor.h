@@ -20,6 +20,75 @@ class WhixyParserBaseVisitor: public WhixyParserVisitor {
 
     virtual std::any visitValsStmt(WhixyParser::ValsStmtContext* ctx) override { return visitChildren(ctx); }
 
+    virtual std::any visitAssignOpStmt(WhixyParser::AssignOpStmtContext* ctx) override { return visitChildren(ctx); }
+
+    virtual std::any visitAndAssignOp(WhixyParser::AndAssignOpContext* ctx) override { return visitChildren(ctx); }
+
+    virtual std::any visitOrAssignOp(WhixyParser::OrAssignOpContext* ctx) override { return visitChildren(ctx); }
+
+    virtual std::any visitModulusAssignOp(WhixyParser::ModulusAssignOpContext* ctx) override
+    {
+        return visitChildren(ctx);
+    }
+
+    virtual std::any visitXorAssignOp(WhixyParser::XorAssignOpContext* ctx) override { return visitChildren(ctx); }
+
+    virtual std::any visitDivisionAssignOp(WhixyParser::DivisionAssignOpContext* ctx) override
+    {
+        return visitChildren(ctx);
+    }
+
+    virtual std::any visitAdditionAssignOp(WhixyParser::AdditionAssignOpContext* ctx) override
+    {
+        return visitChildren(ctx);
+    }
+
+    virtual std::any visitSubtractionAssignOp(WhixyParser::SubtractionAssignOpContext* ctx) override
+    {
+        return visitChildren(ctx);
+    }
+
+    virtual std::any visitMultiplicationAssignOp(WhixyParser::MultiplicationAssignOpContext* ctx) override
+    {
+        return visitChildren(ctx);
+    }
+
+    virtual std::any visitLeftShiftAssignOp(WhixyParser::LeftShiftAssignOpContext* ctx) override
+    {
+        return visitChildren(ctx);
+    }
+
+    virtual std::any visitRightShiftAssignOp(WhixyParser::RightShiftAssignOpContext* ctx) override
+    {
+        return visitChildren(ctx);
+    }
+
+    virtual std::any visitWrappingMultiplicationAssignOp(WhixyParser::WrappingMultiplicationAssignOpContext* ctx
+    ) override
+    {
+        return visitChildren(ctx);
+    }
+
+    virtual std::any visitWrappingAdditionAssignOp(WhixyParser::WrappingAdditionAssignOpContext* ctx) override
+    {
+        return visitChildren(ctx);
+    }
+
+    virtual std::any visitWrappingSubtractionAssignOp(WhixyParser::WrappingSubtractionAssignOpContext* ctx) override
+    {
+        return visitChildren(ctx);
+    }
+
+    virtual std::any visitRightRotationAssignOp(WhixyParser::RightRotationAssignOpContext* ctx) override
+    {
+        return visitChildren(ctx);
+    }
+
+    virtual std::any visitLeftRotationAssignOp(WhixyParser::LeftRotationAssignOpContext* ctx) override
+    {
+        return visitChildren(ctx);
+    }
+
     virtual std::any visitCallStmt(WhixyParser::CallStmtContext* ctx) override { return visitChildren(ctx); }
 
     virtual std::any visitBlockStmt(WhixyParser::BlockStmtContext* ctx) override { return visitChildren(ctx); }
@@ -135,78 +204,11 @@ class WhixyParserBaseVisitor: public WhixyParserVisitor {
 
     virtual std::any visitAndOp(WhixyParser::AndOpContext* ctx) override { return visitChildren(ctx); }
 
-    virtual std::any visitAndAssignOp(WhixyParser::AndAssignOpContext* ctx) override { return visitChildren(ctx); }
-
     virtual std::any visitOrOp(WhixyParser::OrOpContext* ctx) override { return visitChildren(ctx); }
-
-    virtual std::any visitOrAssignOp(WhixyParser::OrAssignOpContext* ctx) override { return visitChildren(ctx); }
 
     virtual std::any visitModulusOp(WhixyParser::ModulusOpContext* ctx) override { return visitChildren(ctx); }
 
-    virtual std::any visitModulusAssignOp(WhixyParser::ModulusAssignOpContext* ctx) override
-    {
-        return visitChildren(ctx);
-    }
-
     virtual std::any visitXorOp(WhixyParser::XorOpContext* ctx) override { return visitChildren(ctx); }
-
-    virtual std::any visitXorAssignOp(WhixyParser::XorAssignOpContext* ctx) override { return visitChildren(ctx); }
-
-    virtual std::any visitDivisionAssignOp(WhixyParser::DivisionAssignOpContext* ctx) override
-    {
-        return visitChildren(ctx);
-    }
-
-    virtual std::any visitAdditionAssignOp(WhixyParser::AdditionAssignOpContext* ctx) override
-    {
-        return visitChildren(ctx);
-    }
-
-    virtual std::any visitSubtractionAssignOp(WhixyParser::SubtractionAssignOpContext* ctx) override
-    {
-        return visitChildren(ctx);
-    }
-
-    virtual std::any visitMultiplicationAssignOp(WhixyParser::MultiplicationAssignOpContext* ctx) override
-    {
-        return visitChildren(ctx);
-    }
-
-    virtual std::any visitLeftShiftAssignOp(WhixyParser::LeftShiftAssignOpContext* ctx) override
-    {
-        return visitChildren(ctx);
-    }
-
-    virtual std::any visitRightShiftAssignOp(WhixyParser::RightShiftAssignOpContext* ctx) override
-    {
-        return visitChildren(ctx);
-    }
-
-    virtual std::any visitWrappingMultiplicationAssignOp(WhixyParser::WrappingMultiplicationAssignOpContext* ctx
-    ) override
-    {
-        return visitChildren(ctx);
-    }
-
-    virtual std::any visitWrappingAdditionAssignOp(WhixyParser::WrappingAdditionAssignOpContext* ctx) override
-    {
-        return visitChildren(ctx);
-    }
-
-    virtual std::any visitWrappingSubtractionAssignOp(WhixyParser::WrappingSubtractionAssignOpContext* ctx) override
-    {
-        return visitChildren(ctx);
-    }
-
-    virtual std::any visitRightRotationAssignOp(WhixyParser::RightRotationAssignOpContext* ctx) override
-    {
-        return visitChildren(ctx);
-    }
-
-    virtual std::any visitLeftRotationAssignOp(WhixyParser::LeftRotationAssignOpContext* ctx) override
-    {
-        return visitChildren(ctx);
-    }
 
     virtual std::any visitComptExpr(WhixyParser::ComptExprContext* ctx) override { return visitChildren(ctx); }
 

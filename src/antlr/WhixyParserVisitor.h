@@ -23,6 +23,39 @@ class WhixyParserVisitor: public antlr4::tree::AbstractParseTreeVisitor {
 
     virtual std::any visitValsStmt(WhixyParser::ValsStmtContext* context) = 0;
 
+    virtual std::any visitAssignOpStmt(WhixyParser::AssignOpStmtContext* context) = 0;
+
+    virtual std::any visitAndAssignOp(WhixyParser::AndAssignOpContext* context) = 0;
+
+    virtual std::any visitOrAssignOp(WhixyParser::OrAssignOpContext* context) = 0;
+
+    virtual std::any visitModulusAssignOp(WhixyParser::ModulusAssignOpContext* context) = 0;
+
+    virtual std::any visitXorAssignOp(WhixyParser::XorAssignOpContext* context) = 0;
+
+    virtual std::any visitDivisionAssignOp(WhixyParser::DivisionAssignOpContext* context) = 0;
+
+    virtual std::any visitAdditionAssignOp(WhixyParser::AdditionAssignOpContext* context) = 0;
+
+    virtual std::any visitSubtractionAssignOp(WhixyParser::SubtractionAssignOpContext* context) = 0;
+
+    virtual std::any visitMultiplicationAssignOp(WhixyParser::MultiplicationAssignOpContext* context) = 0;
+
+    virtual std::any visitLeftShiftAssignOp(WhixyParser::LeftShiftAssignOpContext* context) = 0;
+
+    virtual std::any visitRightShiftAssignOp(WhixyParser::RightShiftAssignOpContext* context) = 0;
+
+    virtual std::any visitWrappingMultiplicationAssignOp(WhixyParser::WrappingMultiplicationAssignOpContext* context
+    ) = 0;
+
+    virtual std::any visitWrappingAdditionAssignOp(WhixyParser::WrappingAdditionAssignOpContext* context) = 0;
+
+    virtual std::any visitWrappingSubtractionAssignOp(WhixyParser::WrappingSubtractionAssignOpContext* context) = 0;
+
+    virtual std::any visitRightRotationAssignOp(WhixyParser::RightRotationAssignOpContext* context) = 0;
+
+    virtual std::any visitLeftRotationAssignOp(WhixyParser::LeftRotationAssignOpContext* context) = 0;
+
     virtual std::any visitCallStmt(WhixyParser::CallStmtContext* context) = 0;
 
     virtual std::any visitBlockStmt(WhixyParser::BlockStmtContext* context) = 0;
@@ -111,42 +144,11 @@ class WhixyParserVisitor: public antlr4::tree::AbstractParseTreeVisitor {
 
     virtual std::any visitAndOp(WhixyParser::AndOpContext* context) = 0;
 
-    virtual std::any visitAndAssignOp(WhixyParser::AndAssignOpContext* context) = 0;
-
     virtual std::any visitOrOp(WhixyParser::OrOpContext* context) = 0;
-
-    virtual std::any visitOrAssignOp(WhixyParser::OrAssignOpContext* context) = 0;
 
     virtual std::any visitModulusOp(WhixyParser::ModulusOpContext* context) = 0;
 
-    virtual std::any visitModulusAssignOp(WhixyParser::ModulusAssignOpContext* context) = 0;
-
     virtual std::any visitXorOp(WhixyParser::XorOpContext* context) = 0;
-
-    virtual std::any visitXorAssignOp(WhixyParser::XorAssignOpContext* context) = 0;
-
-    virtual std::any visitDivisionAssignOp(WhixyParser::DivisionAssignOpContext* context) = 0;
-
-    virtual std::any visitAdditionAssignOp(WhixyParser::AdditionAssignOpContext* context) = 0;
-
-    virtual std::any visitSubtractionAssignOp(WhixyParser::SubtractionAssignOpContext* context) = 0;
-
-    virtual std::any visitMultiplicationAssignOp(WhixyParser::MultiplicationAssignOpContext* context) = 0;
-
-    virtual std::any visitLeftShiftAssignOp(WhixyParser::LeftShiftAssignOpContext* context) = 0;
-
-    virtual std::any visitRightShiftAssignOp(WhixyParser::RightShiftAssignOpContext* context) = 0;
-
-    virtual std::any visitWrappingMultiplicationAssignOp(WhixyParser::WrappingMultiplicationAssignOpContext* context
-    ) = 0;
-
-    virtual std::any visitWrappingAdditionAssignOp(WhixyParser::WrappingAdditionAssignOpContext* context) = 0;
-
-    virtual std::any visitWrappingSubtractionAssignOp(WhixyParser::WrappingSubtractionAssignOpContext* context) = 0;
-
-    virtual std::any visitRightRotationAssignOp(WhixyParser::RightRotationAssignOpContext* context) = 0;
-
-    virtual std::any visitLeftRotationAssignOp(WhixyParser::LeftRotationAssignOpContext* context) = 0;
 
     virtual std::any visitComptExpr(WhixyParser::ComptExprContext* context) = 0;
 

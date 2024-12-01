@@ -113,53 +113,55 @@ class WhixyParser: public antlr4::Parser {
         RuleSrcFile = 0,
         RuleStmt = 1,
         RuleValsStmt = 2,
-        RuleCallStmt = 3,
-        RuleBlockStmt = 4,
-        RuleReturnStmt = 5,
-        RuleFuncStmt = 6,
-        RuleProcStmt = 7,
-        RuleIfStmt = 8,
-        RuleIsStmt = 9,
-        RuleMatchStmt = 10,
-        RuleWhileStmt = 11,
-        RuleForStmt = 12,
-        RuleComptStmt = 13,
-        RuleDeferStmt = 14,
-        RuleErrdeferStmt = 15,
-        RuleExpr = 16,
-        RuleAccessExpr = 17,
-        RuleIfExpr = 18,
-        RuleIsExpr = 19,
-        RuleMatchExpr = 20,
-        RuleWhileExpr = 21,
-        RuleForExpr = 22,
-        RuleFuncExpr = 23,
-        RuleProcExpr = 24,
-        RuleBinaryOpExpr = 25,
-        RuleBinaryOp = 26,
-        RuleComptExpr = 27,
-        RulePreOpExpr = 28,
-        RulePreOp = 29,
-        RulePostOpExpr = 30,
-        RulePostOp = 31,
-        RuleString = 32,
-        RuleAtom = 33,
-        RuleBlockExpr = 34,
-        RuleTypeExpr = 35,
-        RuleTupleExpr = 36,
-        RuleToken = 37,
-        RuleEof = 38,
-        RuleEqual = 39,
-        RuleOBracket = 40,
-        RuleCBracket = 41,
-        RuleOAngleBracket = 42,
-        RuleCAngleBracket = 43,
-        RuleOParen = 44,
-        RuleCParen = 45,
-        RuleOBrace = 46,
-        RuleCBrace = 47,
-        RuleStmtSep = 48,
-        RuleExprSep = 49
+        RuleAssignOpStmt = 3,
+        RuleAssignOp = 4,
+        RuleCallStmt = 5,
+        RuleBlockStmt = 6,
+        RuleReturnStmt = 7,
+        RuleFuncStmt = 8,
+        RuleProcStmt = 9,
+        RuleIfStmt = 10,
+        RuleIsStmt = 11,
+        RuleMatchStmt = 12,
+        RuleWhileStmt = 13,
+        RuleForStmt = 14,
+        RuleComptStmt = 15,
+        RuleDeferStmt = 16,
+        RuleErrdeferStmt = 17,
+        RuleExpr = 18,
+        RuleAccessExpr = 19,
+        RuleIfExpr = 20,
+        RuleIsExpr = 21,
+        RuleMatchExpr = 22,
+        RuleWhileExpr = 23,
+        RuleForExpr = 24,
+        RuleFuncExpr = 25,
+        RuleProcExpr = 26,
+        RuleBinaryOpExpr = 27,
+        RuleBinaryOp = 28,
+        RuleComptExpr = 29,
+        RulePreOpExpr = 30,
+        RulePreOp = 31,
+        RulePostOpExpr = 32,
+        RulePostOp = 33,
+        RuleString = 34,
+        RuleAtom = 35,
+        RuleBlockExpr = 36,
+        RuleTypeExpr = 37,
+        RuleTupleExpr = 38,
+        RuleToken = 39,
+        RuleEof = 40,
+        RuleEqual = 41,
+        RuleOBracket = 42,
+        RuleCBracket = 43,
+        RuleOAngleBracket = 44,
+        RuleCAngleBracket = 45,
+        RuleOParen = 46,
+        RuleCParen = 47,
+        RuleOBrace = 48,
+        RuleCBrace = 49,
+        RuleStmtSep = 50,
+        RuleExprSep = 51
     };
 
     explicit WhixyParser(antlr4::TokenStream* input);
@@ -181,6 +183,8 @@ class WhixyParser: public antlr4::Parser {
     class SrcFileContext;
     class StmtContext;
     class ValsStmtContext;
+    class AssignOpStmtContext;
+    class AssignOpContext;
     class CallStmtContext;
     class BlockStmtContext;
     class ReturnStmtContext;
@@ -249,6 +253,7 @@ class WhixyParser: public antlr4::Parser {
         StmtContext(antlr4::ParserRuleContext* parent, size_t invokingState);
         virtual size_t getRuleIndex() const override;
         ValsStmtContext* valsStmt();
+        AssignOpStmtContext* assignOpStmt();
         CallStmtContext* callStmt();
         BlockStmtContext* blockStmt();
         ReturnStmtContext* returnStmt();
@@ -283,6 +288,167 @@ class WhixyParser: public antlr4::Parser {
     };
 
     ValsStmtContext* valsStmt();
+
+    class AssignOpStmtContext: public antlr4::ParserRuleContext {
+      public:
+        AssignOpStmtContext(antlr4::ParserRuleContext* parent, size_t invokingState);
+        virtual size_t getRuleIndex() const override;
+        AssignOpContext* assignOp();
+        std::vector<AtomContext*> atom();
+        AtomContext* atom(size_t i);
+
+        virtual std::any accept(antlr4::tree::ParseTreeVisitor* visitor) override;
+    };
+
+    AssignOpStmtContext* assignOpStmt();
+
+    class AssignOpContext: public antlr4::ParserRuleContext {
+      public:
+        AssignOpContext(antlr4::ParserRuleContext* parent, size_t invokingState);
+
+        AssignOpContext() = default;
+        void copyFrom(AssignOpContext* context);
+        using antlr4::ParserRuleContext::copyFrom;
+
+        virtual size_t getRuleIndex() const override;
+    };
+
+    class LeftShiftAssignOpContext: public AssignOpContext {
+      public:
+        LeftShiftAssignOpContext(AssignOpContext* ctx);
+
+        antlr4::tree::TerminalNode* LESSTHAN_LESSTHAN_EQUAL();
+
+        virtual std::any accept(antlr4::tree::ParseTreeVisitor* visitor) override;
+    };
+
+    class WrappingMultiplicationAssignOpContext: public AssignOpContext {
+      public:
+        WrappingMultiplicationAssignOpContext(AssignOpContext* ctx);
+
+        antlr4::tree::TerminalNode* ASTERISK_PERCENT_EQUAL();
+
+        virtual std::any accept(antlr4::tree::ParseTreeVisitor* visitor) override;
+    };
+
+    class LeftRotationAssignOpContext: public AssignOpContext {
+      public:
+        LeftRotationAssignOpContext(AssignOpContext* ctx);
+
+        antlr4::tree::TerminalNode* LESSTHAN_LESSTHAN_PERCENT_EQUAL();
+
+        virtual std::any accept(antlr4::tree::ParseTreeVisitor* visitor) override;
+    };
+
+    class AndAssignOpContext: public AssignOpContext {
+      public:
+        AndAssignOpContext(AssignOpContext* ctx);
+
+        antlr4::tree::TerminalNode* AMPERSAND_EQUAL();
+
+        virtual std::any accept(antlr4::tree::ParseTreeVisitor* visitor) override;
+    };
+
+    class DivisionAssignOpContext: public AssignOpContext {
+      public:
+        DivisionAssignOpContext(AssignOpContext* ctx);
+
+        antlr4::tree::TerminalNode* SLASH_EQUAL();
+
+        virtual std::any accept(antlr4::tree::ParseTreeVisitor* visitor) override;
+    };
+
+    class ModulusAssignOpContext: public AssignOpContext {
+      public:
+        ModulusAssignOpContext(AssignOpContext* ctx);
+
+        antlr4::tree::TerminalNode* PERCENT_EQUAL();
+
+        virtual std::any accept(antlr4::tree::ParseTreeVisitor* visitor) override;
+    };
+
+    class RightRotationAssignOpContext: public AssignOpContext {
+      public:
+        RightRotationAssignOpContext(AssignOpContext* ctx);
+
+        antlr4::tree::TerminalNode* GREATERTHAN_GREATERTHAN_PERCENT_EQUAL();
+
+        virtual std::any accept(antlr4::tree::ParseTreeVisitor* visitor) override;
+    };
+
+    class RightShiftAssignOpContext: public AssignOpContext {
+      public:
+        RightShiftAssignOpContext(AssignOpContext* ctx);
+
+        antlr4::tree::TerminalNode* GREATERTHAN_GREATERTHAN_EQUAL();
+
+        virtual std::any accept(antlr4::tree::ParseTreeVisitor* visitor) override;
+    };
+
+    class WrappingSubtractionAssignOpContext: public AssignOpContext {
+      public:
+        WrappingSubtractionAssignOpContext(AssignOpContext* ctx);
+
+        antlr4::tree::TerminalNode* MINUS_PERCENT_EQUAL();
+
+        virtual std::any accept(antlr4::tree::ParseTreeVisitor* visitor) override;
+    };
+
+    class OrAssignOpContext: public AssignOpContext {
+      public:
+        OrAssignOpContext(AssignOpContext* ctx);
+
+        antlr4::tree::TerminalNode* PIPE_EQUAL();
+
+        virtual std::any accept(antlr4::tree::ParseTreeVisitor* visitor) override;
+    };
+
+    class MultiplicationAssignOpContext: public AssignOpContext {
+      public:
+        MultiplicationAssignOpContext(AssignOpContext* ctx);
+
+        antlr4::tree::TerminalNode* ASTERISK_EQUAL();
+
+        virtual std::any accept(antlr4::tree::ParseTreeVisitor* visitor) override;
+    };
+
+    class XorAssignOpContext: public AssignOpContext {
+      public:
+        XorAssignOpContext(AssignOpContext* ctx);
+
+        antlr4::tree::TerminalNode* CARROT_EQUAL();
+
+        virtual std::any accept(antlr4::tree::ParseTreeVisitor* visitor) override;
+    };
+
+    class AdditionAssignOpContext: public AssignOpContext {
+      public:
+        AdditionAssignOpContext(AssignOpContext* ctx);
+
+        antlr4::tree::TerminalNode* PLUS_EQUAL();
+
+        virtual std::any accept(antlr4::tree::ParseTreeVisitor* visitor) override;
+    };
+
+    class SubtractionAssignOpContext: public AssignOpContext {
+      public:
+        SubtractionAssignOpContext(AssignOpContext* ctx);
+
+        antlr4::tree::TerminalNode* MINUS_EQUAL();
+
+        virtual std::any accept(antlr4::tree::ParseTreeVisitor* visitor) override;
+    };
+
+    class WrappingAdditionAssignOpContext: public AssignOpContext {
+      public:
+        WrappingAdditionAssignOpContext(AssignOpContext* ctx);
+
+        antlr4::tree::TerminalNode* PLUS_PERCENT_EQUAL();
+
+        virtual std::any accept(antlr4::tree::ParseTreeVisitor* visitor) override;
+    };
+
+    AssignOpContext* assignOp();
 
     class CallStmtContext: public antlr4::ParserRuleContext {
       public:
@@ -362,8 +528,8 @@ class WhixyParser: public antlr4::Parser {
         IfStmtContext(antlr4::ParserRuleContext* parent, size_t invokingState);
         virtual size_t getRuleIndex() const override;
         antlr4::tree::TerminalNode* IF();
-        std::vector<BlockExprContext*> blockExpr();
-        BlockExprContext* blockExpr(size_t i);
+        std::vector<AtomContext*> atom();
+        AtomContext* atom(size_t i);
         std::vector<BlockStmtContext*> blockStmt();
         BlockStmtContext* blockStmt(size_t i);
         std::vector<antlr4::tree::TerminalNode*> ELSEIF();
@@ -402,10 +568,10 @@ class WhixyParser: public antlr4::Parser {
         WhileStmtContext(antlr4::ParserRuleContext* parent, size_t invokingState);
         virtual size_t getRuleIndex() const override;
         antlr4::tree::TerminalNode* WHILE();
-        BlockStmtContext* blockStmt();
+        StmtContext* stmt();
         antlr4::tree::TerminalNode* UNROLL();
-        std::vector<BlockExprContext*> blockExpr();
-        BlockExprContext* blockExpr(size_t i);
+        std::vector<AtomContext*> atom();
+        AtomContext* atom(size_t i);
 
         virtual std::any accept(antlr4::tree::ParseTreeVisitor* visitor) override;
     };
@@ -417,10 +583,10 @@ class WhixyParser: public antlr4::Parser {
         ForStmtContext(antlr4::ParserRuleContext* parent, size_t invokingState);
         virtual size_t getRuleIndex() const override;
         antlr4::tree::TerminalNode* FOR();
-        BlockStmtContext* blockStmt();
+        StmtContext* stmt();
         antlr4::tree::TerminalNode* UNROLL();
-        std::vector<BlockExprContext*> blockExpr();
-        BlockExprContext* blockExpr(size_t i);
+        std::vector<AtomContext*> atom();
+        AtomContext* atom(size_t i);
 
         virtual std::any accept(antlr4::tree::ParseTreeVisitor* visitor) override;
     };
@@ -507,8 +673,8 @@ class WhixyParser: public antlr4::Parser {
         IfExprContext(antlr4::ParserRuleContext* parent, size_t invokingState);
         virtual size_t getRuleIndex() const override;
         antlr4::tree::TerminalNode* IF();
-        std::vector<BlockExprContext*> blockExpr();
-        BlockExprContext* blockExpr(size_t i);
+        std::vector<AtomContext*> atom();
+        AtomContext* atom(size_t i);
         std::vector<ExprContext*> expr();
         ExprContext* expr(size_t i);
         std::vector<antlr4::tree::TerminalNode*> ELSEIF();
@@ -626,6 +792,15 @@ class WhixyParser: public antlr4::Parser {
         virtual size_t getRuleIndex() const override;
     };
 
+    class WrappingSubtractionOpContext: public BinaryOpContext {
+      public:
+        WrappingSubtractionOpContext(BinaryOpContext* ctx);
+
+        antlr4::tree::TerminalNode* MINUS_PERCENT();
+
+        virtual std::any accept(antlr4::tree::ParseTreeVisitor* visitor) override;
+    };
+
     class GreaterThanOpContext: public BinaryOpContext {
       public:
         GreaterThanOpContext(BinaryOpContext* ctx);
@@ -635,11 +810,11 @@ class WhixyParser: public antlr4::Parser {
         virtual std::any accept(antlr4::tree::ParseTreeVisitor* visitor) override;
     };
 
-    class LeftRotationAssignOpContext: public BinaryOpContext {
+    class EqualityOpContext: public BinaryOpContext {
       public:
-        LeftRotationAssignOpContext(BinaryOpContext* ctx);
+        EqualityOpContext(BinaryOpContext* ctx);
 
-        antlr4::tree::TerminalNode* LESSTHAN_LESSTHAN_PERCENT_EQUAL();
+        antlr4::tree::TerminalNode* EQUAL_EQUAL();
 
         virtual std::any accept(antlr4::tree::ParseTreeVisitor* visitor) override;
     };
@@ -653,20 +828,20 @@ class WhixyParser: public antlr4::Parser {
         virtual std::any accept(antlr4::tree::ParseTreeVisitor* visitor) override;
     };
 
-    class ModulusAssignOpContext: public BinaryOpContext {
+    class RepetitionOpContext: public BinaryOpContext {
       public:
-        ModulusAssignOpContext(BinaryOpContext* ctx);
+        RepetitionOpContext(BinaryOpContext* ctx);
 
-        antlr4::tree::TerminalNode* PERCENT_EQUAL();
+        antlr4::tree::TerminalNode* ASTERISK_ASTERISK();
 
         virtual std::any accept(antlr4::tree::ParseTreeVisitor* visitor) override;
     };
 
-    class WrappingSubtractionAssignOpContext: public BinaryOpContext {
+    class LeftShiftOpContext: public BinaryOpContext {
       public:
-        WrappingSubtractionAssignOpContext(BinaryOpContext* ctx);
+        LeftShiftOpContext(BinaryOpContext* ctx);
 
-        antlr4::tree::TerminalNode* MINUS_PERCENT_EQUAL();
+        antlr4::tree::TerminalNode* LESSTHAN_LESSTHAN();
 
         virtual std::any accept(antlr4::tree::ParseTreeVisitor* visitor) override;
     };
@@ -680,6 +855,15 @@ class WhixyParser: public antlr4::Parser {
         virtual std::any accept(antlr4::tree::ParseTreeVisitor* visitor) override;
     };
 
+    class RightRotationOpContext: public BinaryOpContext {
+      public:
+        RightRotationOpContext(BinaryOpContext* ctx);
+
+        antlr4::tree::TerminalNode* GREATERTHAN_GREATERTHAN_PERCENT();
+
+        virtual std::any accept(antlr4::tree::ParseTreeVisitor* visitor) override;
+    };
+
     class WrappingMultiplicationOpContext: public BinaryOpContext {
       public:
         WrappingMultiplicationOpContext(BinaryOpContext* ctx);
@@ -689,11 +873,29 @@ class WhixyParser: public antlr4::Parser {
         virtual std::any accept(antlr4::tree::ParseTreeVisitor* visitor) override;
     };
 
-    class MultiplicationAssignOpContext: public BinaryOpContext {
+    class OrOpContext: public BinaryOpContext {
       public:
-        MultiplicationAssignOpContext(BinaryOpContext* ctx);
+        OrOpContext(BinaryOpContext* ctx);
 
-        antlr4::tree::TerminalNode* ASTERISK_EQUAL();
+        antlr4::tree::TerminalNode* PIPE();
+
+        virtual std::any accept(antlr4::tree::ParseTreeVisitor* visitor) override;
+    };
+
+    class LessThanEqualOpContext: public BinaryOpContext {
+      public:
+        LessThanEqualOpContext(BinaryOpContext* ctx);
+
+        antlr4::tree::TerminalNode* LESSTHAN_EQUAL();
+
+        virtual std::any accept(antlr4::tree::ParseTreeVisitor* visitor) override;
+    };
+
+    class AndOpContext: public BinaryOpContext {
+      public:
+        AndOpContext(BinaryOpContext* ctx);
+
+        antlr4::tree::TerminalNode* AMPERSAND();
 
         virtual std::any accept(antlr4::tree::ParseTreeVisitor* visitor) override;
     };
@@ -707,11 +909,29 @@ class WhixyParser: public antlr4::Parser {
         virtual std::any accept(antlr4::tree::ParseTreeVisitor* visitor) override;
     };
 
+    class XorOpContext: public BinaryOpContext {
+      public:
+        XorOpContext(BinaryOpContext* ctx);
+
+        antlr4::tree::TerminalNode* CARROT();
+
+        virtual std::any accept(antlr4::tree::ParseTreeVisitor* visitor) override;
+    };
+
     class LessThanOpContext: public BinaryOpContext {
       public:
         LessThanOpContext(BinaryOpContext* ctx);
 
         antlr4::tree::TerminalNode* LESSTHAN();
+
+        virtual std::any accept(antlr4::tree::ParseTreeVisitor* visitor) override;
+    };
+
+    class LeftRotationOpContext: public BinaryOpContext {
+      public:
+        LeftRotationOpContext(BinaryOpContext* ctx);
+
+        antlr4::tree::TerminalNode* LESSTHAN_LESSTHAN_PERCENT();
 
         virtual std::any accept(antlr4::tree::ParseTreeVisitor* visitor) override;
     };
@@ -743,6 +963,15 @@ class WhixyParser: public antlr4::Parser {
         virtual std::any accept(antlr4::tree::ParseTreeVisitor* visitor) override;
     };
 
+    class ModulusOpContext: public BinaryOpContext {
+      public:
+        ModulusOpContext(BinaryOpContext* ctx);
+
+        antlr4::tree::TerminalNode* PERCENT();
+
+        virtual std::any accept(antlr4::tree::ParseTreeVisitor* visitor) override;
+    };
+
     class AdditionOpContext: public BinaryOpContext {
       public:
         AdditionOpContext(BinaryOpContext* ctx);
@@ -770,209 +999,11 @@ class WhixyParser: public antlr4::Parser {
         virtual std::any accept(antlr4::tree::ParseTreeVisitor* visitor) override;
     };
 
-    class SubtractionAssignOpContext: public BinaryOpContext {
-      public:
-        SubtractionAssignOpContext(BinaryOpContext* ctx);
-
-        antlr4::tree::TerminalNode* MINUS_EQUAL();
-
-        virtual std::any accept(antlr4::tree::ParseTreeVisitor* visitor) override;
-    };
-
     class InequalityOpContext: public BinaryOpContext {
       public:
         InequalityOpContext(BinaryOpContext* ctx);
 
         antlr4::tree::TerminalNode* EXCLAMATION_EQUAL();
-
-        virtual std::any accept(antlr4::tree::ParseTreeVisitor* visitor) override;
-    };
-
-    class WrappingSubtractionOpContext: public BinaryOpContext {
-      public:
-        WrappingSubtractionOpContext(BinaryOpContext* ctx);
-
-        antlr4::tree::TerminalNode* MINUS_PERCENT();
-
-        virtual std::any accept(antlr4::tree::ParseTreeVisitor* visitor) override;
-    };
-
-    class OrOpContext: public BinaryOpContext {
-      public:
-        OrOpContext(BinaryOpContext* ctx);
-
-        antlr4::tree::TerminalNode* PIPE();
-
-        virtual std::any accept(antlr4::tree::ParseTreeVisitor* visitor) override;
-    };
-
-    class OrAssignOpContext: public BinaryOpContext {
-      public:
-        OrAssignOpContext(BinaryOpContext* ctx);
-
-        antlr4::tree::TerminalNode* PIPE_EQUAL();
-
-        virtual std::any accept(antlr4::tree::ParseTreeVisitor* visitor) override;
-    };
-
-    class LeftShiftAssignOpContext: public BinaryOpContext {
-      public:
-        LeftShiftAssignOpContext(BinaryOpContext* ctx);
-
-        antlr4::tree::TerminalNode* LESSTHAN_LESSTHAN_EQUAL();
-
-        virtual std::any accept(antlr4::tree::ParseTreeVisitor* visitor) override;
-    };
-
-    class WrappingMultiplicationAssignOpContext: public BinaryOpContext {
-      public:
-        WrappingMultiplicationAssignOpContext(BinaryOpContext* ctx);
-
-        antlr4::tree::TerminalNode* ASTERISK_PERCENT_EQUAL();
-
-        virtual std::any accept(antlr4::tree::ParseTreeVisitor* visitor) override;
-    };
-
-    class EqualityOpContext: public BinaryOpContext {
-      public:
-        EqualityOpContext(BinaryOpContext* ctx);
-
-        antlr4::tree::TerminalNode* EQUAL_EQUAL();
-
-        virtual std::any accept(antlr4::tree::ParseTreeVisitor* visitor) override;
-    };
-
-    class DivisionAssignOpContext: public BinaryOpContext {
-      public:
-        DivisionAssignOpContext(BinaryOpContext* ctx);
-
-        antlr4::tree::TerminalNode* SLASH_EQUAL();
-
-        virtual std::any accept(antlr4::tree::ParseTreeVisitor* visitor) override;
-    };
-
-    class RepetitionOpContext: public BinaryOpContext {
-      public:
-        RepetitionOpContext(BinaryOpContext* ctx);
-
-        antlr4::tree::TerminalNode* ASTERISK_ASTERISK();
-
-        virtual std::any accept(antlr4::tree::ParseTreeVisitor* visitor) override;
-    };
-
-    class RightRotationAssignOpContext: public BinaryOpContext {
-      public:
-        RightRotationAssignOpContext(BinaryOpContext* ctx);
-
-        antlr4::tree::TerminalNode* GREATERTHAN_GREATERTHAN_PERCENT_EQUAL();
-
-        virtual std::any accept(antlr4::tree::ParseTreeVisitor* visitor) override;
-    };
-
-    class LeftShiftOpContext: public BinaryOpContext {
-      public:
-        LeftShiftOpContext(BinaryOpContext* ctx);
-
-        antlr4::tree::TerminalNode* LESSTHAN_LESSTHAN();
-
-        virtual std::any accept(antlr4::tree::ParseTreeVisitor* visitor) override;
-    };
-
-    class RightShiftAssignOpContext: public BinaryOpContext {
-      public:
-        RightShiftAssignOpContext(BinaryOpContext* ctx);
-
-        antlr4::tree::TerminalNode* GREATERTHAN_GREATERTHAN_EQUAL();
-
-        virtual std::any accept(antlr4::tree::ParseTreeVisitor* visitor) override;
-    };
-
-    class RightRotationOpContext: public BinaryOpContext {
-      public:
-        RightRotationOpContext(BinaryOpContext* ctx);
-
-        antlr4::tree::TerminalNode* GREATERTHAN_GREATERTHAN_PERCENT();
-
-        virtual std::any accept(antlr4::tree::ParseTreeVisitor* visitor) override;
-    };
-
-    class AndAssignOpContext: public BinaryOpContext {
-      public:
-        AndAssignOpContext(BinaryOpContext* ctx);
-
-        antlr4::tree::TerminalNode* AMPERSAND_EQUAL();
-
-        virtual std::any accept(antlr4::tree::ParseTreeVisitor* visitor) override;
-    };
-
-    class XorOpContext: public BinaryOpContext {
-      public:
-        XorOpContext(BinaryOpContext* ctx);
-
-        antlr4::tree::TerminalNode* CARROT();
-
-        virtual std::any accept(antlr4::tree::ParseTreeVisitor* visitor) override;
-    };
-
-    class LessThanEqualOpContext: public BinaryOpContext {
-      public:
-        LessThanEqualOpContext(BinaryOpContext* ctx);
-
-        antlr4::tree::TerminalNode* LESSTHAN_EQUAL();
-
-        virtual std::any accept(antlr4::tree::ParseTreeVisitor* visitor) override;
-    };
-
-    class LeftRotationOpContext: public BinaryOpContext {
-      public:
-        LeftRotationOpContext(BinaryOpContext* ctx);
-
-        antlr4::tree::TerminalNode* LESSTHAN_LESSTHAN_PERCENT();
-
-        virtual std::any accept(antlr4::tree::ParseTreeVisitor* visitor) override;
-    };
-
-    class XorAssignOpContext: public BinaryOpContext {
-      public:
-        XorAssignOpContext(BinaryOpContext* ctx);
-
-        antlr4::tree::TerminalNode* CARROT_EQUAL();
-
-        virtual std::any accept(antlr4::tree::ParseTreeVisitor* visitor) override;
-    };
-
-    class AdditionAssignOpContext: public BinaryOpContext {
-      public:
-        AdditionAssignOpContext(BinaryOpContext* ctx);
-
-        antlr4::tree::TerminalNode* PLUS_EQUAL();
-
-        virtual std::any accept(antlr4::tree::ParseTreeVisitor* visitor) override;
-    };
-
-    class ModulusOpContext: public BinaryOpContext {
-      public:
-        ModulusOpContext(BinaryOpContext* ctx);
-
-        antlr4::tree::TerminalNode* PERCENT();
-
-        virtual std::any accept(antlr4::tree::ParseTreeVisitor* visitor) override;
-    };
-
-    class AndOpContext: public BinaryOpContext {
-      public:
-        AndOpContext(BinaryOpContext* ctx);
-
-        antlr4::tree::TerminalNode* AMPERSAND();
-
-        virtual std::any accept(antlr4::tree::ParseTreeVisitor* visitor) override;
-    };
-
-    class WrappingAdditionAssignOpContext: public BinaryOpContext {
-      public:
-        WrappingAdditionAssignOpContext(BinaryOpContext* ctx);
-
-        antlr4::tree::TerminalNode* PLUS_PERCENT_EQUAL();
 
         virtual std::any accept(antlr4::tree::ParseTreeVisitor* visitor) override;
     };
