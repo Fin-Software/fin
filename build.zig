@@ -26,8 +26,19 @@ pub fn build(b: *Build) !void {
     whixy.linkLibCpp();
 
     // Compile external libraries for statically linking to.
-    if (b.build_root.handle.openDir("build", .{}) == error.FileNotFound) {
-        const libs_step = libs_step: {
+    if (b.build_root.handle.openDir("deps", .{}) == error.FileNotFound) {
+        // Certify the integrity of external dependency sources.
+        const certify_vendor = b.addTest(.{ .root_source_file = b.path("certify.zig"), .optimize = .ReleaseFast, .target = target });
+        const run_certify_vendor = b.addRunArtifact(certify_vendor);
+        {
+            var buf: [fs.max_path_bytes]u8 = undefined;
+            const cwd_path = try b.build_root.handle.realpath("vendor", buf[0..]);
+            run_certify_vendor.addArg(cwd_path);
+            run_certify_vendor.addArg("bab0fa6ecb28a9ca41d88ebde566c26325e0115c42a1bd79c5bb30f6d741a265");
+        }
+        b.step("certify-vendor", "").dependOn(&run_certify_vendor.step); // Enable `zig build certify-vendor`
+
+        const deps_step = deps_step: {
             var buf: [32]u8 = undefined; // Adjust as necessary.
             const safety = if (optimize == .ReleaseFast) "fast" else "safe";
             const mcpu = target.result.cpu.model.llvm_name orelse "baseline";
@@ -36,25 +47,14 @@ pub fn build(b: *Build) !void {
                 @tagName(target.result.os.tag),
                 @tagName(target.result.abi),
             });
-            break :libs_step switch (target.result.os.tag) {
+            break :deps_step switch (target.result.os.tag) {
                 .windows => b.addSystemCommand(&[_][]const u8{ "cmd.exe", "libs.cmd", safety, triple, mcpu }),
                 else => b.addSystemCommand(&[_][]const u8{ "sh", "libs.sh", safety, triple, mcpu }),
             };
         };
 
-        // Unvendor external dependency sources.
-        if (b.build_root.handle.openDir("vendor", .{ .access_sub_paths = true }) == error.FileNotFound) {
-            const unvendor = b.dependency("unvendor", .{ .target = target, .optimize = .ReleaseFast });
-            const run_unvendor = b.addRunArtifact(unvendor.artifact("unvendor"));
-            {
-                var buf: [fs.max_path_bytes]u8 = undefined;
-                const cwd_path = try b.build_root.handle.realpath(".", buf[0..]);
-                run_unvendor.addArg(cwd_path);
-                run_unvendor.addArg("bab0fa6ecb28a9ca41d88ebde566c26325e0115c42a1bd79c5bb30f6d741a265");
-            }
-            libs_step.step.dependOn(&run_unvendor.step);
-        }
-        whixy.step.dependOn(&libs_step.step);
+        deps_step.step.dependOn(&run_certify_vendor.step);
+        whixy.step.dependOn(&deps_step.step);
     }
     {
         // Dependencies
@@ -68,16 +68,11 @@ pub fn build(b: *Build) !void {
         if (b.args) |args| run_cmd.addArgs(args);
         b.step("run", "").dependOn(&run_cmd.step);
     }
-    {
-        // Enable `zig build test`
-        const unit_tests = b.addTest(.{
-            .root_source_file = b.path("src/main.zig"),
-            .optimize = optimize,
-            .target = target,
-        });
-        const run_unit_tests = b.addRunArtifact(unit_tests);
-        b.step("test", "").dependOn(&run_unit_tests.step);
-    }
+
+    // Enable `zig build test`
+    const unit_tests = b.addTest(.{ .root_source_file = b.path("src/main.zig"), .optimize = optimize, .target = target });
+    const run_unit_tests = b.addRunArtifact(unit_tests);
+    b.step("test", "").dependOn(&run_unit_tests.step);
 }
 
 fn executable(b: *Build, name: []const u8, root_path: []const u8, target: Build.ResolvedTarget, optimize: builtin.OptimizeMode) *Build.Step.Compile {
