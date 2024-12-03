@@ -1,6 +1,6 @@
 // $antlr-format alignTrailingComments true, allowShortRulesOnASingleLine true, minEmptyLines 0
 // $antlr-format useTab false, maxEmptyLinesToKeep 1, alignSemicolons none, alignColons hanging
-// $antlr-format reflowComments false, alignFirstTokens true, columnLimit 200
+// $antlr-format reflowComments false, alignFirstTokens true, columnLimit 170
 
 // SPDX-License-Identifier: Apache-2.0
 // Copyright © 2024 The Whixy Authors. All rights reserved.
@@ -23,14 +23,12 @@ stmt
     | assignOpStmt
     | callStmt
     | blockStmt
+    | routineStmt
     | returnStmt
-    | funcStmt
-    | procStmt
     | ifStmt
-    | isStmt
+    | whereStmt
     | matchStmt
-    | whileStmt
-    | forStmt
+    | loopStmt
     | comptStmt
     | deferStmt
     | errdeferStmt;
@@ -57,23 +55,29 @@ assignOp
 
 callStmt: atom+;
 
-blockStmt: oParen (stmt (stmtSep stmt)*)? cParen;
+blockStmt
+    : oParen (stmt (stmtSep stmt)*)? cParen      # funcBlockStmt
+    | dollarParen (stmt (stmtSep stmt)*)? cParen # procBlockStmt;
+
+routineStmt
+    : token atom atom blockStmt        # plainRoutineStmt
+    | INLINE token atom atom blockStmt # inlineRoutineStmt;
 
 returnStmt: RETURN atom+;
 
-funcStmt: INLINE? FUNC token typeExpr tupleExpr blockStmt;
-
-procStmt: INLINE? PROC token typeExpr tupleExpr blockStmt;
-
 ifStmt: IF atom blockStmt (ELSEIF atom blockStmt)* (ELSE blockStmt)?;
 
-isStmt: IS;
+whereStmt:     WHERE atom comparisonOp caseStmtBlock;
+comparisonOp:  ;
+caseStmtBlock: ;
 
 matchStmt: MATCH;
 
-whileStmt: UNROLL? WHILE atom? atom? stmt;
-
-forStmt: UNROLL? FOR atom? atom? stmt;
+loopStmt
+    : UNROLL WHILE atom? atom? stmt # unrollWhileStmt
+    | UNROLL FOR atom? atom? stmt   # unrollForStmt
+    | WHILE atom? atom? stmt        # plainWhileStmt
+    | FOR atom? atom? stmt          # plainForStmt;
 
 comptStmt: COMPT stmt;
 
@@ -88,36 +92,17 @@ errdeferStmt: ERRDEFER stmt;
 expr
     : valsStmt
     | callStmt
-    | accessExpr
-    | ifExpr
-    | isExpr
-    | matchExpr
-    | whileExpr
-    | forExpr
-    | funcExpr
-    | procExpr //| unaryExpr
     | binaryOpExpr
-    | comptExpr
-    | preOpExpr
     | postOpExpr
+    | preOpExpr
+    | ifExpr
+    | whereExpr
+    | matchExpr
+    | loopExpr
+    | comptExpr
+    | routineExpr
     | string
     | atom;
-
-accessExpr: atom DOT atom;
-
-ifExpr: IF atom expr (ELSEIF atom expr)* (ELSE expr)?;
-
-isExpr: IS;
-
-matchExpr: MATCH;
-
-whileExpr: UNROLL? WHILE blockExpr? blockExpr? blockExpr;
-
-forExpr: UNROLL? FOR blockExpr? blockExpr? blockExpr;
-
-funcExpr: INLINE? FUNC typeExpr tupleExpr blockStmt;
-
-procExpr: INLINE? PROC typeExpr tupleExpr blockStmt;
 
 binaryOpExpr: atom NEWLINE? binaryOp NEWLINE? atom;
 binaryOp
@@ -146,18 +131,30 @@ binaryOp
     | PERCENT                         # modulusOp
     | CARROT                          # xorOp;
 
-comptExpr: COMPT expr;
-
-preOpExpr: preOp atom;
-preOp:     EXCLAMATION # notOp | MINUS # negateOp;
-
 postOpExpr: atom postOp;
 postOp
-    : DOT_TYPE      # accessTypeOp
+    : DOT atom      # accessFieldOp
+    | DOT_TYPE      # accessTypeOp
     | DOT_LEN       # accessLengthOp
     | DOT_ASTERISK  # dereferencePointerOp
     | DOT_AMPERSAND # addressOfOp
     | DOT_QUESTION  # unwrapOptionalOp;
+
+preOpExpr: preOp atom;
+preOp:     EXCLAMATION # notOp | MINUS # negateOp;
+
+ifExpr: IF atom expr (ELSEIF atom expr)* (ELSE expr)?;
+
+whereExpr:     WHERE atom comparisonOp caseExprBlock;
+caseExprBlock: ;
+
+matchExpr: MATCH;
+
+loopExpr: ;
+
+comptExpr: COMPT expr;
+
+routineExpr: ;
 
 string: DOUBLEQUOTESTRING # dQStringExpr | BACKTICKSTRING # bTStringExpr;
 
@@ -187,11 +184,12 @@ cBracket:      NEWLINE? CLOSEDBRACKET;
 oAngleBracket: LESSTHAN_OPENBRACKET NEWLINE?;
 cAngleBracket: NEWLINE? CLOSEDBRACKET_GREATERTHAN;
 
-// NL? ID NL?
-oParen: NEWLINE? OPENPARENTHESIS NEWLINE?;
-cParen: NEWLINE? CLOSEDPARENTHESIS NEWLINE?;
-oBrace: NEWLINE? OPENBRACE NEWLINE?;
-cBrace: NEWLINE? CLOSEDBRACE NEWLINE?;
+// NL? ID NL?; NL? ID
+dollarParen: NEWLINE? DOLLAR_OPENPARENTHESIS NEWLINE?;
+oParen:      NEWLINE? OPENPARENTHESIS NEWLINE?;
+cParen:      NEWLINE? CLOSEDPARENTHESIS;
+oBrace:      NEWLINE? OPENBRACE NEWLINE?;
+cBrace:      NEWLINE? CLOSEDBRACE;
 
 stmtSep: SEMICOLON | NEWLINE;
 exprSep: COMMA | NEWLINE;

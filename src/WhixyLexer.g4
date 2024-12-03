@@ -23,6 +23,7 @@ COLON:                     ':';  // type specifier
 COMMA:                     ',';  // expression separator
 SEMICOLON:                 ';';  // statement separator
 QUESTION:                  '?';  // Type modifier (optional types)
+DOLLAR_OPENPARENTHESIS:    '$('; //
 OPENPARENTHESIS:           '(';  // open group expression
 CLOSEDPARENTHESIS:         ')';  // close group expression
 OPENBRACE:                 '{';  // open block or type expression
@@ -80,8 +81,6 @@ EQUAL:                                 '=';    // infix op: assign type instance
 PIPE_EQUAL:                            '|=';   // combined assignment: bitwise OR
 PIPE:                                  '|';    // infix op: logical OR; bitwise OR; routine overloading (after PIPE...)
 
-PROC:        'proc';        // Routine keyword (procedure)
-FUNC:        'func';        // Routine keyword (function)
 MUT:         'mut';         // Type modifier (mutable)
 INLINE:      'inline';      // Inline optimization hint
 RETURN:      'return';      // Return statement
@@ -94,7 +93,7 @@ IF:          'if';          // Conditional structure
 ELSEIF:      'elseif';      // Else if statement
 ELSE:        'else';        // Conditional alternative
 MATCH:       'match';       // Pattern matching
-IS:          'is';          // Enhanced switch statement
+WHERE:       'where';       // Enhanced switch statement
 DEFER:       'defer';       // Defer execution until scope ends
 ERRDEFER:    'errdefer';    // Error handling with defer
 ORELSE:      'orelse';      // Alternate error handling
