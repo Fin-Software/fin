@@ -16,4 +16,4 @@ rm antlr/*.interp antlr/*.tokens
 find .. -not -path '*/.*' -name '*.zig' -exec zig fmt {} + \
     -o \( -name '*.cpp' -o -name '*.h' \) -exec clang-format -i --style='file:../.clang-format' {} +
 
-git diff --stat; echo; git status
+git diff --stat && echo; git status

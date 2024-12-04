@@ -1,2 +1,8 @@
-** linguist-detectable=true
+**.cpp linguist-detectable
+**.zig linguist-detectable
+**.g4 linguist-detectable
+**.sh linguist-detectable
+**.cmd linguist-detectable
+**.nanorc linguist-detectable
+**.zig.zon linguist-language=zig
 vendor/** linguist-vendored
