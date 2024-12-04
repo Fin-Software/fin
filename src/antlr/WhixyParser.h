@@ -85,27 +85,26 @@ class WhixyParser: public antlr4::Parser {
         IF = 73,
         ELSEIF = 74,
         ELSE = 75,
-        MATCH = 76,
-        WHERE = 77,
-        DEFER = 78,
-        ERRDEFER = 79,
-        ORELSE = 80,
-        TRY = 81,
-        CATCH = 82,
-        IMPORT = 83,
-        ALIGN = 84,
-        THREADLOCAL = 85,
-        UNREACHABLE = 86,
-        VOLATILE = 87,
-        UNROLL = 88,
-        COMPT = 89,
-        TEST = 90,
-        ENUM = 91,
-        UNION = 92,
-        STD = 93,
-        AS = 94,
-        NEWLINE = 95,
-        TOKEN = 96
+        WHERE = 76,
+        DEFER = 77,
+        ERRDEFER = 78,
+        ORELSE = 79,
+        TRY = 80,
+        CATCH = 81,
+        IMPORT = 82,
+        ALIGN = 83,
+        THREADLOCAL = 84,
+        UNREACHABLE = 85,
+        VOLATILE = 86,
+        UNROLL = 87,
+        COMPT = 88,
+        TEST = 89,
+        ENUM = 90,
+        UNION = 91,
+        STD = 92,
+        AS = 93,
+        NEWLINE = 94,
+        TOKEN = 95
     };
 
     enum {
@@ -122,44 +121,40 @@ class WhixyParser: public antlr4::Parser {
         RuleWhereStmt = 10,
         RuleComparisonOp = 11,
         RuleCaseStmtBlock = 12,
-        RuleMatchStmt = 13,
-        RuleLoopStmt = 14,
-        RuleComptStmt = 15,
-        RuleDeferStmt = 16,
-        RuleErrdeferStmt = 17,
-        RuleExpr = 18,
-        RuleBinaryOpExpr = 19,
-        RuleBinaryOp = 20,
-        RulePostOpExpr = 21,
-        RulePostOp = 22,
-        RulePreOpExpr = 23,
-        RulePreOp = 24,
-        RuleIfExpr = 25,
-        RuleWhereExpr = 26,
-        RuleCaseExprBlock = 27,
-        RuleMatchExpr = 28,
-        RuleLoopExpr = 29,
-        RuleComptExpr = 30,
-        RuleRoutineExpr = 31,
-        RuleString = 32,
-        RuleAtom = 33,
-        RuleBlockExpr = 34,
-        RuleTypeExpr = 35,
-        RuleTupleExpr = 36,
-        RuleToken = 37,
-        RuleEof = 38,
-        RuleEqual = 39,
-        RuleOBracket = 40,
-        RuleCBracket = 41,
-        RuleOAngleBracket = 42,
-        RuleCAngleBracket = 43,
-        RuleDollarParen = 44,
-        RuleOParen = 45,
-        RuleCParen = 46,
-        RuleOBrace = 47,
-        RuleCBrace = 48,
-        RuleStmtSep = 49,
-        RuleExprSep = 50
+        RuleLoopStmt = 13,
+        RuleComptStmt = 14,
+        RuleDeferStmt = 15,
+        RuleErrdeferStmt = 16,
+        RuleExpr = 17,
+        RuleBinaryOpExpr = 18,
+        RuleBinaryOp = 19,
+        RulePostOpExpr = 20,
+        RulePostOp = 21,
+        RulePreOpExpr = 22,
+        RulePreOp = 23,
+        RuleIfExpr = 24,
+        RuleWhereExpr = 25,
+        RuleCaseExprBlock = 26,
+        RuleLoopExpr = 27,
+        RuleComptExpr = 28,
+        RuleRoutineExpr = 29,
+        RuleString = 30,
+        RuleAtom = 31,
+        RuleToken = 32,
+        RuleBlockExpr = 33,
+        RuleTypeExpr = 34,
+        RuleTupleExpr = 35,
+        RuleOBracket = 36,
+        RuleCBracket = 37,
+        RuleOAngleBracket = 38,
+        RuleCAngleBracket = 39,
+        RuleDollarParen = 40,
+        RuleOParen = 41,
+        RuleCParen = 42,
+        RuleOBrace = 43,
+        RuleCBrace = 44,
+        RuleStmtSep = 45,
+        RuleExprSep = 46
     };
 
     explicit WhixyParser(antlr4::TokenStream* input);
@@ -191,7 +186,6 @@ class WhixyParser: public antlr4::Parser {
     class WhereStmtContext;
     class ComparisonOpContext;
     class CaseStmtBlockContext;
-    class MatchStmtContext;
     class LoopStmtContext;
     class ComptStmtContext;
     class DeferStmtContext;
@@ -206,18 +200,15 @@ class WhixyParser: public antlr4::Parser {
     class IfExprContext;
     class WhereExprContext;
     class CaseExprBlockContext;
-    class MatchExprContext;
     class LoopExprContext;
     class ComptExprContext;
     class RoutineExprContext;
     class StringContext;
     class AtomContext;
+    class TokenContext;
     class BlockExprContext;
     class TypeExprContext;
     class TupleExprContext;
-    class TokenContext;
-    class EofContext;
-    class EqualContext;
     class OBracketContext;
     class CBracketContext;
     class OAngleBracketContext;
@@ -236,7 +227,9 @@ class WhixyParser: public antlr4::Parser {
         virtual size_t getRuleIndex() const override;
         std::vector<StmtContext*> stmt();
         StmtContext* stmt(size_t i);
-        EofContext* eof();
+        antlr4::tree::TerminalNode* EOF();
+        std::vector<antlr4::tree::TerminalNode*> NEWLINE();
+        antlr4::tree::TerminalNode* NEWLINE(size_t i);
         std::vector<StmtSepContext*> stmtSep();
         StmtSepContext* stmtSep(size_t i);
 
@@ -257,7 +250,6 @@ class WhixyParser: public antlr4::Parser {
         ReturnStmtContext* returnStmt();
         IfStmtContext* ifStmt();
         WhereStmtContext* whereStmt();
-        MatchStmtContext* matchStmt();
         LoopStmtContext* loopStmt();
         ComptStmtContext* comptStmt();
         DeferStmtContext* deferStmt();
@@ -278,6 +270,7 @@ class WhixyParser: public antlr4::Parser {
         std::vector<TokenContext*> token();
         TokenContext* token(size_t i);
         antlr4::tree::TerminalNode* EQUAL();
+        antlr4::tree::TerminalNode* NEWLINE();
 
         virtual std::any accept(antlr4::tree::ParseTreeVisitor* visitor) override;
     };
@@ -288,9 +281,9 @@ class WhixyParser: public antlr4::Parser {
       public:
         AssignOpStmtContext(antlr4::ParserRuleContext* parent, size_t invokingState);
         virtual size_t getRuleIndex() const override;
-        AssignOpContext* assignOp();
         std::vector<AtomContext*> atom();
         AtomContext* atom(size_t i);
+        AssignOpContext* assignOp();
 
         virtual std::any accept(antlr4::tree::ParseTreeVisitor* visitor) override;
     };
@@ -449,8 +442,8 @@ class WhixyParser: public antlr4::Parser {
       public:
         CallStmtContext(antlr4::ParserRuleContext* parent, size_t invokingState);
         virtual size_t getRuleIndex() const override;
-        std::vector<AtomContext*> atom();
-        AtomContext* atom(size_t i);
+        AtomContext* atom();
+        ExprContext* expr();
 
         virtual std::any accept(antlr4::tree::ParseTreeVisitor* visitor) override;
     };
@@ -541,8 +534,7 @@ class WhixyParser: public antlr4::Parser {
         ReturnStmtContext(antlr4::ParserRuleContext* parent, size_t invokingState);
         virtual size_t getRuleIndex() const override;
         antlr4::tree::TerminalNode* RETURN();
-        std::vector<AtomContext*> atom();
-        AtomContext* atom(size_t i);
+        ExprContext* expr();
 
         virtual std::any accept(antlr4::tree::ParseTreeVisitor* visitor) override;
     };
@@ -556,8 +548,8 @@ class WhixyParser: public antlr4::Parser {
         antlr4::tree::TerminalNode* IF();
         std::vector<AtomContext*> atom();
         AtomContext* atom(size_t i);
-        std::vector<BlockStmtContext*> blockStmt();
-        BlockStmtContext* blockStmt(size_t i);
+        std::vector<StmtContext*> stmt();
+        StmtContext* stmt(size_t i);
         std::vector<antlr4::tree::TerminalNode*> ELSEIF();
         antlr4::tree::TerminalNode* ELSEIF(size_t i);
         antlr4::tree::TerminalNode* ELSE();
@@ -600,17 +592,6 @@ class WhixyParser: public antlr4::Parser {
     };
 
     CaseStmtBlockContext* caseStmtBlock();
-
-    class MatchStmtContext: public antlr4::ParserRuleContext {
-      public:
-        MatchStmtContext(antlr4::ParserRuleContext* parent, size_t invokingState);
-        virtual size_t getRuleIndex() const override;
-        antlr4::tree::TerminalNode* MATCH();
-
-        virtual std::any accept(antlr4::tree::ParseTreeVisitor* visitor) override;
-    };
-
-    MatchStmtContext* matchStmt();
 
     class LoopStmtContext: public antlr4::ParserRuleContext {
       public:
@@ -722,7 +703,6 @@ class WhixyParser: public antlr4::Parser {
         PreOpExprContext* preOpExpr();
         IfExprContext* ifExpr();
         WhereExprContext* whereExpr();
-        MatchExprContext* matchExpr();
         LoopExprContext* loopExpr();
         ComptExprContext* comptExpr();
         RoutineExprContext* routineExpr();
@@ -1143,21 +1123,63 @@ class WhixyParser: public antlr4::Parser {
 
     CaseExprBlockContext* caseExprBlock();
 
-    class MatchExprContext: public antlr4::ParserRuleContext {
+    class LoopExprContext: public antlr4::ParserRuleContext {
       public:
-        MatchExprContext(antlr4::ParserRuleContext* parent, size_t invokingState);
+        LoopExprContext(antlr4::ParserRuleContext* parent, size_t invokingState);
+
+        LoopExprContext() = default;
+        void copyFrom(LoopExprContext* context);
+        using antlr4::ParserRuleContext::copyFrom;
+
         virtual size_t getRuleIndex() const override;
-        antlr4::tree::TerminalNode* MATCH();
+    };
+
+    class UnrollWhileExprContext: public LoopExprContext {
+      public:
+        UnrollWhileExprContext(LoopExprContext* ctx);
+
+        antlr4::tree::TerminalNode* UNROLL();
+        antlr4::tree::TerminalNode* WHILE();
+        ExprContext* expr();
+        std::vector<AtomContext*> atom();
+        AtomContext* atom(size_t i);
 
         virtual std::any accept(antlr4::tree::ParseTreeVisitor* visitor) override;
     };
 
-    MatchExprContext* matchExpr();
-
-    class LoopExprContext: public antlr4::ParserRuleContext {
+    class UnrollForExprContext: public LoopExprContext {
       public:
-        LoopExprContext(antlr4::ParserRuleContext* parent, size_t invokingState);
-        virtual size_t getRuleIndex() const override;
+        UnrollForExprContext(LoopExprContext* ctx);
+
+        antlr4::tree::TerminalNode* UNROLL();
+        antlr4::tree::TerminalNode* FOR();
+        ExprContext* expr();
+        std::vector<AtomContext*> atom();
+        AtomContext* atom(size_t i);
+
+        virtual std::any accept(antlr4::tree::ParseTreeVisitor* visitor) override;
+    };
+
+    class PlainForExprContext: public LoopExprContext {
+      public:
+        PlainForExprContext(LoopExprContext* ctx);
+
+        antlr4::tree::TerminalNode* FOR();
+        ExprContext* expr();
+        std::vector<AtomContext*> atom();
+        AtomContext* atom(size_t i);
+
+        virtual std::any accept(antlr4::tree::ParseTreeVisitor* visitor) override;
+    };
+
+    class PlainWhileExprContext: public LoopExprContext {
+      public:
+        PlainWhileExprContext(LoopExprContext* ctx);
+
+        antlr4::tree::TerminalNode* WHILE();
+        ExprContext* expr();
+        std::vector<AtomContext*> atom();
+        AtomContext* atom(size_t i);
 
         virtual std::any accept(antlr4::tree::ParseTreeVisitor* visitor) override;
     };
@@ -1179,7 +1201,33 @@ class WhixyParser: public antlr4::Parser {
     class RoutineExprContext: public antlr4::ParserRuleContext {
       public:
         RoutineExprContext(antlr4::ParserRuleContext* parent, size_t invokingState);
+
+        RoutineExprContext() = default;
+        void copyFrom(RoutineExprContext* context);
+        using antlr4::ParserRuleContext::copyFrom;
+
         virtual size_t getRuleIndex() const override;
+    };
+
+    class InlineRoutineExprContext: public RoutineExprContext {
+      public:
+        InlineRoutineExprContext(RoutineExprContext* ctx);
+
+        antlr4::tree::TerminalNode* INLINE();
+        std::vector<AtomContext*> atom();
+        AtomContext* atom(size_t i);
+        BlockStmtContext* blockStmt();
+
+        virtual std::any accept(antlr4::tree::ParseTreeVisitor* visitor) override;
+    };
+
+    class PlainRoutineExprContext: public RoutineExprContext {
+      public:
+        PlainRoutineExprContext(RoutineExprContext* ctx);
+
+        std::vector<AtomContext*> atom();
+        AtomContext* atom(size_t i);
+        BlockStmtContext* blockStmt();
 
         virtual std::any accept(antlr4::tree::ParseTreeVisitor* visitor) override;
     };
@@ -1221,15 +1269,26 @@ class WhixyParser: public antlr4::Parser {
       public:
         AtomContext(antlr4::ParserRuleContext* parent, size_t invokingState);
         virtual size_t getRuleIndex() const override;
+        TokenContext* token();
         BlockExprContext* blockExpr();
         TypeExprContext* typeExpr();
         TupleExprContext* tupleExpr();
-        TokenContext* token();
 
         virtual std::any accept(antlr4::tree::ParseTreeVisitor* visitor) override;
     };
 
     AtomContext* atom();
+
+    class TokenContext: public antlr4::ParserRuleContext {
+      public:
+        TokenContext(antlr4::ParserRuleContext* parent, size_t invokingState);
+        virtual size_t getRuleIndex() const override;
+        antlr4::tree::TerminalNode* TOKEN();
+
+        virtual std::any accept(antlr4::tree::ParseTreeVisitor* visitor) override;
+    };
+
+    TokenContext* token();
 
     class BlockExprContext: public antlr4::ParserRuleContext {
       public:
@@ -1279,41 +1338,6 @@ class WhixyParser: public antlr4::Parser {
     };
 
     TupleExprContext* tupleExpr();
-
-    class TokenContext: public antlr4::ParserRuleContext {
-      public:
-        TokenContext(antlr4::ParserRuleContext* parent, size_t invokingState);
-        virtual size_t getRuleIndex() const override;
-        antlr4::tree::TerminalNode* TOKEN();
-
-        virtual std::any accept(antlr4::tree::ParseTreeVisitor* visitor) override;
-    };
-
-    TokenContext* token();
-
-    class EofContext: public antlr4::ParserRuleContext {
-      public:
-        EofContext(antlr4::ParserRuleContext* parent, size_t invokingState);
-        virtual size_t getRuleIndex() const override;
-        antlr4::tree::TerminalNode* EOF();
-        antlr4::tree::TerminalNode* NEWLINE();
-
-        virtual std::any accept(antlr4::tree::ParseTreeVisitor* visitor) override;
-    };
-
-    EofContext* eof();
-
-    class EqualContext: public antlr4::ParserRuleContext {
-      public:
-        EqualContext(antlr4::ParserRuleContext* parent, size_t invokingState);
-        virtual size_t getRuleIndex() const override;
-        antlr4::tree::TerminalNode* EQUAL();
-        antlr4::tree::TerminalNode* NEWLINE();
-
-        virtual std::any accept(antlr4::tree::ParseTreeVisitor* visitor) override;
-    };
-
-    EqualContext* equal();
 
     class OBracketContext: public antlr4::ParserRuleContext {
       public:

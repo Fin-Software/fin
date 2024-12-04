@@ -115,8 +115,6 @@ class WhixyParserBaseVisitor: public WhixyParserVisitor {
 
     virtual std::any visitCaseStmtBlock(WhixyParser::CaseStmtBlockContext* ctx) override { return visitChildren(ctx); }
 
-    virtual std::any visitMatchStmt(WhixyParser::MatchStmtContext* ctx) override { return visitChildren(ctx); }
-
     virtual std::any visitUnrollWhileStmt(WhixyParser::UnrollWhileStmtContext* ctx) override
     {
         return visitChildren(ctx);
@@ -251,13 +249,31 @@ class WhixyParserBaseVisitor: public WhixyParserVisitor {
 
     virtual std::any visitCaseExprBlock(WhixyParser::CaseExprBlockContext* ctx) override { return visitChildren(ctx); }
 
-    virtual std::any visitMatchExpr(WhixyParser::MatchExprContext* ctx) override { return visitChildren(ctx); }
+    virtual std::any visitUnrollWhileExpr(WhixyParser::UnrollWhileExprContext* ctx) override
+    {
+        return visitChildren(ctx);
+    }
 
-    virtual std::any visitLoopExpr(WhixyParser::LoopExprContext* ctx) override { return visitChildren(ctx); }
+    virtual std::any visitUnrollForExpr(WhixyParser::UnrollForExprContext* ctx) override { return visitChildren(ctx); }
+
+    virtual std::any visitPlainWhileExpr(WhixyParser::PlainWhileExprContext* ctx) override
+    {
+        return visitChildren(ctx);
+    }
+
+    virtual std::any visitPlainForExpr(WhixyParser::PlainForExprContext* ctx) override { return visitChildren(ctx); }
 
     virtual std::any visitComptExpr(WhixyParser::ComptExprContext* ctx) override { return visitChildren(ctx); }
 
-    virtual std::any visitRoutineExpr(WhixyParser::RoutineExprContext* ctx) override { return visitChildren(ctx); }
+    virtual std::any visitPlainRoutineExpr(WhixyParser::PlainRoutineExprContext* ctx) override
+    {
+        return visitChildren(ctx);
+    }
+
+    virtual std::any visitInlineRoutineExpr(WhixyParser::InlineRoutineExprContext* ctx) override
+    {
+        return visitChildren(ctx);
+    }
 
     virtual std::any visitDQStringExpr(WhixyParser::DQStringExprContext* ctx) override { return visitChildren(ctx); }
 
@@ -265,17 +281,13 @@ class WhixyParserBaseVisitor: public WhixyParserVisitor {
 
     virtual std::any visitAtom(WhixyParser::AtomContext* ctx) override { return visitChildren(ctx); }
 
+    virtual std::any visitToken(WhixyParser::TokenContext* ctx) override { return visitChildren(ctx); }
+
     virtual std::any visitBlockExpr(WhixyParser::BlockExprContext* ctx) override { return visitChildren(ctx); }
 
     virtual std::any visitTypeExpr(WhixyParser::TypeExprContext* ctx) override { return visitChildren(ctx); }
 
     virtual std::any visitTupleExpr(WhixyParser::TupleExprContext* ctx) override { return visitChildren(ctx); }
-
-    virtual std::any visitToken(WhixyParser::TokenContext* ctx) override { return visitChildren(ctx); }
-
-    virtual std::any visitEof(WhixyParser::EofContext* ctx) override { return visitChildren(ctx); }
-
-    virtual std::any visitEqual(WhixyParser::EqualContext* ctx) override { return visitChildren(ctx); }
 
     virtual std::any visitOBracket(WhixyParser::OBracketContext* ctx) override { return visitChildren(ctx); }
 

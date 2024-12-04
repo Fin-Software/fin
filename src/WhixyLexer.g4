@@ -92,7 +92,6 @@ FOR:         'for';         // Loop control structure
 IF:          'if';          // Conditional structure
 ELSEIF:      'elseif';      // Else if statement
 ELSE:        'else';        // Conditional alternative
-MATCH:       'match';       // Pattern matching
 WHERE:       'where';       // Enhanced switch statement
 DEFER:       'defer';       // Defer execution until scope ends
 ERRDEFER:    'errdefer';    // Error handling with defer

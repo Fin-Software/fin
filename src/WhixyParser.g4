@@ -1,6 +1,6 @@
 // $antlr-format alignTrailingComments true, allowShortRulesOnASingleLine true, minEmptyLines 0
 // $antlr-format useTab false, maxEmptyLinesToKeep 1, alignSemicolons none, alignColons hanging
-// $antlr-format reflowComments false, alignFirstTokens true, columnLimit 170
+// $antlr-format reflowComments false, alignFirstTokens true, columnLimit 150
 
 // SPDX-License-Identifier: Apache-2.0
 // Copyright © 2024 The Whixy Authors. All rights reserved.
@@ -12,7 +12,7 @@ options {
     tokenVocab = WhixyLexer;
 }
 
-srcFile: stmt (stmtSep stmt)* eof;
+srcFile: NEWLINE? stmt (stmtSep stmt)* NEWLINE? EOF;
 
 //
 //    Statements
@@ -27,15 +27,14 @@ stmt
     | returnStmt
     | ifStmt
     | whereStmt
-    | matchStmt
     | loopStmt
     | comptStmt
     | deferStmt
     | errdeferStmt;
 
-valsStmt: token+ COLON (expr EQUAL | EQUAL)? expr;
+valsStmt: token+ COLON (expr? EQUAL NEWLINE?)? expr;
 
-assignOpStmt: atom+ assignOp atom+;
+assignOpStmt: atom assignOp atom;
 assignOp
     : AMPERSAND_EQUAL                       # andAssignOp
     | PIPE_EQUAL                            # orAssignOp
@@ -53,7 +52,7 @@ assignOp
     | GREATERTHAN_GREATERTHAN_PERCENT_EQUAL # rightRotationAssignOp
     | LESSTHAN_LESSTHAN_PERCENT_EQUAL       # leftRotationAssignOp;
 
-callStmt: atom+;
+callStmt: atom expr;
 
 blockStmt
     : oParen (stmt (stmtSep stmt)*)? cParen      # funcBlockStmt
@@ -63,15 +62,13 @@ routineStmt
     : token atom atom blockStmt        # plainRoutineStmt
     | INLINE token atom atom blockStmt # inlineRoutineStmt;
 
-returnStmt: RETURN atom+;
+returnStmt: RETURN expr;
 
-ifStmt: IF atom blockStmt (ELSEIF atom blockStmt)* (ELSE blockStmt)?;
+ifStmt: IF atom stmt (ELSEIF atom stmt)* (ELSE stmt)?;
 
 whereStmt:     WHERE atom comparisonOp caseStmtBlock;
 comparisonOp:  ;
 caseStmtBlock: ;
-
-matchStmt: MATCH;
 
 loopStmt
     : UNROLL WHILE atom? atom? stmt # unrollWhileStmt
@@ -97,7 +94,6 @@ expr
     | preOpExpr
     | ifExpr
     | whereExpr
-    | matchExpr
     | loopExpr
     | comptExpr
     | routineExpr
@@ -148,17 +144,23 @@ ifExpr: IF atom expr (ELSEIF atom expr)* (ELSE expr)?;
 whereExpr:     WHERE atom comparisonOp caseExprBlock;
 caseExprBlock: ;
 
-matchExpr: MATCH;
-
-loopExpr: ;
+loopExpr
+    : UNROLL WHILE atom? atom? expr # unrollWhileExpr
+    | UNROLL FOR atom? atom? expr   # unrollForExpr
+    | WHILE atom? atom? expr        # plainWhileExpr
+    | FOR atom? atom? expr          # plainForExpr;
 
 comptExpr: COMPT expr;
 
-routineExpr: ;
+routineExpr
+    : atom atom blockStmt        # plainRoutineExpr
+    | INLINE atom atom blockStmt # inlineRoutineExpr;
 
 string: DOUBLEQUOTESTRING # dQStringExpr | BACKTICKSTRING # bTStringExpr;
 
-atom: blockExpr | typeExpr | tupleExpr | token;
+atom: token | blockExpr | typeExpr | tupleExpr;
+
+token: TOKEN;
 
 blockExpr: oParen ((stmt (stmtSep stmt)* stmtSep)? expr)? cParen;
 
@@ -166,17 +168,9 @@ typeExpr: oBrace (valsStmt (exprSep valsStmt)*)? cBrace;
 
 tupleExpr: oParen (expr (exprSep expr)*)? cParen;
 
-token: TOKEN;
-
 //
 //    Flexibility
 //
-
-// NL? ID
-eof: NEWLINE? EOF;
-
-// ID NL?
-equal: EQUAL NEWLINE?;
 
 // ID NL?; NL? ID
 oBracket:      OPENBRACKET NEWLINE?;

@@ -76,8 +76,6 @@ class WhixyParserVisitor: public antlr4::tree::AbstractParseTreeVisitor {
 
     virtual std::any visitCaseStmtBlock(WhixyParser::CaseStmtBlockContext* context) = 0;
 
-    virtual std::any visitMatchStmt(WhixyParser::MatchStmtContext* context) = 0;
-
     virtual std::any visitUnrollWhileStmt(WhixyParser::UnrollWhileStmtContext* context) = 0;
 
     virtual std::any visitUnrollForStmt(WhixyParser::UnrollForStmtContext* context) = 0;
@@ -170,13 +168,19 @@ class WhixyParserVisitor: public antlr4::tree::AbstractParseTreeVisitor {
 
     virtual std::any visitCaseExprBlock(WhixyParser::CaseExprBlockContext* context) = 0;
 
-    virtual std::any visitMatchExpr(WhixyParser::MatchExprContext* context) = 0;
+    virtual std::any visitUnrollWhileExpr(WhixyParser::UnrollWhileExprContext* context) = 0;
 
-    virtual std::any visitLoopExpr(WhixyParser::LoopExprContext* context) = 0;
+    virtual std::any visitUnrollForExpr(WhixyParser::UnrollForExprContext* context) = 0;
+
+    virtual std::any visitPlainWhileExpr(WhixyParser::PlainWhileExprContext* context) = 0;
+
+    virtual std::any visitPlainForExpr(WhixyParser::PlainForExprContext* context) = 0;
 
     virtual std::any visitComptExpr(WhixyParser::ComptExprContext* context) = 0;
 
-    virtual std::any visitRoutineExpr(WhixyParser::RoutineExprContext* context) = 0;
+    virtual std::any visitPlainRoutineExpr(WhixyParser::PlainRoutineExprContext* context) = 0;
+
+    virtual std::any visitInlineRoutineExpr(WhixyParser::InlineRoutineExprContext* context) = 0;
 
     virtual std::any visitDQStringExpr(WhixyParser::DQStringExprContext* context) = 0;
 
@@ -184,17 +188,13 @@ class WhixyParserVisitor: public antlr4::tree::AbstractParseTreeVisitor {
 
     virtual std::any visitAtom(WhixyParser::AtomContext* context) = 0;
 
+    virtual std::any visitToken(WhixyParser::TokenContext* context) = 0;
+
     virtual std::any visitBlockExpr(WhixyParser::BlockExprContext* context) = 0;
 
     virtual std::any visitTypeExpr(WhixyParser::TypeExprContext* context) = 0;
 
     virtual std::any visitTupleExpr(WhixyParser::TupleExprContext* context) = 0;
-
-    virtual std::any visitToken(WhixyParser::TokenContext* context) = 0;
-
-    virtual std::any visitEof(WhixyParser::EofContext* context) = 0;
-
-    virtual std::any visitEqual(WhixyParser::EqualContext* context) = 0;
 
     virtual std::any visitOBracket(WhixyParser::OBracketContext* context) = 0;
 
