@@ -4,12 +4,8 @@
     .dependencies = .{
         .cova = .{
             .url = "https://github.com/Beyley/cova/archive/main.tar.gz",
-            .hash = "12205af19f0a80248621b2fd75e8506dbda0c84a65f61c54f2e5a645942d40d04561",
-        },
-        .unvendor = .{
-            .url = "https://github.com/p7r0x7/unvendor/archive/master.tar.gz",
-            .hash = "1220e7e9ed60416f3737df223cdc188559d2d89fd6bd18654b21c629d889f827b2f8",
+            .hash = "1220b70aee16e659e30eb0c066777f930319f74555fe51a8646725263ecb19ba92a3",
         },
     },
-    .paths = .{ "src", "build.zig", "build.zig.zon", "libs.cmd", "libs.sh", "vendor.sh", "vendor.tzst" },
+    .paths = .{ "scripts", "src", "vendor", ".clang-format", ".gitattributes", ".gitignore", "build.zig", "build.zig.zon", "hash.zig" },
 }

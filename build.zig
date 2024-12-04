@@ -28,15 +28,15 @@ pub fn build(b: *Build) !void {
     // Compile external libraries for statically linking to.
     if (b.build_root.handle.openDir("deps", .{}) == error.FileNotFound) {
         // Certify the integrity of external dependency sources.
-        const certify_vendor = b.addTest(.{ .root_source_file = b.path("certify.zig"), .optimize = .ReleaseFast, .target = target });
-        const run_certify_vendor = b.addRunArtifact(certify_vendor);
+        const hash_vendor = b.addTest(.{ .root_source_file = b.path("hash.zig"), .optimize = .ReleaseFast, .target = target });
+        const run_hash_vendor = b.addRunArtifact(hash_vendor);
         {
             var buf: [fs.max_path_bytes]u8 = undefined;
             const cwd_path = try b.build_root.handle.realpath("vendor", buf[0..]);
-            run_certify_vendor.addArg(cwd_path);
-            run_certify_vendor.addArg("bab0fa6ecb28a9ca41d88ebde566c26325e0115c42a1bd79c5bb30f6d741a265");
+            run_hash_vendor.addArg(cwd_path);
+            run_hash_vendor.addArg("bab0fa6ecb28a9ca41d88ebde566c26325e0115c42a1bd79c5bb30f6d741a265");
         }
-        b.step("certify-vendor", "").dependOn(&run_certify_vendor.step); // Enable `zig build certify-vendor`
+        b.step("hash-vendor", "").dependOn(&run_hash_vendor.step); // Enable `zig build hash-vendor`
 
         const deps_step = deps_step: {
             var buf: [32]u8 = undefined; // Adjust as necessary.
@@ -53,7 +53,7 @@ pub fn build(b: *Build) !void {
             };
         };
 
-        deps_step.step.dependOn(&run_certify_vendor.step);
+        deps_step.step.dependOn(&run_hash_vendor.step);
         whixy.step.dependOn(&deps_step.step);
     }
     {
