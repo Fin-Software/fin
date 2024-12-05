@@ -18,10 +18,11 @@ srcFile: NEWLINE? stmt (stmtSep stmt)* NEWLINE? EOF;
 //    Statements
 //
 
+stmtSep: SEMICOLON | NEWLINE;
 stmt
-    : valsStmt
-    | assignOpStmt
-    | callStmt
+    : field
+    | assignStmt
+    | call
     | blockStmt
     | routineStmt
     | returnStmt
@@ -32,27 +33,29 @@ stmt
     | deferStmt
     | errdeferStmt;
 
-valsStmt: token+ COLON (expr? EQUAL NEWLINE?)? expr;
+field
+    : (AUTO | ASTERISK THIS | atom) token+ (EQUAL NEWLINE? expr)?     # immutableVals
+    | MUT (AUTO | ASTERISK THIS | atom) token+ (EQUAL NEWLINE? expr)? # mutableVals;
 
-assignOpStmt: atom assignOp atom;
+assignStmt: atom assignOp atom;
 assignOp
-    : AMPERSAND_EQUAL                       # andAssignOp
-    | PIPE_EQUAL                            # orAssignOp
-    | PERCENT_EQUAL                         # modulusAssignOp
-    | CARROT_EQUAL                          # xorAssignOp
-    | SLASH_EQUAL                           # divisionAssignOp
-    | PLUS_EQUAL                            # additionAssignOp
-    | MINUS_EQUAL                           # subtractionAssignOp
-    | ASTERISK_EQUAL                        # multiplicationAssignOp
-    | LESSTHAN_LESSTHAN_EQUAL               # leftShiftAssignOp
-    | GREATERTHAN_GREATERTHAN_EQUAL         # rightShiftAssignOp
-    | ASTERISK_PERCENT_EQUAL                # wrappingMultiplicationAssignOp
-    | PLUS_PERCENT_EQUAL                    # wrappingAdditionAssignOp
-    | MINUS_PERCENT_EQUAL                   # wrappingSubtractionAssignOp
-    | GREATERTHAN_GREATERTHAN_PERCENT_EQUAL # rightRotationAssignOp
-    | LESSTHAN_LESSTHAN_PERCENT_EQUAL       # leftRotationAssignOp;
+    : AMPERSAND_EQUAL                       # andEqualsOp
+    | PIPE_EQUAL                            # orEqualsOp
+    | PERCENT_EQUAL                         # modEqualsOp
+    | CARROT_EQUAL                          # xorEqualsOp
+    | SLASH_EQUAL                           # divideEqualsOp
+    | PLUS_EQUAL                            # addEqualsOp
+    | MINUS_EQUAL                           # subEqualsOp
+    | ASTERISK_EQUAL                        # timesEqualsOp
+    | LESSTHAN_LESSTHAN_EQUAL               # leftShiftEqualsOp
+    | GREATERTHAN_GREATERTHAN_EQUAL         # rightShiftEqualsOp
+    | ASTERISK_PERCENT_EQUAL                # wrappingTimesEqualsOp
+    | PLUS_PERCENT_EQUAL                    # wrappingAddEqualsOp
+    | MINUS_PERCENT_EQUAL                   # wrappingSubEqualsOp
+    | GREATERTHAN_GREATERTHAN_PERCENT_EQUAL # rightRotateEqualsOp
+    | LESSTHAN_LESSTHAN_PERCENT_EQUAL       # leftRotateEqualsOp;
 
-callStmt: atom expr;
+call: atom expr;
 
 blockStmt
     : oParen (stmt (stmtSep stmt)*)? cParen      # funcBlockStmt
@@ -86,12 +89,13 @@ errdeferStmt: ERRDEFER stmt;
 //    Expressions
 //
 
+exprSep: COMMA | NEWLINE;
 expr
-    : valsStmt
-    | callStmt
-    | binaryOpExpr
-    | postOpExpr
-    | preOpExpr
+    : field
+    | call
+    | binaryExpr
+    | postExpr
+    | preExpr
     | ifExpr
     | whereExpr
     | loopExpr
@@ -100,44 +104,45 @@ expr
     | string
     | atom;
 
-binaryOpExpr: atom NEWLINE? binaryOp NEWLINE? atom;
+binaryExpr: atom NEWLINE? binaryOp NEWLINE? atom;
 binaryOp
     : AS                              # asOp
-    | PLUS_PLUS                       # concatenationOp
-    | ASTERISK_ASTERISK               # repetitionOp
-    | PLUS                            # additionOp
-    | MINUS                           # subtractionOp
-    | ASTERISK                        # multiplicationOp
-    | SLASH                           # divisionOp
+    | PLUS_PLUS                       # concatOp
+    | ASTERISK_ASTERISK               # repeatOp
+    | PLUS                            # addOp
+    | MINUS                           # subOp
+    | ASTERISK                        # timesOp
+    | SLASH                           # divideOp
     | LESSTHAN                        # lessThanOp
     | GREATERTHAN                     # greaterThanOp
-    | LESSTHAN_EQUAL                  # lessThanEqualOp
-    | GREATERTHAN_EQUAL               # greaterThanEqualOp
-    | PLUS_PERCENT                    # wrappingAdditionOp
-    | MINUS_PERCENT                   # wrappingSubtractionOp
-    | ASTERISK_PERCENT                # wrappingMultiplicationOp
+    | LESSTHAN_EQUAL                  # lessThanOrEqualToOp
+    | GREATERTHAN_EQUAL               # greaterThanOrEqualToOp
+    | PLUS_PERCENT                    # wrappingAddOp
+    | MINUS_PERCENT                   # wrappingSubOp
+    | ASTERISK_PERCENT                # wrappingTimesOp
     | LESSTHAN_LESSTHAN               # leftShiftOp
     | GREATERTHAN_GREATERTHAN         # rightShiftOp
-    | LESSTHAN_LESSTHAN_PERCENT       # leftRotationOp
-    | GREATERTHAN_GREATERTHAN_PERCENT # rightRotationOp
+    | LESSTHAN_LESSTHAN_PERCENT       # leftRotateOp
+    | GREATERTHAN_GREATERTHAN_PERCENT # rightRotateOp
     | EQUAL_EQUAL                     # equalityOp
     | EXCLAMATION_EQUAL               # inequalityOp
     | AMPERSAND                       # andOp
     | PIPE                            # orOp
-    | PERCENT                         # modulusOp
+    | PERCENT                         # modOp
     | CARROT                          # xorOp;
 
-postOpExpr: atom postOp;
+postExpr: atom postOp;
 postOp
-    : DOT atom      # accessFieldOp
-    | DOT_TYPE      # accessTypeOp
-    | DOT_LEN       # accessLengthOp
-    | DOT_ASTERISK  # dereferencePointerOp
-    | DOT_AMPERSAND # addressOfOp
-    | DOT_QUESTION  # unwrapOptionalOp;
+    : DOT atom               # accessMemberOp
+    | oBracket expr cBracket # accessIndexOp
+    | DOT_TYPE               # accessTypeOp
+    | DOT_LEN                # accessLengthOp
+    | DOT_ASTERISK           # dereferencePointerOp
+    | DOT_AMPERSAND          # addressOfOp
+    | DOT_QUESTION           # unwrapOptionalOp;
 
-preOpExpr: preOp atom;
-preOp:     EXCLAMATION # notOp | MINUS # negateOp;
+preExpr: preOp atom;
+preOp:   EXCLAMATION # notOp | MINUS # negateOp;
 
 ifExpr: IF atom expr (ELSEIF atom expr)* (ELSE expr)?;
 
@@ -164,7 +169,7 @@ token: TOKEN;
 
 blockExpr: oParen ((stmt (stmtSep stmt)* stmtSep)? expr)? cParen;
 
-typeExpr: oBrace (valsStmt (exprSep valsStmt)*)? cBrace;
+typeExpr: oBrace (field (exprSep field)*)? cBrace;
 
 tupleExpr: oParen (expr (exprSep expr)*)? cParen;
 
@@ -184,6 +189,3 @@ oParen:      NEWLINE? OPENPARENTHESIS NEWLINE?;
 cParen:      NEWLINE? CLOSEDPARENTHESIS;
 oBrace:      NEWLINE? OPENBRACE NEWLINE?;
 cBrace:      NEWLINE? CLOSEDBRACE;
-
-stmtSep: SEMICOLON | NEWLINE;
-exprSep: COMMA | NEWLINE;

@@ -19,7 +19,6 @@ WHITESPACE:        [ \t]+ -> channel(HIDDEN);
 
 // SORTED ^^
 
-COLON:                     ':';  // type specifier
 COMMA:                     ',';  // expression separator
 SEMICOLON:                 ';';  // statement separator
 QUESTION:                  '?';  // Type modifier (optional types)
@@ -81,6 +80,8 @@ EQUAL:                                 '=';    // infix op: assign type instance
 PIPE_EQUAL:                            '|=';   // combined assignment: bitwise OR
 PIPE:                                  '|';    // infix op: logical OR; bitwise OR; routine overloading (after PIPE...)
 
+THIS:        'this';        //
+AUTO:        'auto';        //
 MUT:         'mut';         // Type modifier (mutable)
 INLINE:      'inline';      // Inline optimization hint
 RETURN:      'return';      // Return statement
