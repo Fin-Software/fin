@@ -121,6 +121,9 @@ class WhixyParserListener: public antlr4::tree::ParseTreeListener {
     virtual void enterComptStmt(WhixyParser::ComptStmtContext* ctx) = 0;
     virtual void exitComptStmt(WhixyParser::ComptStmtContext* ctx) = 0;
 
+    virtual void enterUnreachable(WhixyParser::UnreachableContext* ctx) = 0;
+    virtual void exitUnreachable(WhixyParser::UnreachableContext* ctx) = 0;
+
     virtual void enterDeferStmt(WhixyParser::DeferStmtContext* ctx) = 0;
     virtual void exitDeferStmt(WhixyParser::DeferStmtContext* ctx) = 0;
 
@@ -232,6 +235,9 @@ class WhixyParserListener: public antlr4::tree::ParseTreeListener {
     virtual void enterUnwrapOptionalOp(WhixyParser::UnwrapOptionalOpContext* ctx) = 0;
     virtual void exitUnwrapOptionalOp(WhixyParser::UnwrapOptionalOpContext* ctx) = 0;
 
+    virtual void enterTryOp(WhixyParser::TryOpContext* ctx) = 0;
+    virtual void exitTryOp(WhixyParser::TryOpContext* ctx) = 0;
+
     virtual void enterPreExpr(WhixyParser::PreExprContext* ctx) = 0;
     virtual void exitPreExpr(WhixyParser::PreExprContext* ctx) = 0;
 
@@ -286,8 +292,8 @@ class WhixyParserListener: public antlr4::tree::ParseTreeListener {
     virtual void enterBlockExpr(WhixyParser::BlockExprContext* ctx) = 0;
     virtual void exitBlockExpr(WhixyParser::BlockExprContext* ctx) = 0;
 
-    virtual void enterTypeExpr(WhixyParser::TypeExprContext* ctx) = 0;
-    virtual void exitTypeExpr(WhixyParser::TypeExprContext* ctx) = 0;
+    virtual void enterStructExpr(WhixyParser::StructExprContext* ctx) = 0;
+    virtual void exitStructExpr(WhixyParser::StructExprContext* ctx) = 0;
 
     virtual void enterTupleExpr(WhixyParser::TupleExprContext* ctx) = 0;
     virtual void exitTupleExpr(WhixyParser::TupleExprContext* ctx) = 0;
@@ -297,12 +303,6 @@ class WhixyParserListener: public antlr4::tree::ParseTreeListener {
 
     virtual void enterCBracket(WhixyParser::CBracketContext* ctx) = 0;
     virtual void exitCBracket(WhixyParser::CBracketContext* ctx) = 0;
-
-    virtual void enterOAngleBracket(WhixyParser::OAngleBracketContext* ctx) = 0;
-    virtual void exitOAngleBracket(WhixyParser::OAngleBracketContext* ctx) = 0;
-
-    virtual void enterCAngleBracket(WhixyParser::CAngleBracketContext* ctx) = 0;
-    virtual void exitCAngleBracket(WhixyParser::CAngleBracketContext* ctx) = 0;
 
     virtual void enterDollarParen(WhixyParser::DollarParenContext* ctx) = 0;
     virtual void exitDollarParen(WhixyParser::DollarParenContext* ctx) = 0;

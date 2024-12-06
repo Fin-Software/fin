@@ -123,6 +123,9 @@ class WhixyParserBaseListener: public WhixyParserListener {
     virtual void enterComptStmt(WhixyParser::ComptStmtContext* /*ctx*/) override {}
     virtual void exitComptStmt(WhixyParser::ComptStmtContext* /*ctx*/) override {}
 
+    virtual void enterUnreachable(WhixyParser::UnreachableContext* /*ctx*/) override {}
+    virtual void exitUnreachable(WhixyParser::UnreachableContext* /*ctx*/) override {}
+
     virtual void enterDeferStmt(WhixyParser::DeferStmtContext* /*ctx*/) override {}
     virtual void exitDeferStmt(WhixyParser::DeferStmtContext* /*ctx*/) override {}
 
@@ -234,6 +237,9 @@ class WhixyParserBaseListener: public WhixyParserListener {
     virtual void enterUnwrapOptionalOp(WhixyParser::UnwrapOptionalOpContext* /*ctx*/) override {}
     virtual void exitUnwrapOptionalOp(WhixyParser::UnwrapOptionalOpContext* /*ctx*/) override {}
 
+    virtual void enterTryOp(WhixyParser::TryOpContext* /*ctx*/) override {}
+    virtual void exitTryOp(WhixyParser::TryOpContext* /*ctx*/) override {}
+
     virtual void enterPreExpr(WhixyParser::PreExprContext* /*ctx*/) override {}
     virtual void exitPreExpr(WhixyParser::PreExprContext* /*ctx*/) override {}
 
@@ -288,8 +294,8 @@ class WhixyParserBaseListener: public WhixyParserListener {
     virtual void enterBlockExpr(WhixyParser::BlockExprContext* /*ctx*/) override {}
     virtual void exitBlockExpr(WhixyParser::BlockExprContext* /*ctx*/) override {}
 
-    virtual void enterTypeExpr(WhixyParser::TypeExprContext* /*ctx*/) override {}
-    virtual void exitTypeExpr(WhixyParser::TypeExprContext* /*ctx*/) override {}
+    virtual void enterStructExpr(WhixyParser::StructExprContext* /*ctx*/) override {}
+    virtual void exitStructExpr(WhixyParser::StructExprContext* /*ctx*/) override {}
 
     virtual void enterTupleExpr(WhixyParser::TupleExprContext* /*ctx*/) override {}
     virtual void exitTupleExpr(WhixyParser::TupleExprContext* /*ctx*/) override {}
@@ -299,12 +305,6 @@ class WhixyParserBaseListener: public WhixyParserListener {
 
     virtual void enterCBracket(WhixyParser::CBracketContext* /*ctx*/) override {}
     virtual void exitCBracket(WhixyParser::CBracketContext* /*ctx*/) override {}
-
-    virtual void enterOAngleBracket(WhixyParser::OAngleBracketContext* /*ctx*/) override {}
-    virtual void exitOAngleBracket(WhixyParser::OAngleBracketContext* /*ctx*/) override {}
-
-    virtual void enterCAngleBracket(WhixyParser::CAngleBracketContext* /*ctx*/) override {}
-    virtual void exitCAngleBracket(WhixyParser::CAngleBracketContext* /*ctx*/) override {}
 
     virtual void enterDollarParen(WhixyParser::DollarParenContext* /*ctx*/) override {}
     virtual void exitDollarParen(WhixyParser::DollarParenContext* /*ctx*/) override {}

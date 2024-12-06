@@ -15,28 +15,27 @@ DOUBLEQUOTESTRING: '"' ('\\"' | .)*? '"'; // NB: separate tokens saves work
 BACKTICKSTRING:    '`' ('\\`' | .)*? '`'; // NB: separate tokens saves work
 DOCCOMMENT:        '###' ~[\r\n]*;
 COMMENT:           '#' ~[\r\n]* -> channel(HIDDEN);
+RUNE:              '\'' ('\\\'' | .) '\'';
 WHITESPACE:        [ \t]+ -> channel(HIDDEN);
 
 // SORTED ^^
 
-COMMA:                     ',';  // expression separator
-SEMICOLON:                 ';';  // statement separator
-QUESTION:                  '?';  // Type modifier (optional types)
-DOLLAR_OPENPARENTHESIS:    '$('; //
-OPENPARENTHESIS:           '(';  // open group expression
-CLOSEDPARENTHESIS:         ')';  // close group expression
-OPENBRACE:                 '{';  // open block or type expression
-CLOSEDBRACE:               '}';  // close block or type expression
-LESSTHAN_OPENBRACKET:      '<['; // open indexing expression
-CLOSEDBRACKET_GREATERTHAN: ']>'; // close indexing expression
-OPENBRACKET:               '[';  // open indexing expression
-CLOSEDBRACKET:             ']';  // close indexing expression
+COMMA:                  ',';  // expression separator
+SEMICOLON:              ';';  // statement separator
+DOLLAR_OPENPARENTHESIS: '$('; //
+OPENPARENTHESIS:        '(';  // open group expression
+CLOSEDPARENTHESIS:      ')';  // close group expression
+OPENBRACE:              '{';  // open type expression
+CLOSEDBRACE:            '}';  // close type expression
+OPENBRACKET:            '[';  // open indexing expression
+CLOSEDBRACKET:          ']';  // close indexing expression
 
 DOT_TYPE:      '.type'; // postfix op: access comptime type
 DOT_LEN:       '.len';  // postfix op: access length
 DOT_ASTERISK:  '.*';    // postfix op: dereference pointer 
 DOT_AMPERSAND: '.&';    // postfix op: access address-of
-DOT_QUESTION:  '.?';    // postfix op: explicitly unwrap optional
+QUESTION:      '?';     // postfix op: explicitly unwrap optional
+EXCLAMATION:   '!';     // infix op: logical NOT; bitwise NOT (after EXCLAMATION...)
 DOT:           '.';     // postfix op: access field (after DOT...)
 
 GREATERTHAN_GREATERTHAN_PERCENT_EQUAL: '>>%='; // combined assignment: rotr
@@ -65,8 +64,8 @@ MINUS_PERCENT_EQUAL:                   '-%=';  // combined wrapping assignment: 
 MINUS_PERCENT:                         '-%';   //
 MINUS_EQUAL:                           '-=';   // combined assignment: subtraction
 MINUS:                                 '-';    // infix op: subtraction; prefix: negation (after MINUS...)
-EXCLAMATION_EQUAL:                     '!=';   // infix op: inequality comparison
-EXCLAMATION:                           '!';    // infix op: logical NOT; bitwise NOT (after EXCLAMATION...)
+TILDE_EQUAL:                           '~=';   // infix op: inequality comparison
+TILDE:                                 '~';    // infix op: logical NOT; bitwise NOT (after EXCLAMATION...)
 AMPERSAND_EQUAL:                       '&=';   // combined assignment: bitwise AND
 AMPERSAND:                             '&';    // infix op: logical AND; bitwise AND (after AMPERSAND...)
 PERCENT_EQUAL:                         '%=';   // combined assignment: modulus
@@ -80,39 +79,40 @@ EQUAL:                                 '=';    // infix op: assign type instance
 PIPE_EQUAL:                            '|=';   // combined assignment: bitwise OR
 PIPE:                                  '|';    // infix op: logical OR; bitwise OR; routine overloading (after PIPE...)
 
-THIS:        'this';        //
-AUTO:        'auto';        //
-MUT:         'mut';         // Type modifier (mutable)
-INLINE:      'inline';      // Inline optimization hint
-RETURN:      'return';      // Return statement
-CONTINUE:    'continue';    // Continue loop iteration
-BREAK:       'break';       // Break from loop
-GOTO:        'goto';        // Goto
-WHILE:       'while';       // Loop control structure
-FOR:         'for';         // Loop control structure
-IF:          'if';          // Conditional structure
-ELSEIF:      'elseif';      // Else if statement
-ELSE:        'else';        // Conditional alternative
-WHERE:       'where';       // Enhanced switch statement
-DEFER:       'defer';       // Defer execution until scope ends
-ERRDEFER:    'errdefer';    // Error handling with defer
-ORELSE:      'orelse';      // Alternate error handling
-TRY:         'try';         // Error handling structure
-CATCH:       'catch';       // Error handling structure
-IMPORT:      'import';      // Import modules
-ALIGN:       'align';       // Type alignment modifier
-THREADLOCAL: 'threadlocal'; // Type modifier (thread-local storage)
-UNREACHABLE: 'unreachable'; //
-VOLATILE:    'volatile';    // Type modifier (volatile)
-UNROLL:      'unroll';      // Loop optimization hint
-COMPT:       'compt';       // Type modifier (comptime/compile-time)
-TEST:        'test';        // Unit test declaration
-ENUM:        'enum';        // Enumeration type
-UNION:       'union';       // Union type
-STD:         'std';         // Standard library access
-AS:          'as';          // infix op: Type casting
+THIS:        'this';        // immediately encapsulating type directive
+AUTO:        'auto';        // type inferrence directive
+MUT:         'mut';         // value mutability modifier
+INLINE:      'inline';      // routine inlining modifier
+RETURN:      'return';      // return statement
+CONTINUE:    'continue';    // goto continue statement
+BREAK:       'break';       // goto break statement
+GOTO:        'goto';        // goto label statement
+WHILE:       'while';       // while loop statement/expression
+FOR:         'for';         // for loop statement/expression
+IF:          'if';          // if statement statement/expression
+ELSEIF:      'elseif';      // elseif statement/expression
+ELSE:        'else';        // else statement/expression
+WHERE:       'where';       // enhanced switch statement/expression
+DEFER:       'defer';       // defer statement
+ERRDEFER:    'errdefer';    // errdefer statement
+FAST:        'fast';        // routine fastcall convention modifier
+BARE:        'bare';        // routine freestanding convention modifier
+IMPORT:      'import';      // import statement/expression
+ALIGN:       'align';       // value alignment modifier
+THREADL:     'threadl';     // value thread-local modifier
+UNREACHABLE: 'unreachable'; // unreachable statement/expression
+VOLATILE:    'volatile';    // value volatile modifier
+UNROLL:      'unroll';      // loop inlining modifier
+COMPT:       'compt';       // type/statement/expression comptime modifier
+TEST:        'test';        // routine test modifier
+ENUM:        'enum';        // enumeration type expression
+UNION:       'union';       // union type expression
+STD:         'std';         // standard library value
+ORELSE:      'orelse';      // optional unwrapping operator
+CATCH:       'catch';       // error handling operator
+AS:          'as';          // coercion operator
 
 // SORTED vv
 
-NEWLINE: [\r\n]+; // statement separator; expression separator; whitespace (-2nd)
-TOKEN:   .+?;     // tokens to be parsed during AST generation (-1st)
+NEWLINE: [\r\n]+; // statement/expression separator or whitespace (-2nd)
+TOKEN:   .+?;     // tokens to be parsed during AST semantic analysis (-1st)

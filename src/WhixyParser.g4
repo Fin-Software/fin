@@ -30,6 +30,7 @@ stmt
     | whereStmt
     | loopStmt
     | comptStmt
+    | unreachable
     | deferStmt
     | errdeferStmt;
 
@@ -81,6 +82,8 @@ loopStmt
 
 comptStmt: COMPT stmt;
 
+unreachable: UNREACHABLE;
+
 deferStmt: DEFER stmt;
 
 errdeferStmt: ERRDEFER stmt;
@@ -100,6 +103,7 @@ expr
     | whereExpr
     | loopExpr
     | comptExpr
+    | unreachable
     | routineExpr
     | string
     | atom;
@@ -125,7 +129,7 @@ binaryOp
     | LESSTHAN_LESSTHAN_PERCENT       # leftRotateOp
     | GREATERTHAN_GREATERTHAN_PERCENT # rightRotateOp
     | EQUAL_EQUAL                     # equalityOp
-    | EXCLAMATION_EQUAL               # inequalityOp
+    | TILDE_EQUAL                     # inequalityOp
     | AMPERSAND                       # andOp
     | PIPE                            # orOp
     | PERCENT                         # modOp
@@ -139,10 +143,11 @@ postOp
     | DOT_LEN                # accessLengthOp
     | DOT_ASTERISK           # dereferencePointerOp
     | DOT_AMPERSAND          # addressOfOp
-    | DOT_QUESTION           # unwrapOptionalOp;
+    | QUESTION               # unwrapOptionalOp
+    | EXCLAMATION            # tryOp;
 
 preExpr: preOp atom;
-preOp:   EXCLAMATION # notOp | MINUS # negateOp;
+preOp:   TILDE # notOp | MINUS # negateOp;
 
 ifExpr: IF atom expr (ELSEIF atom expr)* (ELSE expr)?;
 
@@ -163,26 +168,19 @@ routineExpr
 
 string: DOUBLEQUOTESTRING # dQStringExpr | BACKTICKSTRING # bTStringExpr;
 
-atom: token | blockExpr | typeExpr | tupleExpr;
+atom: token | blockExpr | structExpr | tupleExpr;
 
 token: TOKEN;
 
 blockExpr: oParen ((stmt (stmtSep stmt)* stmtSep)? expr)? cParen;
 
-typeExpr: oBrace (field (exprSep field)*)? cBrace;
+structExpr: oBrace (field (exprSep field)*)? cBrace;
 
 tupleExpr: oParen (expr (exprSep expr)*)? cParen;
 
-//
-//    Flexibility
-//
-
 // ID NL?; NL? ID
-oBracket:      OPENBRACKET NEWLINE?;
-cBracket:      NEWLINE? CLOSEDBRACKET;
-oAngleBracket: LESSTHAN_OPENBRACKET NEWLINE?;
-cAngleBracket: NEWLINE? CLOSEDBRACKET_GREATERTHAN;
-
+oBracket: OPENBRACKET NEWLINE?;
+cBracket: NEWLINE? CLOSEDBRACKET;
 // NL? ID NL?; NL? ID
 dollarParen: NEWLINE? DOLLAR_OPENPARENTHESIS NEWLINE?;
 oParen:      NEWLINE? OPENPARENTHESIS NEWLINE?;

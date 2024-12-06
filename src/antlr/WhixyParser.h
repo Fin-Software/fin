@@ -14,95 +14,95 @@ class WhixyParser: public antlr4::Parser {
         BACKTICKSTRING = 2,
         DOCCOMMENT = 3,
         COMMENT = 4,
-        WHITESPACE = 5,
-        COMMA = 6,
-        SEMICOLON = 7,
-        QUESTION = 8,
+        RUNE = 5,
+        WHITESPACE = 6,
+        COMMA = 7,
+        SEMICOLON = 8,
         DOLLAR_OPENPARENTHESIS = 9,
         OPENPARENTHESIS = 10,
         CLOSEDPARENTHESIS = 11,
         OPENBRACE = 12,
         CLOSEDBRACE = 13,
-        LESSTHAN_OPENBRACKET = 14,
-        CLOSEDBRACKET_GREATERTHAN = 15,
-        OPENBRACKET = 16,
-        CLOSEDBRACKET = 17,
-        DOT_TYPE = 18,
-        DOT_LEN = 19,
-        DOT_ASTERISK = 20,
-        DOT_AMPERSAND = 21,
-        DOT_QUESTION = 22,
-        DOT = 23,
-        GREATERTHAN_GREATERTHAN_PERCENT_EQUAL = 24,
-        GREATERTHAN_GREATERTHAN_PERCENT = 25,
-        GREATERTHAN_GREATERTHAN_EQUAL = 26,
-        GREATERTHAN_GREATERTHAN = 27,
-        GREATERTHAN_EQUAL = 28,
-        GREATERTHAN = 29,
-        LESSTHAN_LESSTHAN_PERCENT_EQUAL = 30,
-        LESSTHAN_LESSTHAN_PERCENT = 31,
-        LESSTHAN_LESSTHAN_EQUAL = 32,
-        LESSTHAN_LESSTHAN = 33,
-        LESSTHAN_EQUAL = 34,
-        LESSTHAN = 35,
-        ASTERISK_PERCENT_EQUAL = 36,
-        ASTERISK_PERCENT = 37,
-        ASTERISK_EQUAL = 38,
-        ASTERISK_ASTERISK = 39,
-        ASTERISK = 40,
-        PLUS_PERCENT_EQUAL = 41,
-        PLUS_PERCENT = 42,
-        PLUS_EQUAL = 43,
-        PLUS_PLUS = 44,
-        PLUS = 45,
-        MINUS_PERCENT_EQUAL = 46,
-        MINUS_PERCENT = 47,
-        MINUS_EQUAL = 48,
-        MINUS = 49,
-        EXCLAMATION_EQUAL = 50,
-        EXCLAMATION = 51,
-        AMPERSAND_EQUAL = 52,
-        AMPERSAND = 53,
-        PERCENT_EQUAL = 54,
-        PERCENT = 55,
-        CARROT_EQUAL = 56,
-        CARROT = 57,
-        SLASH_EQUAL = 58,
-        SLASH = 59,
-        EQUAL_EQUAL = 60,
-        EQUAL = 61,
-        PIPE_EQUAL = 62,
-        PIPE = 63,
-        THIS = 64,
-        AUTO = 65,
-        MUT = 66,
-        INLINE = 67,
-        RETURN = 68,
-        CONTINUE = 69,
-        BREAK = 70,
-        GOTO = 71,
-        WHILE = 72,
-        FOR = 73,
-        IF = 74,
-        ELSEIF = 75,
-        ELSE = 76,
-        WHERE = 77,
-        DEFER = 78,
-        ERRDEFER = 79,
-        ORELSE = 80,
-        TRY = 81,
-        CATCH = 82,
-        IMPORT = 83,
-        ALIGN = 84,
-        THREADLOCAL = 85,
-        UNREACHABLE = 86,
-        VOLATILE = 87,
-        UNROLL = 88,
-        COMPT = 89,
-        TEST = 90,
-        ENUM = 91,
-        UNION = 92,
-        STD = 93,
+        OPENBRACKET = 14,
+        CLOSEDBRACKET = 15,
+        DOT_TYPE = 16,
+        DOT_LEN = 17,
+        DOT_ASTERISK = 18,
+        DOT_AMPERSAND = 19,
+        QUESTION = 20,
+        EXCLAMATION = 21,
+        DOT = 22,
+        GREATERTHAN_GREATERTHAN_PERCENT_EQUAL = 23,
+        GREATERTHAN_GREATERTHAN_PERCENT = 24,
+        GREATERTHAN_GREATERTHAN_EQUAL = 25,
+        GREATERTHAN_GREATERTHAN = 26,
+        GREATERTHAN_EQUAL = 27,
+        GREATERTHAN = 28,
+        LESSTHAN_LESSTHAN_PERCENT_EQUAL = 29,
+        LESSTHAN_LESSTHAN_PERCENT = 30,
+        LESSTHAN_LESSTHAN_EQUAL = 31,
+        LESSTHAN_LESSTHAN = 32,
+        LESSTHAN_EQUAL = 33,
+        LESSTHAN = 34,
+        ASTERISK_PERCENT_EQUAL = 35,
+        ASTERISK_PERCENT = 36,
+        ASTERISK_EQUAL = 37,
+        ASTERISK_ASTERISK = 38,
+        ASTERISK = 39,
+        PLUS_PERCENT_EQUAL = 40,
+        PLUS_PERCENT = 41,
+        PLUS_EQUAL = 42,
+        PLUS_PLUS = 43,
+        PLUS = 44,
+        MINUS_PERCENT_EQUAL = 45,
+        MINUS_PERCENT = 46,
+        MINUS_EQUAL = 47,
+        MINUS = 48,
+        TILDE_EQUAL = 49,
+        TILDE = 50,
+        AMPERSAND_EQUAL = 51,
+        AMPERSAND = 52,
+        PERCENT_EQUAL = 53,
+        PERCENT = 54,
+        CARROT_EQUAL = 55,
+        CARROT = 56,
+        SLASH_EQUAL = 57,
+        SLASH = 58,
+        EQUAL_EQUAL = 59,
+        EQUAL = 60,
+        PIPE_EQUAL = 61,
+        PIPE = 62,
+        THIS = 63,
+        AUTO = 64,
+        MUT = 65,
+        INLINE = 66,
+        RETURN = 67,
+        CONTINUE = 68,
+        BREAK = 69,
+        GOTO = 70,
+        WHILE = 71,
+        FOR = 72,
+        IF = 73,
+        ELSEIF = 74,
+        ELSE = 75,
+        WHERE = 76,
+        DEFER = 77,
+        ERRDEFER = 78,
+        FAST = 79,
+        BARE = 80,
+        IMPORT = 81,
+        ALIGN = 82,
+        THREADL = 83,
+        UNREACHABLE = 84,
+        VOLATILE = 85,
+        UNROLL = 86,
+        COMPT = 87,
+        TEST = 88,
+        ENUM = 89,
+        UNION = 90,
+        STD = 91,
+        ORELSE = 92,
+        CATCH = 93,
         AS = 94,
         NEWLINE = 95,
         TOKEN = 96
@@ -125,37 +125,36 @@ class WhixyParser: public antlr4::Parser {
         RuleCaseStmtBlock = 13,
         RuleLoopStmt = 14,
         RuleComptStmt = 15,
-        RuleDeferStmt = 16,
-        RuleErrdeferStmt = 17,
-        RuleExprSep = 18,
-        RuleExpr = 19,
-        RuleBinaryExpr = 20,
-        RuleBinaryOp = 21,
-        RulePostExpr = 22,
-        RulePostOp = 23,
-        RulePreExpr = 24,
-        RulePreOp = 25,
-        RuleIfExpr = 26,
-        RuleWhereExpr = 27,
-        RuleCaseExprBlock = 28,
-        RuleLoopExpr = 29,
-        RuleComptExpr = 30,
-        RuleRoutineExpr = 31,
-        RuleString = 32,
-        RuleAtom = 33,
-        RuleToken = 34,
-        RuleBlockExpr = 35,
-        RuleTypeExpr = 36,
-        RuleTupleExpr = 37,
-        RuleOBracket = 38,
-        RuleCBracket = 39,
-        RuleOAngleBracket = 40,
-        RuleCAngleBracket = 41,
-        RuleDollarParen = 42,
-        RuleOParen = 43,
-        RuleCParen = 44,
-        RuleOBrace = 45,
-        RuleCBrace = 46
+        RuleUnreachable = 16,
+        RuleDeferStmt = 17,
+        RuleErrdeferStmt = 18,
+        RuleExprSep = 19,
+        RuleExpr = 20,
+        RuleBinaryExpr = 21,
+        RuleBinaryOp = 22,
+        RulePostExpr = 23,
+        RulePostOp = 24,
+        RulePreExpr = 25,
+        RulePreOp = 26,
+        RuleIfExpr = 27,
+        RuleWhereExpr = 28,
+        RuleCaseExprBlock = 29,
+        RuleLoopExpr = 30,
+        RuleComptExpr = 31,
+        RuleRoutineExpr = 32,
+        RuleString = 33,
+        RuleAtom = 34,
+        RuleToken = 35,
+        RuleBlockExpr = 36,
+        RuleStructExpr = 37,
+        RuleTupleExpr = 38,
+        RuleOBracket = 39,
+        RuleCBracket = 40,
+        RuleDollarParen = 41,
+        RuleOParen = 42,
+        RuleCParen = 43,
+        RuleOBrace = 44,
+        RuleCBrace = 45
     };
 
     explicit WhixyParser(antlr4::TokenStream* input);
@@ -190,6 +189,7 @@ class WhixyParser: public antlr4::Parser {
     class CaseStmtBlockContext;
     class LoopStmtContext;
     class ComptStmtContext;
+    class UnreachableContext;
     class DeferStmtContext;
     class ErrdeferStmtContext;
     class ExprSepContext;
@@ -210,12 +210,10 @@ class WhixyParser: public antlr4::Parser {
     class AtomContext;
     class TokenContext;
     class BlockExprContext;
-    class TypeExprContext;
+    class StructExprContext;
     class TupleExprContext;
     class OBracketContext;
     class CBracketContext;
-    class OAngleBracketContext;
-    class CAngleBracketContext;
     class DollarParenContext;
     class OParenContext;
     class CParenContext;
@@ -267,6 +265,7 @@ class WhixyParser: public antlr4::Parser {
         WhereStmtContext* whereStmt();
         LoopStmtContext* loopStmt();
         ComptStmtContext* comptStmt();
+        UnreachableContext* unreachable();
         DeferStmtContext* deferStmt();
         ErrdeferStmtContext* errdeferStmt();
 
@@ -723,6 +722,18 @@ class WhixyParser: public antlr4::Parser {
 
     ComptStmtContext* comptStmt();
 
+    class UnreachableContext: public antlr4::ParserRuleContext {
+      public:
+        UnreachableContext(antlr4::ParserRuleContext* parent, size_t invokingState);
+        virtual size_t getRuleIndex() const override;
+        antlr4::tree::TerminalNode* UNREACHABLE();
+
+        virtual void enterRule(antlr4::tree::ParseTreeListener* listener) override;
+        virtual void exitRule(antlr4::tree::ParseTreeListener* listener) override;
+    };
+
+    UnreachableContext* unreachable();
+
     class DeferStmtContext: public antlr4::ParserRuleContext {
       public:
         DeferStmtContext(antlr4::ParserRuleContext* parent, size_t invokingState);
@@ -775,6 +786,7 @@ class WhixyParser: public antlr4::Parser {
         WhereExprContext* whereExpr();
         LoopExprContext* loopExpr();
         ComptExprContext* comptExpr();
+        UnreachableContext* unreachable();
         RoutineExprContext* routineExpr();
         StringContext* string();
         AtomContext* atom();
@@ -1023,7 +1035,7 @@ class WhixyParser: public antlr4::Parser {
       public:
         InequalityOpContext(BinaryOpContext* ctx);
 
-        antlr4::tree::TerminalNode* EXCLAMATION_EQUAL();
+        antlr4::tree::TerminalNode* TILDE_EQUAL();
         virtual void enterRule(antlr4::tree::ParseTreeListener* listener) override;
         virtual void exitRule(antlr4::tree::ParseTreeListener* listener) override;
     };
@@ -1063,6 +1075,15 @@ class WhixyParser: public antlr4::Parser {
         virtual void exitRule(antlr4::tree::ParseTreeListener* listener) override;
     };
 
+    class TryOpContext: public PostOpContext {
+      public:
+        TryOpContext(PostOpContext* ctx);
+
+        antlr4::tree::TerminalNode* EXCLAMATION();
+        virtual void enterRule(antlr4::tree::ParseTreeListener* listener) override;
+        virtual void exitRule(antlr4::tree::ParseTreeListener* listener) override;
+    };
+
     class AccessLengthOpContext: public PostOpContext {
       public:
         AccessLengthOpContext(PostOpContext* ctx);
@@ -1096,7 +1117,7 @@ class WhixyParser: public antlr4::Parser {
       public:
         UnwrapOptionalOpContext(PostOpContext* ctx);
 
-        antlr4::tree::TerminalNode* DOT_QUESTION();
+        antlr4::tree::TerminalNode* QUESTION();
         virtual void enterRule(antlr4::tree::ParseTreeListener* listener) override;
         virtual void exitRule(antlr4::tree::ParseTreeListener* listener) override;
     };
@@ -1159,7 +1180,7 @@ class WhixyParser: public antlr4::Parser {
       public:
         NotOpContext(PreOpContext* ctx);
 
-        antlr4::tree::TerminalNode* EXCLAMATION();
+        antlr4::tree::TerminalNode* TILDE();
         virtual void enterRule(antlr4::tree::ParseTreeListener* listener) override;
         virtual void exitRule(antlr4::tree::ParseTreeListener* listener) override;
     };
@@ -1360,7 +1381,7 @@ class WhixyParser: public antlr4::Parser {
         virtual size_t getRuleIndex() const override;
         TokenContext* token();
         BlockExprContext* blockExpr();
-        TypeExprContext* typeExpr();
+        StructExprContext* structExpr();
         TupleExprContext* tupleExpr();
 
         virtual void enterRule(antlr4::tree::ParseTreeListener* listener) override;
@@ -1399,9 +1420,9 @@ class WhixyParser: public antlr4::Parser {
 
     BlockExprContext* blockExpr();
 
-    class TypeExprContext: public antlr4::ParserRuleContext {
+    class StructExprContext: public antlr4::ParserRuleContext {
       public:
-        TypeExprContext(antlr4::ParserRuleContext* parent, size_t invokingState);
+        StructExprContext(antlr4::ParserRuleContext* parent, size_t invokingState);
         virtual size_t getRuleIndex() const override;
         OBraceContext* oBrace();
         CBraceContext* cBrace();
@@ -1414,7 +1435,7 @@ class WhixyParser: public antlr4::Parser {
         virtual void exitRule(antlr4::tree::ParseTreeListener* listener) override;
     };
 
-    TypeExprContext* typeExpr();
+    StructExprContext* structExpr();
 
     class TupleExprContext: public antlr4::ParserRuleContext {
       public:
@@ -1458,32 +1479,6 @@ class WhixyParser: public antlr4::Parser {
     };
 
     CBracketContext* cBracket();
-
-    class OAngleBracketContext: public antlr4::ParserRuleContext {
-      public:
-        OAngleBracketContext(antlr4::ParserRuleContext* parent, size_t invokingState);
-        virtual size_t getRuleIndex() const override;
-        antlr4::tree::TerminalNode* LESSTHAN_OPENBRACKET();
-        antlr4::tree::TerminalNode* NEWLINE();
-
-        virtual void enterRule(antlr4::tree::ParseTreeListener* listener) override;
-        virtual void exitRule(antlr4::tree::ParseTreeListener* listener) override;
-    };
-
-    OAngleBracketContext* oAngleBracket();
-
-    class CAngleBracketContext: public antlr4::ParserRuleContext {
-      public:
-        CAngleBracketContext(antlr4::ParserRuleContext* parent, size_t invokingState);
-        virtual size_t getRuleIndex() const override;
-        antlr4::tree::TerminalNode* CLOSEDBRACKET_GREATERTHAN();
-        antlr4::tree::TerminalNode* NEWLINE();
-
-        virtual void enterRule(antlr4::tree::ParseTreeListener* listener) override;
-        virtual void exitRule(antlr4::tree::ParseTreeListener* listener) override;
-    };
-
-    CAngleBracketContext* cAngleBracket();
 
     class DollarParenContext: public antlr4::ParserRuleContext {
       public:
