@@ -300,15 +300,6 @@ class WhixyParserBaseListener: public WhixyParserListener {
     virtual void enterTupleExpr(WhixyParser::TupleExprContext* /*ctx*/) override {}
     virtual void exitTupleExpr(WhixyParser::TupleExprContext* /*ctx*/) override {}
 
-    virtual void enterOBracket(WhixyParser::OBracketContext* /*ctx*/) override {}
-    virtual void exitOBracket(WhixyParser::OBracketContext* /*ctx*/) override {}
-
-    virtual void enterCBracket(WhixyParser::CBracketContext* /*ctx*/) override {}
-    virtual void exitCBracket(WhixyParser::CBracketContext* /*ctx*/) override {}
-
-    virtual void enterDollarParen(WhixyParser::DollarParenContext* /*ctx*/) override {}
-    virtual void exitDollarParen(WhixyParser::DollarParenContext* /*ctx*/) override {}
-
     virtual void enterOParen(WhixyParser::OParenContext* /*ctx*/) override {}
     virtual void exitOParen(WhixyParser::OParenContext* /*ctx*/) override {}
 

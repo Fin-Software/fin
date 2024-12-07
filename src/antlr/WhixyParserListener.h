@@ -298,15 +298,6 @@ class WhixyParserListener: public antlr4::tree::ParseTreeListener {
     virtual void enterTupleExpr(WhixyParser::TupleExprContext* ctx) = 0;
     virtual void exitTupleExpr(WhixyParser::TupleExprContext* ctx) = 0;
 
-    virtual void enterOBracket(WhixyParser::OBracketContext* ctx) = 0;
-    virtual void exitOBracket(WhixyParser::OBracketContext* ctx) = 0;
-
-    virtual void enterCBracket(WhixyParser::CBracketContext* ctx) = 0;
-    virtual void exitCBracket(WhixyParser::CBracketContext* ctx) = 0;
-
-    virtual void enterDollarParen(WhixyParser::DollarParenContext* ctx) = 0;
-    virtual void exitDollarParen(WhixyParser::DollarParenContext* ctx) = 0;
-
     virtual void enterOParen(WhixyParser::OParenContext* ctx) = 0;
     virtual void exitOParen(WhixyParser::OParenContext* ctx) = 0;
 

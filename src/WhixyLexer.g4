@@ -11,32 +11,28 @@ lexer grammar WhixyLexer;
 
 // TODO: Tokens are to be reordered to maximize lexing speed of std, barring overshadowing other rules.
 
-DOUBLEQUOTESTRING: '"' ('\\"' | .)*? '"'; // NB: separate tokens saves work
-BACKTICKSTRING:    '`' ('\\`' | .)*? '`'; // NB: separate tokens saves work
-DOCCOMMENT:        '###' ~[\r\n]*;
-COMMENT:           '#' ~[\r\n]* -> channel(HIDDEN);
-RUNE:              '\'' ('\\\'' | .) '\'';
-WHITESPACE:        [ \t]+ -> channel(HIDDEN);
+DOUBLEQUOTESTRING: '"' ('\\"' | .)*? '"';           // NB: separate tokens saves work
+BACKTICKSTRING:    '`' ('\\`' | .)*? '`';           // NB: separate tokens saves work
+DOCCOMMENT:        '###' ~[\r\n]*;                  //
+COMMENT:           '#' ~[\r\n]* -> channel(HIDDEN); //
+RUNE:              '\'' ('\\\'' | .) '\'';          //
+NEWLINE:           [\r\n]+;                         // statement/expression separator or whitespace (-2nd)
+WHITESPACE:        [ \t]+ -> channel(HIDDEN);       //
 
 // SORTED ^^
 
-COMMA:                  ',';  // expression separator
-SEMICOLON:              ';';  // statement separator
-DOLLAR_OPENPARENTHESIS: '$('; //
-OPENPARENTHESIS:        '(';  // open group expression
-CLOSEDPARENTHESIS:      ')';  // close group expression
-OPENBRACE:              '{';  // open type expression
-CLOSEDBRACE:            '}';  // close type expression
-OPENBRACKET:            '[';  // open indexing expression
-CLOSEDBRACKET:          ']';  // close indexing expression
-
-DOT_TYPE:      '.type'; // postfix op: access comptime type
-DOT_LEN:       '.len';  // postfix op: access length
-DOT_ASTERISK:  '.*';    // postfix op: dereference pointer 
-DOT_AMPERSAND: '.&';    // postfix op: access address-of
-QUESTION:      '?';     // postfix op: explicitly unwrap optional
-EXCLAMATION:   '!';     // infix op: logical NOT; bitwise NOT (after EXCLAMATION...)
-DOT:           '.';     // postfix op: access field (after DOT...)
+DOT:               '.'; // postfix op: access field (after DOT...)
+COMMA:             ','; // expression separator
+SEMICOLON:         ';'; // statement separator
+OPENPARENTHESIS:   '('; // open group expression
+CLOSEDPARENTHESIS: ')'; // close group expression
+OPENBRACE:         '{'; // open type expression
+CLOSEDBRACE:       '}'; // close type expression
+OPENBRACKET:       '['; // open indexing expression
+CLOSEDBRACKET:     ']'; // close indexing expression
+EXCLAMATION:       '!'; // infix op: logical NOT; bitwise NOT (after EXCLAMATION...)
+DOLLAR:            '$'; //
+QUESTION:          '?'; // postfix op: explicitly unwrap optional
 
 GREATERTHAN_GREATERTHAN_PERCENT_EQUAL: '>>%='; // combined assignment: rotr
 GREATERTHAN_GREATERTHAN_PERCENT:       '>>%';  //
@@ -79,6 +75,8 @@ EQUAL:                                 '=';    // infix op: assign type instance
 PIPE_EQUAL:                            '|=';   // combined assignment: bitwise OR
 PIPE:                                  '|';    // infix op: logical OR; bitwise OR; routine overloading (after PIPE...)
 
+TYPE:        'type';        // postfix op: access comptime type
+LEN:         'len';         // postfix op: access length
 THIS:        'this';        // immediately encapsulating type directive
 AUTO:        'auto';        // type inferrence directive
 MUT:         'mut';         // value mutability modifier
@@ -114,5 +112,4 @@ AS:          'as';          // coercion operator
 
 // SORTED vv
 
-NEWLINE: [\r\n]+; // statement/expression separator or whitespace (-2nd)
-TOKEN:   .+?;     // tokens to be parsed during AST semantic analysis (-1st)
+TOKEN: .+?; // tokens to be parsed during AST semantic analysis (-1st)

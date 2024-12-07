@@ -59,8 +59,8 @@ assignOp
 call: atom expr;
 
 blockStmt
-    : oParen (stmt (stmtSep stmt)*)? cParen      # funcBlockStmt
-    | dollarParen (stmt (stmtSep stmt)*)? cParen # procBlockStmt;
+    : oParen (stmt (stmtSep stmt)*)? cParen                                   # funcBlockStmt
+    | NEWLINE? DOLLAR OPENPARENTHESIS NEWLINE? (stmt (stmtSep stmt)*)? cParen # procBlockStmt;
 
 routineStmt
     : token atom atom blockStmt        # plainRoutineStmt
@@ -137,14 +137,14 @@ binaryOp
 
 postExpr: atom postOp;
 postOp
-    : DOT atom               # accessMemberOp
-    | oBracket expr cBracket # accessIndexOp
-    | DOT_TYPE               # accessTypeOp
-    | DOT_LEN                # accessLengthOp
-    | DOT_ASTERISK           # dereferencePointerOp
-    | DOT_AMPERSAND          # addressOfOp
-    | QUESTION               # unwrapOptionalOp
-    | EXCLAMATION            # tryOp;
+    : DOT atom                                         # accessMemberOp
+    | OPENBRACKET NEWLINE? expr NEWLINE? CLOSEDBRACKET # accessIndexOp
+    | DOT TYPE                                         # accessTypeOp
+    | DOT LEN                                          # accessLengthOp
+    | DOT ASTERISK                                     # dereferencePointerOp
+    | DOT AMPERSAND                                    # addressOfOp
+    | QUESTION                                         # unwrapOptionalOp
+    | EXCLAMATION                                      # tryOp;
 
 preExpr: preOp atom;
 preOp:   TILDE # notOp | MINUS # negateOp;
@@ -178,12 +178,8 @@ structExpr: oBrace (field (exprSep field)*)? cBrace;
 
 tupleExpr: oParen (expr (exprSep expr)*)? cParen;
 
-// ID NL?; NL? ID
-oBracket: OPENBRACKET NEWLINE?;
-cBracket: NEWLINE? CLOSEDBRACKET;
 // NL? ID NL?; NL? ID
-dollarParen: NEWLINE? DOLLAR_OPENPARENTHESIS NEWLINE?;
-oParen:      NEWLINE? OPENPARENTHESIS NEWLINE?;
-cParen:      NEWLINE? CLOSEDPARENTHESIS;
-oBrace:      NEWLINE? OPENBRACE NEWLINE?;
-cBrace:      NEWLINE? CLOSEDBRACE;
+oParen: NEWLINE? OPENPARENTHESIS NEWLINE?;
+cParen: NEWLINE? CLOSEDPARENTHESIS;
+oBrace: NEWLINE? OPENBRACE NEWLINE?;
+cBrace: NEWLINE? CLOSEDBRACE;
