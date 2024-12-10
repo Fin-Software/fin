@@ -27,11 +27,10 @@ pub fn build(b: *Build) !void {
 
     // Compile external libraries for statically linking to.
     if (b.build_root.handle.openDir("deps", .{}) == error.FileNotFound) {
-        // Certify the integrity of external dependency sources.
-        const hash_vendor = executable(b, "hash", "hash.zig", target, .ReleaseFast);
+        const hash_vendor = executable(b, "hash-vendor", "hash.zig", target, .ReleaseFast);
         const run_hash_vendor = b.addRunArtifact(hash_vendor);
         run_hash_vendor.addArg("vendor");
-        run_hash_vendor.addArg("1aa68a194f59ca44de3f0a08ab077ea6970e041210357d3e5cb1c5c8796e1d17");
+        run_hash_vendor.addArg("71e5a4da0eb3d7519d8f752ab04e75c282c8e81885a158c4944912f5cd7fda5d");
         b.step("hash-vendor", "").dependOn(&run_hash_vendor.step); // Enable `zig build hash-vendor`
 
         const deps_step = deps_step: {

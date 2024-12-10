@@ -3,4 +3,4 @@
 .zig-cache/
 zig-cache/
 zig-out/
-deps/
+.build/
