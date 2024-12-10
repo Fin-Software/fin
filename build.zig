@@ -28,14 +28,10 @@ pub fn build(b: *Build) !void {
     // Compile external libraries for statically linking to.
     if (b.build_root.handle.openDir("deps", .{}) == error.FileNotFound) {
         // Certify the integrity of external dependency sources.
-        const hash_vendor = b.addTest(.{ .root_source_file = b.path("hash.zig"), .optimize = .ReleaseFast, .target = target });
+        const hash_vendor = executable(b, "hash", "hash.zig", target, .ReleaseFast);
         const run_hash_vendor = b.addRunArtifact(hash_vendor);
-        {
-            var buf: [fs.max_path_bytes]u8 = undefined;
-            const cwd_path = try b.build_root.handle.realpath("vendor", buf[0..]);
-            run_hash_vendor.addArg(cwd_path);
-            run_hash_vendor.addArg("bab0fa6ecb28a9ca41d88ebde566c26325e0115c42a1bd79c5bb30f6d741a265");
-        }
+        run_hash_vendor.addArg("vendor");
+        run_hash_vendor.addArg("1aa68a194f59ca44de3f0a08ab077ea6970e041210357d3e5cb1c5c8796e1d17");
         b.step("hash-vendor", "").dependOn(&run_hash_vendor.step); // Enable `zig build hash-vendor`
 
         const deps_step = deps_step: {
@@ -56,18 +52,16 @@ pub fn build(b: *Build) !void {
         deps_step.step.dependOn(&run_hash_vendor.step);
         whixy.step.dependOn(&deps_step.step);
     }
-    {
-        // Dependencies
-        const cova = b.dependency("cova", .{ .target = target, .optimize = optimize });
-        whixy.root_module.addImport("cova", cova.module("cova"));
-    }
-    {
-        // Enable `zig build run`
-        const run_cmd = b.addRunArtifact(whixy);
-        run_cmd.step.dependOn(b.getInstallStep());
-        if (b.args) |args| run_cmd.addArgs(args);
-        b.step("run", "").dependOn(&run_cmd.step);
-    }
+
+    // Dependencies
+    const cova = b.dependency("cova", .{ .target = target, .optimize = optimize });
+    whixy.root_module.addImport("cova", cova.module("cova"));
+
+    // Enable `zig build run`
+    const run_cmd = b.addRunArtifact(whixy);
+    run_cmd.step.dependOn(b.getInstallStep());
+    if (b.args) |args| run_cmd.addArgs(args);
+    b.step("run", "").dependOn(&run_cmd.step);
 
     // Enable `zig build test`
     const unit_tests = b.addTest(.{ .root_source_file = b.path("src/main.zig"), .optimize = optimize, .target = target });

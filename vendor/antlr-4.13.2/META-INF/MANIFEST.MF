@@ -1,0 +1,8 @@
+Manifest-Version: 1.0
+Created-By: Maven Jar Plugin 3.2.0
+Build-Jdk-Spec: 11
+Implementation-Title: ANTLR 4 Tool
+Implementation-Version: 4.13.2
+Implementation-Vendor: ANTLR
+Main-Class: org.antlr.v4.Tool
+
