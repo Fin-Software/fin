@@ -10,11 +10,11 @@
 
 llvm()
 {
-	start llvm f750c540fb1aea578da42dba4feed3bd5440d06a9174456d777dea6d3d68eb1f
+	start llvm
 
-	semv=19.1.4 deps="clang cmake compiler-rt libunwind lld llvm openmp polly"
+	semv=19.1.5 deps="clang cmake compiler-rt libunwind lld llvm openmp polly"
 	url="https://github.com/llvm/llvm-project/releases/download/llvmorg-$semv"; base="llvm-project-$semv.src.tar.xz"
-	dl ca26803168af5ee675bde53177382e3aca45dba5f01884933690500af9b71d12
+	dl 664048444577925c129c7299793389e61ba50da27ffd612549e8435d6be84416
 	dec e -so "$srcs/$base" | tar -xf - --strip-components=1 -C "$pkg" $(printf "llvm-project-$semv.src/%s\n" $deps)
 	(
 		cd "$pkg"; for dep in $deps; do mv "$dep" "$dep-$semv"; done
@@ -26,7 +26,7 @@ llvm()
 }
 common()
 {
-	start common 022b2ef2bac36d6da3120a3bd0350139fb95ef1552886f8ce0df19b7b1ba717a
+	start common
 
 	semv=4.13.2; base="antlr-$semv-complete.jar"; url=https://www.antlr.org/download
 	{
@@ -56,9 +56,7 @@ common()
 start()
 {
 	trap clean INT HUP TERM EXIT; . ../scripts/vendor.sh # Borrows $@
-	name="$1" hash="$2"; pkg=/tmp/"$name" tar=/tmp/"$name".tar tzst=/tmp/"$name".tzst
-	[ -f "$name".tzst ] && [ "$(zstd -cd "$name".tzst | b3sum)" = "$hash  -" ] \
-		&& { zstd -lv "$name".tzst; exit 0; } || { rm -rf "$pkg"; install "$pkg"; }
+	name="$1"; pkg=/tmp/"$name"; rm -rf "$pkg"; install "$pkg"
 }
 dl()
 {
