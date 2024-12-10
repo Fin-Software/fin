@@ -143,9 +143,9 @@ class WhixyParser: public antlr4::Parser {
         RuleString = 33,
         RuleAtom = 34,
         RuleToken = 35,
-        RuleBlockExpr = 36,
-        RuleStructExpr = 37,
-        RuleTupleExpr = 38,
+        RuleTupleExpr = 36,
+        RuleBlockExpr = 37,
+        RuleStructExpr = 38,
         RuleOParen = 39,
         RuleCParen = 40,
         RuleOBrace = 41,
@@ -204,9 +204,9 @@ class WhixyParser: public antlr4::Parser {
     class StringContext;
     class AtomContext;
     class TokenContext;
+    class TupleExprContext;
     class BlockExprContext;
     class StructExprContext;
-    class TupleExprContext;
     class OParenContext;
     class CParenContext;
     class OBraceContext;
@@ -549,9 +549,9 @@ class WhixyParser: public antlr4::Parser {
       public:
         PlainRoutineStmtContext(RoutineStmtContext* ctx);
 
+        AtomContext* atom();
         TokenContext* token();
-        std::vector<AtomContext*> atom();
-        AtomContext* atom(size_t i);
+        StructExprContext* structExpr();
         BlockStmtContext* blockStmt();
         virtual void enterRule(antlr4::tree::ParseTreeListener* listener) override;
         virtual void exitRule(antlr4::tree::ParseTreeListener* listener) override;
@@ -562,9 +562,9 @@ class WhixyParser: public antlr4::Parser {
         InlineRoutineStmtContext(RoutineStmtContext* ctx);
 
         antlr4::tree::TerminalNode* INLINE();
+        AtomContext* atom();
         TokenContext* token();
-        std::vector<AtomContext*> atom();
-        AtomContext* atom(size_t i);
+        StructExprContext* structExpr();
         BlockStmtContext* blockStmt();
         virtual void enterRule(antlr4::tree::ParseTreeListener* listener) override;
         virtual void exitRule(antlr4::tree::ParseTreeListener* listener) override;
@@ -1325,8 +1325,8 @@ class WhixyParser: public antlr4::Parser {
         InlineRoutineExprContext(RoutineExprContext* ctx);
 
         antlr4::tree::TerminalNode* INLINE();
-        std::vector<AtomContext*> atom();
-        AtomContext* atom(size_t i);
+        AtomContext* atom();
+        StructExprContext* structExpr();
         BlockStmtContext* blockStmt();
         virtual void enterRule(antlr4::tree::ParseTreeListener* listener) override;
         virtual void exitRule(antlr4::tree::ParseTreeListener* listener) override;
@@ -1336,8 +1336,8 @@ class WhixyParser: public antlr4::Parser {
       public:
         PlainRoutineExprContext(RoutineExprContext* ctx);
 
-        std::vector<AtomContext*> atom();
-        AtomContext* atom(size_t i);
+        AtomContext* atom();
+        StructExprContext* structExpr();
         BlockStmtContext* blockStmt();
         virtual void enterRule(antlr4::tree::ParseTreeListener* listener) override;
         virtual void exitRule(antlr4::tree::ParseTreeListener* listener) override;
@@ -1381,9 +1381,9 @@ class WhixyParser: public antlr4::Parser {
         AtomContext(antlr4::ParserRuleContext* parent, size_t invokingState);
         virtual size_t getRuleIndex() const override;
         TokenContext* token();
+        TupleExprContext* tupleExpr();
         BlockExprContext* blockExpr();
         StructExprContext* structExpr();
-        TupleExprContext* tupleExpr();
 
         virtual void enterRule(antlr4::tree::ParseTreeListener* listener) override;
         virtual void exitRule(antlr4::tree::ParseTreeListener* listener) override;
@@ -1402,6 +1402,23 @@ class WhixyParser: public antlr4::Parser {
     };
 
     TokenContext* token();
+
+    class TupleExprContext: public antlr4::ParserRuleContext {
+      public:
+        TupleExprContext(antlr4::ParserRuleContext* parent, size_t invokingState);
+        virtual size_t getRuleIndex() const override;
+        OParenContext* oParen();
+        CParenContext* cParen();
+        std::vector<ExprContext*> expr();
+        ExprContext* expr(size_t i);
+        std::vector<ExprSepContext*> exprSep();
+        ExprSepContext* exprSep(size_t i);
+
+        virtual void enterRule(antlr4::tree::ParseTreeListener* listener) override;
+        virtual void exitRule(antlr4::tree::ParseTreeListener* listener) override;
+    };
+
+    TupleExprContext* tupleExpr();
 
     class BlockExprContext: public antlr4::ParserRuleContext {
       public:
@@ -1437,23 +1454,6 @@ class WhixyParser: public antlr4::Parser {
     };
 
     StructExprContext* structExpr();
-
-    class TupleExprContext: public antlr4::ParserRuleContext {
-      public:
-        TupleExprContext(antlr4::ParserRuleContext* parent, size_t invokingState);
-        virtual size_t getRuleIndex() const override;
-        OParenContext* oParen();
-        CParenContext* cParen();
-        std::vector<ExprContext*> expr();
-        ExprContext* expr(size_t i);
-        std::vector<ExprSepContext*> exprSep();
-        ExprSepContext* exprSep(size_t i);
-
-        virtual void enterRule(antlr4::tree::ParseTreeListener* listener) override;
-        virtual void exitRule(antlr4::tree::ParseTreeListener* listener) override;
-    };
-
-    TupleExprContext* tupleExpr();
 
     class OParenContext: public antlr4::ParserRuleContext {
       public:

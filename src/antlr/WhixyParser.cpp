@@ -58,7 +58,7 @@ void whixyparserParserInitialize()
                                  "expr",      "binaryExpr",  "binaryOp",     "postExpr",      "postOp",
                                  "preExpr",   "preOp",       "ifExpr",       "whereExpr",     "caseExprBlock",
                                  "loopExpr",  "comptExpr",   "routineExpr",  "string",        "atom",
-                                 "token",     "blockExpr",   "structExpr",   "tupleExpr",     "oParen",
+                                 "token",     "tupleExpr",   "blockExpr",    "structExpr",    "oParen",
                                  "cParen",    "oBrace",      "cBrace"},
         std::vector<std::string>{"",           "",           "",         "",        "",          "",
                                  "",           "",           "'.'",      "','",     "';'",       "'('",
@@ -222,9 +222,9 @@ void whixyparserParserInitialize()
         30,  1,   31,  1,   31,  1,   31,  1,   32,  1,   32,  1,   32,  1,   32,  1,   32,  1,   32,  1,   32,  1,
         32,  1,   32,  3,   32,  466, 8,   32,  1,   33,  1,   33,  3,   33,  470, 8,   33,  1,   34,  1,   34,  1,
         34,  1,   34,  3,   34,  476, 8,   34,  1,   35,  1,   35,  1,   36,  1,   36,  1,   36,  1,   36,  1,   36,
-        5,   36,  485, 8,   36,  10,  36,  12,  36,  488, 9,   36,  1,   36,  1,   36,  3,   36,  492, 8,   36,  1,
-        36,  3,   36,  495, 8,   36,  1,   36,  1,   36,  1,   37,  1,   37,  1,   37,  1,   37,  1,   37,  5,   37,
-        504, 8,   37,  10,  37,  12,  37,  507, 9,   37,  3,   37,  509, 8,   37,  1,   37,  1,   37,  1,   38,  1,
+        5,   36,  485, 8,   36,  10,  36,  12,  36,  488, 9,   36,  3,   36,  490, 8,   36,  1,   36,  1,   36,  1,
+        37,  1,   37,  1,   37,  1,   37,  1,   37,  5,   37,  499, 8,   37,  10,  37,  12,  37,  502, 9,   37,  1,
+        37,  1,   37,  3,   37,  506, 8,   37,  1,   37,  3,   37,  509, 8,   37,  1,   37,  1,   37,  1,   38,  1,
         38,  1,   38,  1,   38,  1,   38,  5,   38,  518, 8,   38,  10,  38,  12,  38,  521, 9,   38,  3,   38,  523,
         8,   38,  1,   38,  1,   38,  1,   39,  3,   39,  528, 8,   39,  1,   39,  1,   39,  3,   39,  532, 8,   39,
         1,   40,  3,   40,  535, 8,   40,  1,   40,  1,   40,  1,   41,  3,   41,  540, 8,   41,  1,   41,  1,   41,
@@ -241,7 +241,7 @@ void whixyparserParserInitialize()
         0,   0,   0,   48,  385, 1,   0,   0,   0,   50,  387, 1,   0,   0,   0,   52,  392, 1,   0,   0,   0,   54,
         394, 1,   0,   0,   0,   56,  410, 1,   0,   0,   0,   58,  415, 1,   0,   0,   0,   60,  451, 1,   0,   0,
         0,   62,  453, 1,   0,   0,   0,   64,  465, 1,   0,   0,   0,   66,  469, 1,   0,   0,   0,   68,  475, 1,
-        0,   0,   0,   70,  477, 1,   0,   0,   0,   72,  479, 1,   0,   0,   0,   74,  498, 1,   0,   0,   0,   76,
+        0,   0,   0,   70,  477, 1,   0,   0,   0,   72,  479, 1,   0,   0,   0,   74,  493, 1,   0,   0,   0,   76,
         512, 1,   0,   0,   0,   78,  527, 1,   0,   0,   0,   80,  534, 1,   0,   0,   0,   82,  539, 1,   0,   0,
         0,   84,  546, 1,   0,   0,   0,   86,  88,  5,   6,   0,   0,   87,  86,  1,   0,   0,   0,   87,  88,  1,
         0,   0,   0,   88,  89,  1,   0,   0,   0,   89,  95,  3,   4,   2,   0,   90,  91,  3,   2,   1,   0,   91,
@@ -292,9 +292,9 @@ void whixyparserParserInitialize()
         0,   0,   0,   210, 213, 1,   0,   0,   0,   211, 209, 1,   0,   0,   0,   211, 212, 1,   0,   0,   0,   212,
         215, 1,   0,   0,   0,   213, 211, 1,   0,   0,   0,   214, 205, 1,   0,   0,   0,   214, 215, 1,   0,   0,
         0,   215, 216, 1,   0,   0,   0,   216, 218, 3,   80,  40,  0,   217, 183, 1,   0,   0,   0,   217, 198, 1,
-        0,   0,   0,   218, 15,  1,   0,   0,   0,   219, 220, 3,   70,  35,  0,   220, 221, 3,   68,  34,  0,   221,
-        222, 3,   68,  34,  0,   222, 223, 3,   14,  7,   0,   223, 231, 1,   0,   0,   0,   224, 225, 5,   65,  0,
-        0,   225, 226, 3,   70,  35,  0,   226, 227, 3,   68,  34,  0,   227, 228, 3,   68,  34,  0,   228, 229, 3,
+        0,   0,   0,   218, 15,  1,   0,   0,   0,   219, 220, 3,   68,  34,  0,   220, 221, 3,   70,  35,  0,   221,
+        222, 3,   76,  38,  0,   222, 223, 3,   14,  7,   0,   223, 231, 1,   0,   0,   0,   224, 225, 5,   65,  0,
+        0,   225, 226, 3,   68,  34,  0,   226, 227, 3,   70,  35,  0,   227, 228, 3,   76,  38,  0,   228, 229, 3,
         14,  7,   0,   229, 231, 1,   0,   0,   0,   230, 219, 1,   0,   0,   0,   230, 224, 1,   0,   0,   0,   231,
         17,  1,   0,   0,   0,   232, 233, 5,   66,  0,   0,   233, 234, 3,   40,  20,  0,   234, 19,  1,   0,   0,
         0,   235, 236, 5,   72,  0,   0,   236, 237, 3,   68,  34,  0,   237, 244, 3,   4,   2,   0,   238, 239, 5,
@@ -377,29 +377,29 @@ void whixyparserParserInitialize()
         447, 1,   0,   0,   0,   448, 449, 1,   0,   0,   0,   449, 450, 1,   0,   0,   0,   450, 452, 3,   40,  20,
         0,   451, 417, 1,   0,   0,   0,   451, 426, 1,   0,   0,   0,   451, 435, 1,   0,   0,   0,   451, 443, 1,
         0,   0,   0,   452, 61,  1,   0,   0,   0,   453, 454, 5,   86,  0,   0,   454, 455, 3,   40,  20,  0,   455,
-        63,  1,   0,   0,   0,   456, 457, 3,   68,  34,  0,   457, 458, 3,   68,  34,  0,   458, 459, 3,   14,  7,
+        63,  1,   0,   0,   0,   456, 457, 3,   68,  34,  0,   457, 458, 3,   76,  38,  0,   458, 459, 3,   14,  7,
         0,   459, 466, 1,   0,   0,   0,   460, 461, 5,   65,  0,   0,   461, 462, 3,   68,  34,  0,   462, 463, 3,
-        68,  34,  0,   463, 464, 3,   14,  7,   0,   464, 466, 1,   0,   0,   0,   465, 456, 1,   0,   0,   0,   465,
+        76,  38,  0,   463, 464, 3,   14,  7,   0,   464, 466, 1,   0,   0,   0,   465, 456, 1,   0,   0,   0,   465,
         460, 1,   0,   0,   0,   466, 65,  1,   0,   0,   0,   467, 470, 5,   1,   0,   0,   468, 470, 5,   2,   0,
         0,   469, 467, 1,   0,   0,   0,   469, 468, 1,   0,   0,   0,   470, 67,  1,   0,   0,   0,   471, 476, 3,
         70,  35,  0,   472, 476, 3,   72,  36,  0,   473, 476, 3,   74,  37,  0,   474, 476, 3,   76,  38,  0,   475,
         471, 1,   0,   0,   0,   475, 472, 1,   0,   0,   0,   475, 473, 1,   0,   0,   0,   475, 474, 1,   0,   0,
-        0,   476, 69,  1,   0,   0,   0,   477, 478, 5,   94,  0,   0,   478, 71,  1,   0,   0,   0,   479, 494, 3,
-        78,  39,  0,   480, 486, 3,   4,   2,   0,   481, 482, 3,   2,   1,   0,   482, 483, 3,   4,   2,   0,   483,
+        0,   476, 69,  1,   0,   0,   0,   477, 478, 5,   94,  0,   0,   478, 71,  1,   0,   0,   0,   479, 489, 3,
+        78,  39,  0,   480, 486, 3,   40,  20,  0,   481, 482, 3,   38,  19,  0,   482, 483, 3,   40,  20,  0,   483,
         485, 1,   0,   0,   0,   484, 481, 1,   0,   0,   0,   485, 488, 1,   0,   0,   0,   486, 484, 1,   0,   0,
-        0,   486, 487, 1,   0,   0,   0,   487, 489, 1,   0,   0,   0,   488, 486, 1,   0,   0,   0,   489, 490, 3,
-        2,   1,   0,   490, 492, 1,   0,   0,   0,   491, 480, 1,   0,   0,   0,   491, 492, 1,   0,   0,   0,   492,
-        493, 1,   0,   0,   0,   493, 495, 3,   40,  20,  0,   494, 491, 1,   0,   0,   0,   494, 495, 1,   0,   0,
-        0,   495, 496, 1,   0,   0,   0,   496, 497, 3,   80,  40,  0,   497, 73,  1,   0,   0,   0,   498, 508, 3,
-        82,  41,  0,   499, 505, 3,   6,   3,   0,   500, 501, 3,   38,  19,  0,   501, 502, 3,   6,   3,   0,   502,
-        504, 1,   0,   0,   0,   503, 500, 1,   0,   0,   0,   504, 507, 1,   0,   0,   0,   505, 503, 1,   0,   0,
-        0,   505, 506, 1,   0,   0,   0,   506, 509, 1,   0,   0,   0,   507, 505, 1,   0,   0,   0,   508, 499, 1,
-        0,   0,   0,   508, 509, 1,   0,   0,   0,   509, 510, 1,   0,   0,   0,   510, 511, 3,   84,  42,  0,   511,
-        75,  1,   0,   0,   0,   512, 522, 3,   78,  39,  0,   513, 519, 3,   40,  20,  0,   514, 515, 3,   38,  19,
-        0,   515, 516, 3,   40,  20,  0,   516, 518, 1,   0,   0,   0,   517, 514, 1,   0,   0,   0,   518, 521, 1,
+        0,   486, 487, 1,   0,   0,   0,   487, 490, 1,   0,   0,   0,   488, 486, 1,   0,   0,   0,   489, 480, 1,
+        0,   0,   0,   489, 490, 1,   0,   0,   0,   490, 491, 1,   0,   0,   0,   491, 492, 3,   80,  40,  0,   492,
+        73,  1,   0,   0,   0,   493, 508, 3,   78,  39,  0,   494, 500, 3,   4,   2,   0,   495, 496, 3,   2,   1,
+        0,   496, 497, 3,   4,   2,   0,   497, 499, 1,   0,   0,   0,   498, 495, 1,   0,   0,   0,   499, 502, 1,
+        0,   0,   0,   500, 498, 1,   0,   0,   0,   500, 501, 1,   0,   0,   0,   501, 503, 1,   0,   0,   0,   502,
+        500, 1,   0,   0,   0,   503, 504, 3,   2,   1,   0,   504, 506, 1,   0,   0,   0,   505, 494, 1,   0,   0,
+        0,   505, 506, 1,   0,   0,   0,   506, 507, 1,   0,   0,   0,   507, 509, 3,   40,  20,  0,   508, 505, 1,
+        0,   0,   0,   508, 509, 1,   0,   0,   0,   509, 510, 1,   0,   0,   0,   510, 511, 3,   80,  40,  0,   511,
+        75,  1,   0,   0,   0,   512, 522, 3,   82,  41,  0,   513, 519, 3,   6,   3,   0,   514, 515, 3,   38,  19,
+        0,   515, 516, 3,   6,   3,   0,   516, 518, 1,   0,   0,   0,   517, 514, 1,   0,   0,   0,   518, 521, 1,
         0,   0,   0,   519, 517, 1,   0,   0,   0,   519, 520, 1,   0,   0,   0,   520, 523, 1,   0,   0,   0,   521,
         519, 1,   0,   0,   0,   522, 513, 1,   0,   0,   0,   522, 523, 1,   0,   0,   0,   523, 524, 1,   0,   0,
-        0,   524, 525, 3,   80,  40,  0,   525, 77,  1,   0,   0,   0,   526, 528, 5,   6,   0,   0,   527, 526, 1,
+        0,   524, 525, 3,   84,  42,  0,   525, 77,  1,   0,   0,   0,   526, 528, 5,   6,   0,   0,   527, 526, 1,
         0,   0,   0,   527, 528, 1,   0,   0,   0,   528, 529, 1,   0,   0,   0,   529, 531, 5,   11,  0,   0,   530,
         532, 5,   6,   0,   0,   531, 530, 1,   0,   0,   0,   531, 532, 1,   0,   0,   0,   532, 79,  1,   0,   0,
         0,   533, 535, 5,   6,   0,   0,   534, 533, 1,   0,   0,   0,   534, 535, 1,   0,   0,   0,   535, 536, 1,
@@ -410,7 +410,7 @@ void whixyparserParserInitialize()
         548, 1,   0,   0,   0,   548, 549, 5,   14,  0,   0,   549, 85,  1,   0,   0,   0,   68,  87,  95,  99,  118,
         124, 129, 133, 136, 143, 148, 152, 155, 157, 178, 190, 193, 198, 203, 211, 214, 217, 230, 244, 249, 263, 266,
         272, 275, 280, 283, 288, 291, 294, 322, 326, 330, 358, 367, 371, 385, 392, 403, 408, 420, 423, 429, 432, 437,
-        440, 445, 448, 451, 465, 469, 475, 486, 491, 494, 505, 508, 519, 522, 527, 531, 534, 539, 543, 546
+        440, 445, 448, 451, 465, 469, 475, 486, 489, 500, 505, 508, 519, 522, 527, 531, 534, 539, 543, 546
     };
     staticData->serializedATN = antlr4::atn::SerializedATNView(
         serializedATNSegment, sizeof(serializedATNSegment) / sizeof(serializedATNSegment[0])
@@ -1915,19 +1915,19 @@ void WhixyParser::RoutineStmtContext::copyFrom(RoutineStmtContext* ctx) { Parser
 
 //----------------- PlainRoutineStmtContext ------------------------------------------------------------------
 
+WhixyParser::AtomContext* WhixyParser::PlainRoutineStmtContext::atom()
+{
+    return getRuleContext<WhixyParser::AtomContext>(0);
+}
+
 WhixyParser::TokenContext* WhixyParser::PlainRoutineStmtContext::token()
 {
     return getRuleContext<WhixyParser::TokenContext>(0);
 }
 
-std::vector<WhixyParser::AtomContext*> WhixyParser::PlainRoutineStmtContext::atom()
+WhixyParser::StructExprContext* WhixyParser::PlainRoutineStmtContext::structExpr()
 {
-    return getRuleContexts<WhixyParser::AtomContext>();
-}
-
-WhixyParser::AtomContext* WhixyParser::PlainRoutineStmtContext::atom(size_t i)
-{
-    return getRuleContext<WhixyParser::AtomContext>(i);
+    return getRuleContext<WhixyParser::StructExprContext>(0);
 }
 
 WhixyParser::BlockStmtContext* WhixyParser::PlainRoutineStmtContext::blockStmt()
@@ -1951,19 +1951,19 @@ void WhixyParser::PlainRoutineStmtContext::exitRule(tree::ParseTreeListener* lis
 
 tree::TerminalNode* WhixyParser::InlineRoutineStmtContext::INLINE() { return getToken(WhixyParser::INLINE, 0); }
 
+WhixyParser::AtomContext* WhixyParser::InlineRoutineStmtContext::atom()
+{
+    return getRuleContext<WhixyParser::AtomContext>(0);
+}
+
 WhixyParser::TokenContext* WhixyParser::InlineRoutineStmtContext::token()
 {
     return getRuleContext<WhixyParser::TokenContext>(0);
 }
 
-std::vector<WhixyParser::AtomContext*> WhixyParser::InlineRoutineStmtContext::atom()
+WhixyParser::StructExprContext* WhixyParser::InlineRoutineStmtContext::structExpr()
 {
-    return getRuleContexts<WhixyParser::AtomContext>();
-}
-
-WhixyParser::AtomContext* WhixyParser::InlineRoutineStmtContext::atom(size_t i)
-{
-    return getRuleContext<WhixyParser::AtomContext>(i);
+    return getRuleContext<WhixyParser::StructExprContext>(0);
 }
 
 WhixyParser::BlockStmtContext* WhixyParser::InlineRoutineStmtContext::blockStmt()
@@ -2004,15 +2004,18 @@ WhixyParser::RoutineStmtContext* WhixyParser::routineStmt()
         setState(230);
         _errHandler->sync(this);
         switch (_input->LA(1)) {
+        case WhixyParser::NEWLINE:
+        case WhixyParser::OPENPARENTHESIS:
+        case WhixyParser::OPENBRACE:
         case WhixyParser::TOKEN: {
             _localctx = _tracker.createInstance<WhixyParser::PlainRoutineStmtContext>(_localctx);
             enterOuterAlt(_localctx, 1);
             setState(219);
-            token();
+            atom();
             setState(220);
-            atom();
+            token();
             setState(221);
-            atom();
+            structExpr();
             setState(222);
             blockStmt();
             break;
@@ -2024,11 +2027,11 @@ WhixyParser::RoutineStmtContext* WhixyParser::routineStmt()
             setState(224);
             match(WhixyParser::INLINE);
             setState(225);
-            token();
+            atom();
             setState(226);
-            atom();
+            token();
             setState(227);
-            atom();
+            structExpr();
             setState(228);
             blockStmt();
             break;
@@ -5048,14 +5051,14 @@ void WhixyParser::RoutineExprContext::copyFrom(RoutineExprContext* ctx) { Parser
 
 tree::TerminalNode* WhixyParser::InlineRoutineExprContext::INLINE() { return getToken(WhixyParser::INLINE, 0); }
 
-std::vector<WhixyParser::AtomContext*> WhixyParser::InlineRoutineExprContext::atom()
+WhixyParser::AtomContext* WhixyParser::InlineRoutineExprContext::atom()
 {
-    return getRuleContexts<WhixyParser::AtomContext>();
+    return getRuleContext<WhixyParser::AtomContext>(0);
 }
 
-WhixyParser::AtomContext* WhixyParser::InlineRoutineExprContext::atom(size_t i)
+WhixyParser::StructExprContext* WhixyParser::InlineRoutineExprContext::structExpr()
 {
-    return getRuleContext<WhixyParser::AtomContext>(i);
+    return getRuleContext<WhixyParser::StructExprContext>(0);
 }
 
 WhixyParser::BlockStmtContext* WhixyParser::InlineRoutineExprContext::blockStmt()
@@ -5077,14 +5080,14 @@ void WhixyParser::InlineRoutineExprContext::exitRule(tree::ParseTreeListener* li
 }
 //----------------- PlainRoutineExprContext ------------------------------------------------------------------
 
-std::vector<WhixyParser::AtomContext*> WhixyParser::PlainRoutineExprContext::atom()
+WhixyParser::AtomContext* WhixyParser::PlainRoutineExprContext::atom()
 {
-    return getRuleContexts<WhixyParser::AtomContext>();
+    return getRuleContext<WhixyParser::AtomContext>(0);
 }
 
-WhixyParser::AtomContext* WhixyParser::PlainRoutineExprContext::atom(size_t i)
+WhixyParser::StructExprContext* WhixyParser::PlainRoutineExprContext::structExpr()
 {
-    return getRuleContext<WhixyParser::AtomContext>(i);
+    return getRuleContext<WhixyParser::StructExprContext>(0);
 }
 
 WhixyParser::BlockStmtContext* WhixyParser::PlainRoutineExprContext::blockStmt()
@@ -5134,7 +5137,7 @@ WhixyParser::RoutineExprContext* WhixyParser::routineExpr()
             setState(456);
             atom();
             setState(457);
-            atom();
+            structExpr();
             setState(458);
             blockStmt();
             break;
@@ -5148,7 +5151,7 @@ WhixyParser::RoutineExprContext* WhixyParser::routineExpr()
             setState(461);
             atom();
             setState(462);
-            atom();
+            structExpr();
             setState(463);
             blockStmt();
             break;
@@ -5271,6 +5274,11 @@ WhixyParser::AtomContext::AtomContext(ParserRuleContext* parent, size_t invoking
 
 WhixyParser::TokenContext* WhixyParser::AtomContext::token() { return getRuleContext<WhixyParser::TokenContext>(0); }
 
+WhixyParser::TupleExprContext* WhixyParser::AtomContext::tupleExpr()
+{
+    return getRuleContext<WhixyParser::TupleExprContext>(0);
+}
+
 WhixyParser::BlockExprContext* WhixyParser::AtomContext::blockExpr()
 {
     return getRuleContext<WhixyParser::BlockExprContext>(0);
@@ -5279,11 +5287,6 @@ WhixyParser::BlockExprContext* WhixyParser::AtomContext::blockExpr()
 WhixyParser::StructExprContext* WhixyParser::AtomContext::structExpr()
 {
     return getRuleContext<WhixyParser::StructExprContext>(0);
-}
-
-WhixyParser::TupleExprContext* WhixyParser::AtomContext::tupleExpr()
-{
-    return getRuleContext<WhixyParser::TupleExprContext>(0);
 }
 
 size_t WhixyParser::AtomContext::getRuleIndex() const { return WhixyParser::RuleAtom; }
@@ -5331,21 +5334,21 @@ WhixyParser::AtomContext* WhixyParser::atom()
         case 2: {
             enterOuterAlt(_localctx, 2);
             setState(472);
-            blockExpr();
+            tupleExpr();
             break;
         }
 
         case 3: {
             enterOuterAlt(_localctx, 3);
             setState(473);
-            structExpr();
+            blockExpr();
             break;
         }
 
         case 4: {
             enterOuterAlt(_localctx, 4);
             setState(474);
-            tupleExpr();
+            structExpr();
             break;
         }
 
@@ -5414,6 +5417,116 @@ WhixyParser::TokenContext* WhixyParser::token()
     return _localctx;
 }
 
+//----------------- TupleExprContext ------------------------------------------------------------------
+
+WhixyParser::TupleExprContext::TupleExprContext(ParserRuleContext* parent, size_t invokingState)
+    : ParserRuleContext(parent, invokingState)
+{}
+
+WhixyParser::OParenContext* WhixyParser::TupleExprContext::oParen()
+{
+    return getRuleContext<WhixyParser::OParenContext>(0);
+}
+
+WhixyParser::CParenContext* WhixyParser::TupleExprContext::cParen()
+{
+    return getRuleContext<WhixyParser::CParenContext>(0);
+}
+
+std::vector<WhixyParser::ExprContext*> WhixyParser::TupleExprContext::expr()
+{
+    return getRuleContexts<WhixyParser::ExprContext>();
+}
+
+WhixyParser::ExprContext* WhixyParser::TupleExprContext::expr(size_t i)
+{
+    return getRuleContext<WhixyParser::ExprContext>(i);
+}
+
+std::vector<WhixyParser::ExprSepContext*> WhixyParser::TupleExprContext::exprSep()
+{
+    return getRuleContexts<WhixyParser::ExprSepContext>();
+}
+
+WhixyParser::ExprSepContext* WhixyParser::TupleExprContext::exprSep(size_t i)
+{
+    return getRuleContext<WhixyParser::ExprSepContext>(i);
+}
+
+size_t WhixyParser::TupleExprContext::getRuleIndex() const { return WhixyParser::RuleTupleExpr; }
+
+void WhixyParser::TupleExprContext::enterRule(tree::ParseTreeListener* listener)
+{
+    auto parserListener = dynamic_cast<WhixyParserListener*>(listener);
+    if (parserListener != nullptr) parserListener->enterTupleExpr(this);
+}
+
+void WhixyParser::TupleExprContext::exitRule(tree::ParseTreeListener* listener)
+{
+    auto parserListener = dynamic_cast<WhixyParserListener*>(listener);
+    if (parserListener != nullptr) parserListener->exitTupleExpr(this);
+}
+
+WhixyParser::TupleExprContext* WhixyParser::tupleExpr()
+{
+    TupleExprContext* _localctx = _tracker.createInstance<TupleExprContext>(_ctx, getState());
+    enterRule(_localctx, 72, WhixyParser::RuleTupleExpr);
+
+#if __cplusplus > 201703L
+    auto onExit = finally(
+        [=, this]
+        {
+#else
+    auto onExit = finally(
+        [=]
+        {
+#endif
+            exitRule();
+        }
+    );
+    try {
+        size_t alt;
+        enterOuterAlt(_localctx, 1);
+        setState(479);
+        oParen();
+        setState(489);
+        _errHandler->sync(this);
+
+        switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 56, _ctx)) {
+        case 1: {
+            setState(480);
+            expr();
+            setState(486);
+            _errHandler->sync(this);
+            alt = getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 55, _ctx);
+            while (alt != 2 && alt != atn::ATN::INVALID_ALT_NUMBER) {
+                if (alt == 1) {
+                    setState(481);
+                    exprSep();
+                    setState(482);
+                    expr();
+                }
+                setState(488);
+                _errHandler->sync(this);
+                alt = getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 55, _ctx);
+            }
+            break;
+        }
+
+        default: break;
+        }
+        setState(491);
+        cParen();
+
+    } catch (RecognitionException& e) {
+        _errHandler->reportError(this, e);
+        _localctx->exception = std::current_exception();
+        _errHandler->recover(this, _localctx->exception);
+    }
+
+    return _localctx;
+}
+
 //----------------- BlockExprContext ------------------------------------------------------------------
 
 WhixyParser::BlockExprContext::BlockExprContext(ParserRuleContext* parent, size_t invokingState)
@@ -5469,7 +5582,7 @@ void WhixyParser::BlockExprContext::exitRule(tree::ParseTreeListener* listener)
 WhixyParser::BlockExprContext* WhixyParser::blockExpr()
 {
     BlockExprContext* _localctx = _tracker.createInstance<BlockExprContext>(_ctx, getState());
-    enterRule(_localctx, 72, WhixyParser::RuleBlockExpr);
+    enterRule(_localctx, 74, WhixyParser::RuleBlockExpr);
 
 #if __cplusplus > 201703L
     auto onExit = finally(
@@ -5486,49 +5599,49 @@ WhixyParser::BlockExprContext* WhixyParser::blockExpr()
     try {
         size_t alt;
         enterOuterAlt(_localctx, 1);
-        setState(479);
+        setState(493);
         oParen();
-        setState(494);
+        setState(508);
         _errHandler->sync(this);
 
-        switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 57, _ctx)) {
+        switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 59, _ctx)) {
         case 1: {
-            setState(491);
+            setState(505);
             _errHandler->sync(this);
 
-            switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 56, _ctx)) {
+            switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 58, _ctx)) {
             case 1: {
-                setState(480);
+                setState(494);
                 stmt();
-                setState(486);
+                setState(500);
                 _errHandler->sync(this);
-                alt = getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 55, _ctx);
+                alt = getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 57, _ctx);
                 while (alt != 2 && alt != atn::ATN::INVALID_ALT_NUMBER) {
                     if (alt == 1) {
-                        setState(481);
+                        setState(495);
                         stmtSep();
-                        setState(482);
+                        setState(496);
                         stmt();
                     }
-                    setState(488);
+                    setState(502);
                     _errHandler->sync(this);
-                    alt = getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 55, _ctx);
+                    alt = getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 57, _ctx);
                 }
-                setState(489);
+                setState(503);
                 stmtSep();
                 break;
             }
 
             default: break;
             }
-            setState(493);
+            setState(507);
             expr();
             break;
         }
 
         default: break;
         }
-        setState(496);
+        setState(510);
         cParen();
 
     } catch (RecognitionException& e) {
@@ -5593,117 +5706,7 @@ void WhixyParser::StructExprContext::exitRule(tree::ParseTreeListener* listener)
 WhixyParser::StructExprContext* WhixyParser::structExpr()
 {
     StructExprContext* _localctx = _tracker.createInstance<StructExprContext>(_ctx, getState());
-    enterRule(_localctx, 74, WhixyParser::RuleStructExpr);
-
-#if __cplusplus > 201703L
-    auto onExit = finally(
-        [=, this]
-        {
-#else
-    auto onExit = finally(
-        [=]
-        {
-#endif
-            exitRule();
-        }
-    );
-    try {
-        size_t alt;
-        enterOuterAlt(_localctx, 1);
-        setState(498);
-        oBrace();
-        setState(508);
-        _errHandler->sync(this);
-
-        switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 59, _ctx)) {
-        case 1: {
-            setState(499);
-            field();
-            setState(505);
-            _errHandler->sync(this);
-            alt = getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 58, _ctx);
-            while (alt != 2 && alt != atn::ATN::INVALID_ALT_NUMBER) {
-                if (alt == 1) {
-                    setState(500);
-                    exprSep();
-                    setState(501);
-                    field();
-                }
-                setState(507);
-                _errHandler->sync(this);
-                alt = getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 58, _ctx);
-            }
-            break;
-        }
-
-        default: break;
-        }
-        setState(510);
-        cBrace();
-
-    } catch (RecognitionException& e) {
-        _errHandler->reportError(this, e);
-        _localctx->exception = std::current_exception();
-        _errHandler->recover(this, _localctx->exception);
-    }
-
-    return _localctx;
-}
-
-//----------------- TupleExprContext ------------------------------------------------------------------
-
-WhixyParser::TupleExprContext::TupleExprContext(ParserRuleContext* parent, size_t invokingState)
-    : ParserRuleContext(parent, invokingState)
-{}
-
-WhixyParser::OParenContext* WhixyParser::TupleExprContext::oParen()
-{
-    return getRuleContext<WhixyParser::OParenContext>(0);
-}
-
-WhixyParser::CParenContext* WhixyParser::TupleExprContext::cParen()
-{
-    return getRuleContext<WhixyParser::CParenContext>(0);
-}
-
-std::vector<WhixyParser::ExprContext*> WhixyParser::TupleExprContext::expr()
-{
-    return getRuleContexts<WhixyParser::ExprContext>();
-}
-
-WhixyParser::ExprContext* WhixyParser::TupleExprContext::expr(size_t i)
-{
-    return getRuleContext<WhixyParser::ExprContext>(i);
-}
-
-std::vector<WhixyParser::ExprSepContext*> WhixyParser::TupleExprContext::exprSep()
-{
-    return getRuleContexts<WhixyParser::ExprSepContext>();
-}
-
-WhixyParser::ExprSepContext* WhixyParser::TupleExprContext::exprSep(size_t i)
-{
-    return getRuleContext<WhixyParser::ExprSepContext>(i);
-}
-
-size_t WhixyParser::TupleExprContext::getRuleIndex() const { return WhixyParser::RuleTupleExpr; }
-
-void WhixyParser::TupleExprContext::enterRule(tree::ParseTreeListener* listener)
-{
-    auto parserListener = dynamic_cast<WhixyParserListener*>(listener);
-    if (parserListener != nullptr) parserListener->enterTupleExpr(this);
-}
-
-void WhixyParser::TupleExprContext::exitRule(tree::ParseTreeListener* listener)
-{
-    auto parserListener = dynamic_cast<WhixyParserListener*>(listener);
-    if (parserListener != nullptr) parserListener->exitTupleExpr(this);
-}
-
-WhixyParser::TupleExprContext* WhixyParser::tupleExpr()
-{
-    TupleExprContext* _localctx = _tracker.createInstance<TupleExprContext>(_ctx, getState());
-    enterRule(_localctx, 76, WhixyParser::RuleTupleExpr);
+    enterRule(_localctx, 76, WhixyParser::RuleStructExpr);
 
 #if __cplusplus > 201703L
     auto onExit = finally(
@@ -5721,14 +5724,14 @@ WhixyParser::TupleExprContext* WhixyParser::tupleExpr()
         size_t alt;
         enterOuterAlt(_localctx, 1);
         setState(512);
-        oParen();
+        oBrace();
         setState(522);
         _errHandler->sync(this);
 
         switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 61, _ctx)) {
         case 1: {
             setState(513);
-            expr();
+            field();
             setState(519);
             _errHandler->sync(this);
             alt = getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 60, _ctx);
@@ -5737,7 +5740,7 @@ WhixyParser::TupleExprContext* WhixyParser::tupleExpr()
                     setState(514);
                     exprSep();
                     setState(515);
-                    expr();
+                    field();
                 }
                 setState(521);
                 _errHandler->sync(this);
@@ -5749,7 +5752,7 @@ WhixyParser::TupleExprContext* WhixyParser::tupleExpr()
         default: break;
         }
         setState(524);
-        cParen();
+        cBrace();
 
     } catch (RecognitionException& e) {
         _errHandler->reportError(this, e);

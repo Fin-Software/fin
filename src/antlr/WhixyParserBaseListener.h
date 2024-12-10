@@ -291,14 +291,14 @@ class WhixyParserBaseListener: public WhixyParserListener {
     virtual void enterToken(WhixyParser::TokenContext* /*ctx*/) override {}
     virtual void exitToken(WhixyParser::TokenContext* /*ctx*/) override {}
 
+    virtual void enterTupleExpr(WhixyParser::TupleExprContext* /*ctx*/) override {}
+    virtual void exitTupleExpr(WhixyParser::TupleExprContext* /*ctx*/) override {}
+
     virtual void enterBlockExpr(WhixyParser::BlockExprContext* /*ctx*/) override {}
     virtual void exitBlockExpr(WhixyParser::BlockExprContext* /*ctx*/) override {}
 
     virtual void enterStructExpr(WhixyParser::StructExprContext* /*ctx*/) override {}
     virtual void exitStructExpr(WhixyParser::StructExprContext* /*ctx*/) override {}
-
-    virtual void enterTupleExpr(WhixyParser::TupleExprContext* /*ctx*/) override {}
-    virtual void exitTupleExpr(WhixyParser::TupleExprContext* /*ctx*/) override {}
 
     virtual void enterOParen(WhixyParser::OParenContext* /*ctx*/) override {}
     virtual void exitOParen(WhixyParser::OParenContext* /*ctx*/) override {}

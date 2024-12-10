@@ -63,8 +63,8 @@ blockStmt
     | NEWLINE? DOLLAR OPENPARENTHESIS NEWLINE? (stmt (stmtSep stmt)*)? cParen # procBlockStmt;
 
 routineStmt
-    : token atom atom blockStmt        # plainRoutineStmt
-    | INLINE token atom atom blockStmt # inlineRoutineStmt;
+    : atom token structExpr blockStmt        # plainRoutineStmt
+    | INLINE atom token structExpr blockStmt # inlineRoutineStmt;
 
 returnStmt: RETURN expr;
 
@@ -163,20 +163,20 @@ loopExpr
 comptExpr: COMPT expr;
 
 routineExpr
-    : atom atom blockStmt        # plainRoutineExpr
-    | INLINE atom atom blockStmt # inlineRoutineExpr;
+    : atom structExpr blockStmt        # plainRoutineExpr
+    | INLINE atom structExpr blockStmt # inlineRoutineExpr;
 
 string: DOUBLEQUOTESTRING # dQStringExpr | BACKTICKSTRING # bTStringExpr;
 
-atom: token | blockExpr | structExpr | tupleExpr;
+atom: token | tupleExpr | blockExpr | structExpr;
 
 token: TOKEN;
+
+tupleExpr: oParen (expr (exprSep expr)*)? cParen;
 
 blockExpr: oParen ((stmt (stmtSep stmt)* stmtSep)? expr)? cParen;
 
 structExpr: oBrace (field (exprSep field)*)? cBrace;
-
-tupleExpr: oParen (expr (exprSep expr)*)? cParen;
 
 // NL? ID NL?; NL? ID
 oParen: NEWLINE? OPENPARENTHESIS NEWLINE?;
