@@ -1,3 +1,8 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright © 2024 The Whixy Authors. All rights reserved.
+# Contributors responsible for this file:
+# @p7r0x7 <mattrbonnette@pm.me>
+
 def cmp = (std "compare") orelse Compare
 # equivalent to `cmp := if (std "compare") != null |v| {v} else {Compare}`
 

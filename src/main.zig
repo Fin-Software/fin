@@ -3,8 +3,16 @@
 // Contributors responsible for this file:
 // @p7r0x7 <mattrbonnette@pm.me>
 
-extern fn doJIT(c_int, [*][*]c_char) void;
+const io = @import("std").io;
+const cli = @import("cli.zig");
+const heap = @import("std").heap;
 
-fn main() void {
-    doJIT(0, &[_]c_char{&[_]c_char{""}});
+pub fn main() !void {
+    const stderr = io.getStdErr();
+    {
+        // Run VPXL's CLI using an arena-wrapped stack allocator.
+        var buf: [9 << 10]u8 = undefined; // Adjust as necessary.
+        var fba = heap.FixedBufferAllocator.init(buf[0..]); // Not reused
+        try cli.runVPXL(stderr, fba.allocator());
+    }
 }
