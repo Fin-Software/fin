@@ -69,14 +69,11 @@ dl()
 finish()
 {
 	find "$pkg" \( -name '.[!.]*' -o -empty -o -iname '*changelog*' -o -iname '*bazel*' \) -exec rm -rf {} +
-	tar --pax-option=exthdr.name=%d/PaxHeaders/%f,delete=atime,delete=ctime --sort=name \
-		--mtime="@0" --owner=0 --group=0 --numeric-owner -S --no-seek -cf "$tar" -C "$pkg" .
-	b3sum "$tar"; zstd "$tar" -o "$tzst"; zstd -lv "$tzst"; mv "$tzst" .
+    for file in "$pkg"/*; do filename=$(basename "$file"); rm -rf "./$filename"; mv "$file" .; done
 }
 
-set -eu; umask 0022; srcs=/tmp/srcs; command -v gtar >/dev/null && tar() { gtar "$@"; }
-tar --version | awk '{exit ($4 >= 1.28) ? 0 : 1}' || { printf 'GNU tar too old.'; return 1; }
-zstd() { command zstd --ultra -22 --long=29 --no-check --no-progress "$@"; }
+set -eu; umask 0022; srcs=/tmp/srcs;
+command -v gtar >/dev/null && tar() { gtar "$@"; }
 command -v 7zz >/dev/null && dec() { 7zz "$@"; }
 command -v 7z >/dev/null && dec() { 7z "$@"; }
 install() { command install -dm 0755 "$@"; }
