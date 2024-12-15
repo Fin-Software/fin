@@ -43,8 +43,8 @@ pub fn build(b: *Build) !void {
                 @tagName(target.result.abi),
             });
             break :deps_step switch (target.result.os.tag) {
-                .windows => b.addSystemCommand(&[_][]const u8{ "cmd.exe", "libs.cmd", safety, triple, mcpu }),
-                else => b.addSystemCommand(&[_][]const u8{ "sh", "libs.sh", safety, triple, mcpu }),
+                .windows => b.addSystemCommand(&[_][]const u8{ "cmd.exe", "scripts/libs.cmd", safety, triple, mcpu }),
+                else => b.addSystemCommand(&[_][]const u8{ "sh", "scripts/libs.sh", safety, triple, mcpu }),
             };
         };
 
@@ -74,7 +74,7 @@ fn executable(b: *Build, name: []const u8, root_path: []const u8, target: Build.
         .strip = optimize == .ReleaseFast or optimize == .ReleaseSmall,
         .omit_frame_pointer = optimize != .Debug,
         .root_source_file = b.path(root_path),
-        .unwind_tables = optimize == .Debug,
+        .unwind_tables = if (optimize == .Debug) .sync else .none,
         .optimize = optimize,
         .target = target,
         .name = name,
