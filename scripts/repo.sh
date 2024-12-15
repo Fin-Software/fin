@@ -13,11 +13,11 @@ jar --no-compress --date 1980-01-01T00:00:02Z --main-class org.antlr.v4.Tool \
 	--create --file "../.build/antlr-4.13.2.jar" -C "../vendor/antlr-4.13.2" .
 
 java -jar ../.build/antlr-4.13.2.jar \
-    -Dlanguage=Cpp -no-visitor -listener -o antlr -package Whixy -encoding utf-8 WhixyParser.g4 WhixyLexer.g4 \
+    -Dlanguage=Cpp -visitor -no-listener -o antlr -package Whixy -encoding utf-8 WhixyParser.g4 WhixyLexer.g4 \
     || printf '\n\t\033[33mantlr4 failed to execute successfully: continuing...\033[0m\n\n'
 rm antlr/*.interp antlr/*.tokens
 
-find .. -path '../vendor' -prune -not -path '*/.*' -name '*.zig' -exec zig fmt {} + \
-    -o \( -name '*.cpp' -o -name '*.h' \) -exec clang-format -i --style='file:../.clang-format' {} +
+find .. \( -path '../vendor' -o -name '.[!.]*' \) -prune -o ! -type d -name '*.zig' -exec zig fmt {} + -o \
+    \( -name '*.cpp' -o -name '*.h' \) -exec clang-format -i --style='file:../.clang-format' {} +
 
 git add .; git diff --stat HEAD; git reset >/dev/null

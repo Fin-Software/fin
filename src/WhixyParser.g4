@@ -34,9 +34,10 @@ stmt
     | deferStmt
     | errdeferStmt;
 
-field
-    : (AUTO | ASTERISK THIS | atom) token+ (EQUAL NEWLINE? expr)?     # immutableVals
-    | MUT (AUTO | ASTERISK THIS | atom) token+ (EQUAL NEWLINE? expr)? # mutableVals;
+field: mutable? volatile? threadlocal? atom token+ (EQUAL NEWLINE? expr)?;
+mutable: MUT;
+volatile: VOLATILE;
+threadlocal: THREADLOCAL;
 
 assignStmt: atom assignOp atom;
 assignOp
@@ -54,19 +55,19 @@ assignOp
     | PLUS_PERCENT_EQUAL                    # wrappingAddEqualsOp
     | MINUS_PERCENT_EQUAL                   # wrappingSubEqualsOp
     | GREATERTHAN_GREATERTHAN_PERCENT_EQUAL # rightRotateEqualsOp
-    | LESSTHAN_LESSTHAN_PERCENT_EQUAL       # leftRotateEqualsOp;
+    | LESSTHAN_LESSTHAN_PERCENT_EQUAL       # leftRotateEqualsOp; // TODO(@p7r0x7): Needs reordering.
 
-call: atom expr;
+call: atom (atom+ | expr);
 
 blockStmt
     : oParen (stmt (stmtSep stmt)*)? cParen                                   # funcBlockStmt
-    | NEWLINE? DOLLAR OPENPARENTHESIS NEWLINE? (stmt (stmtSep stmt)*)? cParen # procBlockStmt;
+    | NEWLINE? DOLLAR_OPENPARENTHESIS NEWLINE? (stmt (stmtSep stmt)*)? cParen # procBlockStmt;
 
 routineStmt
-    : atom token structExpr blockStmt        # plainRoutineStmt
-    | INLINE atom token structExpr blockStmt # inlineRoutineStmt;
+    : typeExpr token structExpr blockStmt        # plainRoutineStmt
+    | INLINE typeExpr token structExpr blockStmt # inlineRoutineStmt;
 
-returnStmt: RETURN expr;
+returnStmt: RETURN (atom+ | expr);
 
 ifStmt: IF atom stmt (ELSEIF atom stmt)* (ELSE stmt)?;
 
@@ -95,45 +96,73 @@ errdeferStmt: ERRDEFER stmt;
 exprSep: COMMA | NEWLINE;
 expr
     : field
+    | typeExpr
     | call
     | binaryExpr
     | postExpr
     | preExpr
     | ifExpr
     | whereExpr
-    | loopExpr
     | comptExpr
     | unreachable
     | routineExpr
     | string
     | atom;
 
-binaryExpr: atom NEWLINE? binaryOp NEWLINE? atom;
-binaryOp
-    : AS                              # asOp
-    | PLUS_PLUS                       # concatOp
-    | ASTERISK_ASTERISK               # repeatOp
-    | PLUS                            # addOp
-    | MINUS                           # subOp
-    | ASTERISK                        # timesOp
-    | SLASH                           # divideOp
-    | LESSTHAN                        # lessThanOp
-    | GREATERTHAN                     # greaterThanOp
-    | LESSTHAN_EQUAL                  # lessThanOrEqualToOp
-    | GREATERTHAN_EQUAL               # greaterThanOrEqualToOp
-    | PLUS_PERCENT                    # wrappingAddOp
-    | MINUS_PERCENT                   # wrappingSubOp
-    | ASTERISK_PERCENT                # wrappingTimesOp
-    | LESSTHAN_LESSTHAN               # leftShiftOp
-    | GREATERTHAN_GREATERTHAN         # rightShiftOp
-    | LESSTHAN_LESSTHAN_PERCENT       # leftRotateOp
-    | GREATERTHAN_GREATERTHAN_PERCENT # rightRotateOp
-    | EQUAL_EQUAL                     # equalityOp
-    | TILDE_EQUAL                     # inequalityOp
-    | AMPERSAND                       # andOp
-    | PIPE                            # orOp
-    | PERCENT                         # modOp
-    | CARROT                          # xorOp;
+typeExpr: UNDERSCORE | ASTERISK? THIS | atom;
+
+binaryExpr
+    : atom NEWLINE? (
+        asOp
+        | (
+            timesOp
+            | divideOp
+            | modOp
+            | bitwiseAndOp
+            | leftShiftOp
+            | rightShiftOp
+            | wrappingTimesOp
+            | leftRotateOp
+            | rightRotateOp
+        )
+        | (addOp | subOp | bitwiseOrOp | xorOp | wrappingAddOp | wrappingSubOp)
+        | (
+            equalityOp
+            | inequalityOp
+            | lessThanOp
+            | greaterThanOp
+            | lessThanOrEqualToOp
+            | greaterThanOrEqualToOp
+        )
+        | logicalAndOp
+        | logicalOrOp
+    ) NEWLINE? atom;
+asOp:                   AS;
+concatOp:               PLUS_PLUS;
+repeatOp:               ASTERISK_ASTERISK;
+addOp:                  PLUS;
+subOp:                  MINUS;
+timesOp:                ASTERISK;
+divideOp:               SLASH;
+lessThanOp:             LESSTHAN;
+greaterThanOp:          GREATERTHAN;
+lessThanOrEqualToOp:    LESSTHAN_EQUAL;
+greaterThanOrEqualToOp: GREATERTHAN_EQUAL;
+wrappingAddOp:          PLUS_PERCENT;
+wrappingSubOp:          MINUS_PERCENT;
+wrappingTimesOp:        ASTERISK_PERCENT;
+leftShiftOp:            LESSTHAN_LESSTHAN;
+rightShiftOp:           GREATERTHAN_GREATERTHAN;
+leftRotateOp:           LESSTHAN_LESSTHAN_PERCENT;
+rightRotateOp:          GREATERTHAN_GREATERTHAN_PERCENT;
+equalityOp:             EQUAL_EQUAL;
+inequalityOp:           TILDE_EQUAL;
+logicalAndOp:           AND;
+logicalOrOp:            OR;
+bitwiseAndOp:           AMPERSAND;
+bitwiseOrOp:            PIPE;
+modOp:                  PERCENT;
+xorOp:                  CARROT;
 
 postExpr: atom postOp;
 postOp
@@ -154,19 +183,13 @@ ifExpr: IF atom expr (ELSEIF atom expr)* (ELSE expr)?;
 whereExpr:     WHERE atom comparisonOp caseExprBlock;
 caseExprBlock: ;
 
-loopExpr
-    : UNROLL WHILE atom? atom? expr # unrollWhileExpr
-    | UNROLL FOR atom? atom? expr   # unrollForExpr
-    | WHILE atom? atom? expr        # plainWhileExpr
-    | FOR atom? atom? expr          # plainForExpr;
-
 comptExpr: COMPT expr;
 
 routineExpr
     : atom structExpr blockStmt        # plainRoutineExpr
     | INLINE atom structExpr blockStmt # inlineRoutineExpr;
 
-string: DOUBLEQUOTESTRING # dQStringExpr | BACKTICKSTRING # bTStringExpr;
+string: DOUBLEQUOTESTRING # dQString | BACKSLASHSTRING # bSString | BACKTICKSTRING # bTString;
 
 atom: token | tupleExpr | blockExpr | structExpr;
 

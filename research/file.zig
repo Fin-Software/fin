@@ -27,24 +27,24 @@ pub const bitwise = struct {
 };
 
 pub const arithmetic = struct {
-    pub const overflow_behavior = enum { WrapOnOverflow, PanicOnOverflow };
+    pub const overflow_behavior = enum { wrapOnOverflow, panicOnOverflow };
 
     pub inline fn add(comptime T: type, a: T, b: T, comptime of: overflow_behavior) T {
         return switch (of) {
-            .WrapOnOverflow => a +% b,
-            .PanicOnOverflow => a + b,
+            .wrapOnOverflow => a +% b,
+            .panicOnOverflow => a + b,
         };
     }
     pub inline fn sub(comptime T: type, a: T, b: T, comptime of: overflow_behavior) T {
         return switch (of) {
-            .WrapOnOverflow => a -% b,
-            .PanicOnOverflow => a - b,
+            .wrapOnOverflow => a -% b,
+            .panicOnOverflow => a - b,
         };
     }
     pub inline fn mul(comptime T: type, a: T, b: T, comptime of: overflow_behavior) T {
         return switch (of) {
-            .WrapOnOverflow => a *% b,
-            .PanicOnOverflow => a * b,
+            .wrapOnOverflow => a *% b,
+            .panicOnOverflow => a * b,
         };
     }
 

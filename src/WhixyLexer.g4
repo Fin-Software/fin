@@ -11,28 +11,34 @@ lexer grammar WhixyLexer;
 
 // TODO: Tokens are to be reordered to maximize lexing speed of std, barring overshadowing other rules.
 
-DOUBLEQUOTESTRING: '"' ('\\"' | .)*? '"';           // NB: separate tokens saves work
-BACKTICKSTRING:    '`' ('\\`' | .)*? '`';           // NB: separate tokens saves work
-DOCCOMMENT:        '###' ~[\r\n]*;                  //
-COMMENT:           '#' ~[\r\n]* -> channel(HIDDEN); //
-RUNE:              '\'' ('\\\'' | .) '\'';          //
-NEWLINE:           [\r\n]+;                         // statement/expression separator or whitespace (-2nd)
-WHITESPACE:        [ \t]+ -> channel(HIDDEN);       //
+// TODO: When Whixy is self-hostable, replace ANTLR4 with a recursive descent parser. Predicates here are especially slow.
+
+DOUBLEQUOTESTRING: '"' ('\\"' | ~["])* '"';                                // NB: separate tokens saves work
+BACKTICKSTRING:    '`' ('\\`' | ~[`])* '`';                                // NB: separate tokens saves work
+BACKSLASHSTRING:   (WHITESPACE? '\\ ' ~[\r\n]* [\r\n])+;                   // TODO(@p7r0x7): missing predicate
+BLOCKDOCCOMMENT:   (WHITESPACE? '##' ~[\r\n]* [\r\n])+ -> channel(HIDDEN); // TODO(@p7r0x7): missing predicate
+BLOCKCOMMENT:      (WHITESPACE? '#' ~[\r\n]* [\r\n])+ -> channel(HIDDEN);  // TODO(@p7r0x7): missing predicate
+DOCCOMMENT:        '##' ~[\r\n]* -> channel(HIDDEN);
+COMMENT:           '#' ~[\r\n]* -> channel(HIDDEN);
+WHITESPACE:        [ \t]+ -> channel(HIDDEN);
+NEWLINE:           [\r\n]+;
 
 // SORTED ^^
 
-DOT:               '.'; // postfix op: access field (after DOT...)
-COMMA:             ','; // expression separator
-SEMICOLON:         ';'; // statement separator
-OPENPARENTHESIS:   '('; // open group expression
-CLOSEDPARENTHESIS: ')'; // close group expression
-OPENBRACE:         '{'; // open type expression
-CLOSEDBRACE:       '}'; // close type expression
-OPENBRACKET:       '['; // open indexing expression
-CLOSEDBRACKET:     ']'; // close indexing expression
-EXCLAMATION:       '!'; // infix op: logical NOT; bitwise NOT (after EXCLAMATION...)
-DOLLAR:            '$'; //
-QUESTION:          '?'; // postfix op: explicitly unwrap optional
+OPENPARENTHESIS:        '(';  // open group expression
+CLOSEDPARENTHESIS:      ')';  // close group expression
+DOT:                    '.';  // postfix op: access field (after DOT...)
+COMMA:                  ',';  // expression separator
+UNDERSCORE:             '_';  // type inferrence directive or 
+EXCLAMATION:            '!';  // infix op: logical NOT; bitwise NOT (after EXCLAMATION...)
+OPENBRACE:              '{';  // open type expression
+CLOSEDBRACE:            '}';  // close type expression
+OPENBRACKET:            '[';  // open indexing expression
+CLOSEDBRACKET:          ']';  // close indexing expression
+SEMICOLON:              ';';  // statement separator
+QUESTION:               '?';  // postfix op: explicitly unwrap optional
+DOLLAR_OPENPARENTHESIS: '$('; //
+SINGLEQUOTE:            '\''; //
 
 GREATERTHAN_GREATERTHAN_PERCENT_EQUAL: '>>%='; // combined assignment: rotr
 GREATERTHAN_GREATERTHAN_PERCENT:       '>>%';  //
@@ -75,10 +81,11 @@ EQUAL:                                 '=';    // infix op: assign type instance
 PIPE_EQUAL:                            '|=';   // combined assignment: bitwise OR
 PIPE:                                  '|';    // infix op: logical OR; bitwise OR; routine overloading (after PIPE...)
 
-TYPE:        'type';        // postfix op: access comptime type
-LEN:         'len';         // postfix op: access length
+AND:         'and';         //
+OR:          'or';          // logical or operator
+TYPE:        'type';        // postfix: access comptime type
+LEN:         'len';         // postfix: access length
 THIS:        'this';        // immediately encapsulating type directive
-AUTO:        'auto';        // type inferrence directive
 MUT:         'mut';         // value mutability modifier
 INLINE:      'inline';      // routine inlining modifier
 RETURN:      'return';      // return statement
@@ -97,13 +104,14 @@ FAST:        'fast';        // routine fastcall convention modifier
 BARE:        'bare';        // routine freestanding convention modifier
 IMPORT:      'import';      // import statement/expression
 ALIGN:       'align';       // value alignment modifier
-THREADL:     'threadl';     // value thread-local modifier
+THREADLOCAL: 'threadlocal'; // value thread-local modifier
 UNREACHABLE: 'unreachable'; // unreachable statement/expression
 VOLATILE:    'volatile';    // value volatile modifier
 UNROLL:      'unroll';      // loop inlining modifier
 COMPT:       'compt';       // type/statement/expression comptime modifier
 TEST:        'test';        // routine test modifier
 ENUM:        'enum';        // enumeration type expression
+EMBED:       'embed';       // disk data embed directive
 UNION:       'union';       // union type expression
 STD:         'std';         // standard library value
 ORELSE:      'orelse';      // optional unwrapping operator
