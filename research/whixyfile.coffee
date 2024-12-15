@@ -22,7 +22,7 @@ uptr CollatzStoppingTime {uptr a}
         steps += t + 1
     )
     return steps + (cache[n] as uptr)
-)
+) # Declared functional ("(" vs "$(").
 
 # Main must always be declared as exported (PascalCase vs camelCase) and procedural ("$(" vs "(").
 u8 Main {}
@@ -33,14 +33,36 @@ $(
 # For reference only; will compile if used 
 _ Bitwise =
 {
-	inline a.type Not {a.type a} (return !a)
-	inline a.type Or {a.type a b} (return a | b)
-	inline a.type And {a.type a b} (return a & b)
-	inline a.type Xor {a.type a b} (return a ^ b)
-	inline a.type Shl {a.type a b} (return a << b)
-	inline a.type Shr {a.type a b} (return a >> b)
-	inline a.type Rotl {a.type a b} (return a <<% b)
-	inline a.type Rotr {a.type a b} (return a >>% b)
+	inline a.type Not {a.type a} ( return !a )
+	inline a.type Or {a.type a b} ( return a | b )
+	inline a.type And {a.type a b} ( return a & b )
+	inline a.type Xor {a.type a b} ( return a ^ b )
+	inline a.type Shl {a.type a b} ( return a << b )
+	inline a.type Shr {a.type a b} ( return a >> b )
+	inline a.type Rotl {a.type a b} ( return a <<% b )
+	inline a.type Rotr {a.type a b} ( return a >>% b )
 }
 
-_ Arithmetic = {}
+# For reference only; will compile if used 
+_ Arithmetic =
+{
+    _ OverflowBehavior = enum ( .wrapOnOverflow, .panicOnOverflow )
+    #
+    # The following functions are generic and improper usage will be caught at comptime:
+    #
+    _ Add = inline a.type {a.type a b, (compt OverflowBehavior) of}
+    (
+        return where of == ( .wrapOnOverflow => a +% b, .panicOnOverflow => a + b )
+    )
+    _ Sub = inline a.type {a.type a b, (compt OverflowBehavior) of}
+    (
+        return where of == ( .wrapOnOverflow => a -% b, .panicOnOverflow => a - b )
+    )
+    _ Mul = inline a.type {a.type a b, (compt OverflowBehavior) of}
+    (
+        return where of == ( .wrapOnOverflow => a *% b, .panicOnOverflow => a * b )
+    )
+    _ Div = inline a.type {a.type a b} ( return a / b )
+    _ Mod = inline a.type {a.type a b} ( return a % b )
+    _ Neg = inline a.type {a.type a} ( return -a )
+}
