@@ -96,7 +96,7 @@ class WhixyLexer: public antlr4::Lexer {
         BARE = 84,
         IMPORT = 85,
         ALIGN = 86,
-        THREADLOCAL = 87,
+        THREADL = 87,
         UNREACHABLE = 88,
         VOLATILE = 89,
         UNROLL = 90,

@@ -8,48 +8,58 @@ const fmt = @import("std").fmt;
 const db = @import("std").debug;
 const Build = @import("std").Build;
 const builtin = @import("std").builtin;
+const Builddef = @import("builddef").Builddef;
 
-pub fn build(b: *Build) !void {
-    const target = b.standardTargetOptions(.{});
-    const optimize: builtin.OptimizeMode =
-        if (b.option(bool, "release", "true: production, false: debugging") orelse (b.release_mode != .off))
-        .ReleaseFast // For distributors and users
-    else
-        .ReleaseSafe; // For contributors
-    db.assert(optimize != .Debug and optimize != .ReleaseSmall);
-    b.enable_wine = target.result.os.tag == .windows and target.result.cpu.arch == .x86_64;
-    b.enable_rosetta = target.result.os.tag == .macos and target.result.cpu.arch == .x86_64;
+pub fn build(b: *Build) void {
 
-    const whixy = executable(b, "whixy", "src/main.zig", target, optimize);
-    whixy.addCSourceFile(.{ .file = b.path("src/jit.cpp") });
+    // Environment defaults
+    var def = Builddef.init(b);
+    const target, const optimize = def.stdOptions(.{}, .{});
+    //const target = b.standardTargetOptions(.{});
+    //const optimize: builtin.OptimizeMode = if (b.option(bool, "release",
+    //    \\true: production (distributors and users), false: debugging (contributors)
+    //) orelse true) .ReleaseFast else .ReleaseSafe;
+    //def.universalSettings(target);
+
+    const parser = def.staticLib("parser", null, target, optimize);
+    parser.root_module.error_tracing = false;
+    //parser.root_module.strip = optimize == .ReleaseFast;
+    def.addCSources(parser, &sources.parser);
+    if (optimize == .Debug) b.installArtifact(parser);
+    parser.linkLibCpp();
+
+    const whixy = def.executable("whixy", "src/main.zig", target, optimize);
+    //whixy.root_module.strip = optimize == .ReleaseFast;
+    whixy.linkLibrary(parser);
     b.installArtifact(whixy);
     whixy.linkLibCpp();
 
     // Compile external libraries for statically linking to.
-    if (b.build_root.handle.openDir("deps", .{}) == error.FileNotFound) {
-        const hash_vendor = executable(b, "hash-vendor", "hash.zig", target, .ReleaseFast);
-        const run_hash_vendor = b.addRunArtifact(hash_vendor);
-        run_hash_vendor.addArg("vendor");
-        run_hash_vendor.addArg("71e5a4da0eb3d7519d8f752ab04e75c282c8e81885a158c4944912f5cd7fda5d");
+    if (b.build_root.handle.openDir(".build", .{}) == error.FileNotFound) {
+        const hash_vendor = def.executable("hash-vendor", "hash.zig", target, .ReleaseFast);
+        const run_hash_vendor = def.runArtifact(hash_vendor, &.{
+            "vendor",
+            \\71e5a4da0eb3d7519d8f752ab04e75c282c8e81885a158c4944912f5cd7fda5d
+        });
         b.step("hash-vendor", "").dependOn(&run_hash_vendor.step); // Enable `zig build hash-vendor`
 
-        const deps_step = deps_step: {
-            var buf: [32]u8 = undefined; // Adjust as necessary.
+        const libs_step = libs_step: {
+            var buf: [11 + 1 + 12 + 1 + 12]u8 = undefined; // Adjust as necessary.
             const safety = if (optimize == .ReleaseFast) "fast" else "safe";
             const mcpu = target.result.cpu.model.llvm_name orelse "baseline";
-            const triple = try fmt.bufPrint(buf[0..], "{s}-{s}-{s}", .{
+            const triple = fmt.bufPrint(&buf, "{s}-{s}-{s}", .{
                 @tagName(target.result.cpu.arch),
                 @tagName(target.result.os.tag),
                 @tagName(target.result.abi),
-            });
-            break :deps_step switch (target.result.os.tag) {
-                .windows => b.addSystemCommand(&[_][]const u8{ "cmd.exe", "scripts/libs.cmd", safety, triple, mcpu }),
-                else => b.addSystemCommand(&[_][]const u8{ "sh", "scripts/libs.sh", safety, triple, mcpu }),
+            }) catch unreachable;
+            break :libs_step switch (target.result.os.tag) {
+                .windows => b.addSystemCommand(&.{ "cmd.exe", "scripts/libs.cmd", safety, triple, mcpu }),
+                else => b.addSystemCommand(&.{ "sh", "scripts/libs.sh", safety, triple, mcpu }),
             };
         };
 
-        deps_step.step.dependOn(&run_hash_vendor.step);
-        whixy.step.dependOn(&deps_step.step);
+        run_hash_vendor.step.dependOn(&whixy.step);
+        libs_step.step.dependOn(&run_hash_vendor.step);
     }
 
     // Dependencies
@@ -68,21 +78,162 @@ pub fn build(b: *Build) !void {
     b.step("test", "").dependOn(&run_unit_tests.step);
 }
 
-fn executable(b: *Build, name: []const u8, root_path: []const u8, target: Build.ResolvedTarget, optimize: builtin.OptimizeMode) *Build.Step.Compile {
-    const exe = b.addExecutable(.{
-        .error_tracing = optimize == .ReleaseSafe or optimize == .Debug,
-        .strip = optimize == .ReleaseFast or optimize == .ReleaseSmall,
-        .omit_frame_pointer = optimize != .Debug,
-        .root_source_file = b.path(root_path),
-        .unwind_tables = if (optimize == .Debug) .sync else .none,
-        .optimize = optimize,
-        .target = target,
-        .name = name,
-        .pic = true,
-    });
-    exe.want_lto = !target.result.isDarwin(); // https://github.com/ziglang/zig/issues/8680
-    exe.compress_debug_sections = .zstd;
-    exe.link_function_sections = true;
-    exe.link_gc_sections = true;
-    return exe;
-}
+const sources = struct {
+    const parser = [_]Builddef.CSources{
+        .{
+            .root = "src/antlr/",
+            .flags = &.{"-std=c++17"},
+            .header_paths = &.{"."},
+            .c_sources = &.{
+                "WhixyLexer.cpp",
+                "WhixyParser.cpp",
+                "WhixyParserBaseVisitor.cpp",
+                "WhixyParserVisitor.cpp",
+                //"../antlr.cpp",
+            },
+        },
+        .{
+            .root = "vendor/antlr-cpp-runtime-4.13.2/runtime/src",
+            .flags = &.{"-std=c++17"},
+            .header_paths = &.{ ".", "atn", "dfa", "internal", "misc", "support", "tree", "tree/pattern", "tree/xpath" },
+            .c_sources = &.{
+                "ANTLRErrorListener.cpp",
+                "ANTLRErrorStrategy.cpp",
+                "ANTLRFileStream.cpp",
+                "ANTLRInputStream.cpp",
+                "BailErrorStrategy.cpp",
+                "BaseErrorListener.cpp",
+                "BufferedTokenStream.cpp",
+                "CharStream.cpp",
+                "CommonToken.cpp",
+                "CommonTokenFactory.cpp",
+                "CommonTokenStream.cpp",
+                "ConsoleErrorListener.cpp",
+                "DefaultErrorStrategy.cpp",
+                "DiagnosticErrorListener.cpp",
+                "Exceptions.cpp",
+                "FailedPredicateException.cpp",
+                "InputMismatchException.cpp",
+                "IntStream.cpp",
+                "InterpreterRuleContext.cpp",
+                "Lexer.cpp",
+                "LexerInterpreter.cpp",
+                "LexerNoViableAltException.cpp",
+                "ListTokenSource.cpp",
+                "NoViableAltException.cpp",
+                "Parser.cpp",
+                "ParserInterpreter.cpp",
+                "ParserRuleContext.cpp",
+                "ProxyErrorListener.cpp",
+                "RecognitionException.cpp",
+                "Recognizer.cpp",
+                "RuleContext.cpp",
+                "RuleContextWithAltNum.cpp",
+                "RuntimeMetaData.cpp",
+                "Token.cpp",
+                "TokenSource.cpp",
+                "TokenStream.cpp",
+                "TokenStreamRewriter.cpp",
+                "UnbufferedCharStream.cpp",
+                "UnbufferedTokenStream.cpp",
+                "Vocabulary.cpp",
+                "WritableToken.cpp",
+                "atn/ATN.cpp",
+                "atn/ATNConfig.cpp",
+                "atn/ATNConfigSet.cpp",
+                "atn/ATNDeserializationOptions.cpp",
+                "atn/ATNDeserializer.cpp",
+                "atn/ATNSimulator.cpp",
+                "atn/ATNState.cpp",
+                "atn/ATNStateType.cpp",
+                "atn/ActionTransition.cpp",
+                "atn/AmbiguityInfo.cpp",
+                "atn/ArrayPredictionContext.cpp",
+                "atn/AtomTransition.cpp",
+                "atn/ContextSensitivityInfo.cpp",
+                "atn/DecisionEventInfo.cpp",
+                "atn/DecisionInfo.cpp",
+                "atn/DecisionState.cpp",
+                "atn/EpsilonTransition.cpp",
+                "atn/ErrorInfo.cpp",
+                "atn/LL1Analyzer.cpp",
+                "atn/LexerATNConfig.cpp",
+                "atn/LexerATNSimulator.cpp",
+                "atn/LexerAction.cpp",
+                "atn/LexerActionExecutor.cpp",
+                "atn/LexerChannelAction.cpp",
+                "atn/LexerCustomAction.cpp",
+                "atn/LexerIndexedCustomAction.cpp",
+                "atn/LexerModeAction.cpp",
+                "atn/LexerMoreAction.cpp",
+                "atn/LexerPopModeAction.cpp",
+                "atn/LexerPushModeAction.cpp",
+                "atn/LexerSkipAction.cpp",
+                "atn/LexerTypeAction.cpp",
+                "atn/LookaheadEventInfo.cpp",
+                "atn/NotSetTransition.cpp",
+                "atn/OrderedATNConfigSet.cpp",
+                "atn/ParseInfo.cpp",
+                "atn/ParserATNSimulator.cpp",
+                "atn/PrecedencePredicateTransition.cpp",
+                "atn/PredicateEvalInfo.cpp",
+                "atn/PredicateTransition.cpp",
+                "atn/PredictionContext.cpp",
+                "atn/PredictionContextCache.cpp",
+                "atn/PredictionContextMergeCache.cpp",
+                "atn/PredictionMode.cpp",
+                "atn/ProfilingATNSimulator.cpp",
+                "atn/RangeTransition.cpp",
+                "atn/RuleTransition.cpp",
+                "atn/SemanticContext.cpp",
+                "atn/SetTransition.cpp",
+                "atn/SingletonPredictionContext.cpp",
+                "atn/StarLoopbackState.cpp",
+                "atn/Transition.cpp",
+                "atn/TransitionType.cpp",
+                "atn/WildcardTransition.cpp",
+                "dfa/DFA.cpp",
+                "dfa/DFASerializer.cpp",
+                "dfa/DFAState.cpp",
+                "dfa/LexerDFASerializer.cpp",
+                "internal/Synchronization.cpp",
+                "misc/InterpreterDataReader.cpp",
+                "misc/Interval.cpp",
+                "misc/IntervalSet.cpp",
+                "misc/MurmurHash.cpp",
+                "misc/Predicate.cpp",
+                "support/Any.cpp",
+                "support/Arrays.cpp",
+                "support/CPPUtils.cpp",
+                "support/StringUtils.cpp",
+                "support/Utf8.cpp",
+                "tree/ErrorNodeImpl.cpp",
+                "tree/IterativeParseTreeWalker.cpp",
+                "tree/ParseTree.cpp",
+                "tree/ParseTreeListener.cpp",
+                "tree/ParseTreeVisitor.cpp",
+                "tree/ParseTreeWalker.cpp",
+                "tree/TerminalNodeImpl.cpp",
+                "tree/Trees.cpp",
+                "tree/pattern/Chunk.cpp",
+                "tree/pattern/ParseTreeMatch.cpp",
+                "tree/pattern/ParseTreePattern.cpp",
+                "tree/pattern/ParseTreePatternMatcher.cpp",
+                "tree/pattern/RuleTagToken.cpp",
+                "tree/pattern/TagChunk.cpp",
+                "tree/pattern/TextChunk.cpp",
+                "tree/pattern/TokenTagToken.cpp",
+                "tree/xpath/XPath.cpp",
+                "tree/xpath/XPathElement.cpp",
+                "tree/xpath/XPathLexer.cpp",
+                "tree/xpath/XPathLexerErrorListener.cpp",
+                "tree/xpath/XPathRuleAnywhereElement.cpp",
+                "tree/xpath/XPathRuleElement.cpp",
+                "tree/xpath/XPathTokenAnywhereElement.cpp",
+                "tree/xpath/XPathTokenElement.cpp",
+                "tree/xpath/XPathWildcardAnywhereElement.cpp",
+                "tree/xpath/XPathWildcardElement.cpp",
+            },
+        },
+    };
+};

@@ -2,10 +2,24 @@
     .name = "whixy",
     .version = "0.0.0",
     .dependencies = .{
+        .builddef = .{
+            .url = "https://github.com/p7r0x7/builddef/archive/master.tar.gz",
+            .hash = "12206131b0eb6ba0b183448da096a8885faedc0802a8653930f24e99c6b409f07599",
+        },
         .cova = .{
             .url = "https://github.com/Beyley/cova/archive/main.tar.gz",
             .hash = "1220b70aee16e659e30eb0c066777f930319f74555fe51a8646725263ecb19ba92a3",
         },
     },
-    .paths = .{ "scripts", "src", "vendor", ".clang-format", ".gitattributes", ".gitignore", "build.zig", "build.zig.zon", "hash.zig" },
+    .paths = .{
+        "scripts",
+        "src",
+        "vendor",
+        ".clang-format",
+        ".gitattributes",
+        ".gitignore",
+        "build.zig",
+        "build.zig.zon",
+        "hash.zig",
+    },
 }

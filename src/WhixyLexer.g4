@@ -104,7 +104,7 @@ FAST:        'fast';        // routine fastcall convention modifier
 BARE:        'bare';        // routine freestanding convention modifier
 IMPORT:      'import';      // import statement/expression
 ALIGN:       'align';       // value alignment modifier
-THREADLOCAL: 'threadlocal'; // value thread-local modifier
+THREADL:     'threadl';     // value thread-local modifier
 UNREACHABLE: 'unreachable'; // unreachable statement/expression
 VOLATILE:    'volatile';    // value volatile modifier
 UNROLL:      'unroll';      // loop inlining modifier

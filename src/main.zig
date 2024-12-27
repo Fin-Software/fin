@@ -13,6 +13,6 @@ pub fn main() !void {
         // Run VPXL's CLI using an arena-wrapped stack allocator.
         var buf: [9 << 10]u8 = undefined; // Adjust as necessary.
         var fba = heap.FixedBufferAllocator.init(buf[0..]); // Not reused
-        try cli.runVPXL(stderr, fba.allocator());
+        try cli.runWhixy(stderr, fba.allocator());
     }
 }

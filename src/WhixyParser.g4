@@ -34,10 +34,10 @@ stmt
     | deferStmt
     | errdeferStmt;
 
-field: mutable? volatile? threadlocal? atom token+ (EQUAL NEWLINE? expr)?;
-mutable: MUT;
+field:    mutable? volatile? threadl? atom token+ (EQUAL NEWLINE? expr)?;
+mutable:  MUT;
 volatile: VOLATILE;
-threadlocal: THREADLOCAL;
+threadl:  THREADL;
 
 assignStmt: atom assignOp atom;
 assignOp
@@ -59,13 +59,13 @@ assignOp
 
 call: atom (atom+ | expr);
 
-blockStmt
-    : oParen (stmt (stmtSep stmt)*)? cParen                                   # funcBlockStmt
-    | NEWLINE? DOLLAR_OPENPARENTHESIS NEWLINE? (stmt (stmtSep stmt)*)? cParen # procBlockStmt;
+blockStmt:    (oParen | dollarOParen) (stmt (stmtSep stmt)*)? cParen;
+dollarOParen: NEWLINE? DOLLAR_OPENPARENTHESIS NEWLINE?;
 
-routineStmt
-    : typeExpr token structExpr blockStmt        # plainRoutineStmt
-    | INLINE typeExpr token structExpr blockStmt # inlineRoutineStmt;
+routineStmt: inline? (fast | bare)? typeExpr token structExpr blockStmt;
+inline:      INLINE;
+fast:        FAST;
+bare:        BARE;
 
 returnStmt: RETURN (atom+ | expr);
 
@@ -75,11 +75,10 @@ whereStmt:     WHERE atom comparisonOp caseStmtBlock;
 comparisonOp:  ;
 caseStmtBlock: ;
 
-loopStmt
-    : UNROLL WHILE atom? atom? stmt # unrollWhileStmt
-    | UNROLL FOR atom? atom? stmt   # unrollForStmt
-    | WHILE atom? atom? stmt        # plainWhileStmt
-    | FOR atom? atom? stmt          # plainForStmt;
+loopStmt: unroll? (while | for) atom? atom? stmt;
+unroll:   UNROLL;
+while:    WHILE;
+for:      FOR;
 
 comptStmt: COMPT stmt;
 
@@ -107,9 +106,13 @@ expr
     | unreachable
     | routineExpr
     | string
+    | rune
     | atom;
 
-typeExpr: UNDERSCORE | ASTERISK? THIS | atom;
+typeExpr:   underscore | pointer? this | atom;
+underscore: UNDERSCORE;
+pointer:    ASTERISK;
+this:       THIS;
 
 binaryExpr
     : atom NEWLINE? (
@@ -185,11 +188,11 @@ caseExprBlock: ;
 
 comptExpr: COMPT expr;
 
-routineExpr
-    : atom structExpr blockStmt        # plainRoutineExpr
-    | INLINE atom structExpr blockStmt # inlineRoutineExpr;
+routineExpr: inline? (fast | bare)? typeExpr structExpr blockStmt;
 
 string: DOUBLEQUOTESTRING # dQString | BACKSLASHSTRING # bSString | BACKTICKSTRING # bTString;
+
+rune: SINGLEQUOTE token SINGLEQUOTE;
 
 atom: token | tupleExpr | blockExpr | structExpr;
 

@@ -15,7 +15,7 @@ const builtin = @import("builtin");
 const utf8 = @import("std").unicode;
 
 /// Cova configuration type identity
-const VPXLCmd = cmd: {
+const WhixyCmd = cmd: {
     var cmd_config = cova.Command.Config.optimized(.{ .no_formats = true, .remove_features = true });
 
     cmd_config.opt_config.global_usage_fn = printing.optionUsage;
@@ -50,97 +50,24 @@ const VPXLCmd = cmd: {
     break :cmd cova.Command.Custom(cmd_config);
 };
 
-/// Comptime-assembled Cova command definition for VPXL
-const vpxl_cmd: VPXLCmd = command("vpxl",
-    \\Encode a(n) (un)compressed input with the VPXL VP9 video encoder, courtesy of Maxine R Bonnette (@p7r0x7) et al.
+/// Comptime-assembled Cova command definition for Whixy
+const whixy_cmd: WhixyCmd = command("whixy",
+    \\Build and execute Whixy programs.
 , &.{
-    command("xpsnr",
-        \\Calculate XPSNR score between two or more (un)compressed inputs.
-    , null, &.{
-        value("input_path", []const u8, null, parsing.parsePathOrURL,
-            \\Path from which (un)compressed frames are to be demuxed and decoded by FFmpeg for scoring.
-            \\This option must be passed more than once.
-        ),
-    }, null),
+    command("cc",
+        \\Invoke the internal LLVM Clang C compiler.
+    , null, null, null),
 
-    command("fssim",
-        \\Calculate FastSSIM score between two or more (un)compressed inputs.
-    , null, &.{
-        value("input_path", []const u8, null, parsing.parsePathOrURL,
-            \\Path from which (un)compressed frames are to be demuxed and decoded by FFmpeg for scoring.
-            \\This option must be passed more than once.
-        ),
-    }, null),
-
-    command("pp",
-        \\Filter a(n) (un)compressed input with VPXL's opinionated, encoder- and content-agnostic video preprocessor.
-    , null, &.{
-        value("input_path", []const u8, null, parsing.parsePathOrURL,
-            \\Path from which (un)compressed frames are to be demuxed, decoded, and lossily filtered by
-            \\FFmpeg to improve transcoding efficiency.
-        ),
-        //option("out", value("output_path", []const u8, null, parsers.parseOutPath),
-        //   \\Path to which the filtered frames will be muxed.
-        //At the cost of reduced playback compatibility, lossily preprocesses input frames for
-        //improved coding efficiency: First, crops out uniform letterboxes and pillarbars within
-        //consistent GOPs. Then, increases 8-bit inputs to 10-bit and denoises imperceptibly noisy
-        //frames. And lastly, converts CFR inputs to VFR, dropping perceptually-duplicate frames.
-    }, &.{
-        option(false, "preset", null, value("x264_preset", []const u8, "auto", null, ""), ""),
-    }),
-}, &.{
-    value("input_path", []const u8, null, parsing.parsePathOrURL,
-        \\Path from which (un)compressed frames are to be demuxed and decoded by FFmpeg for encoding.
-    ),
-    value("output_path", []const u8, null, parsing.parsePathOrURL,
-        \\Path to which VPXL-compressed and FFmpeg-muxed frames are to be written. FFmpeg will mux to
-        \\the container format specified by output_path's file extension.
-    ),
-}, &.{
-    option(false, "qp", null, value("quantizer", u8, 64, parsing.parseInt(u8, 10), ""),
-        \\VPXL logarithmic quantizer parameter to employ: 0 (lossless) to 255 (most lossy)
-    ),
-    option(false, "pix", null, value("pixel_format", []const u8, "auto", parsing.parsePixelFormat, ""),
-        \\Prior to encoding, correctly convert input
-        \\frames to the given pixel format; VPXL's supported values: yuv420p yuv422p yuv440p yuv444p
-        \\yuv420p10le yuv422p10le yuv440p10le yuv444p10le yuv420p12le yuv422p12le yuv440p12le
-        \\yuv444p12le yuva420p yuva422p yuva440p yuva444p yuva420p10le yuva422p10le yuva440p10le
-        \\yuva444p10le yuva420p12le yuva422p12le yuva440p12le yuva444p12le auto
-    ),
-    option(false, "pass", null, value("vpxl_pass", []const u8, "only", parsing.parsePass, ""),
-        \\VPXL encoding pass to employ: 'only' refers to
-        \\the only pass of one-pass encoding. 'first' refers to the first pass of two-pass encoding.
-        \\'second' refers to the second pass of two- pass encoding.
-    ),
-    option(false, "gop", null, value("gop_duration", []const u8, "auto", parsing.parseTime, ""), if (builtin.os.tag == .windows)
-        \\Terminate GOPs after gop_duration if it is
-        \\terminated by a unit of time (s/ms/us); otherwise, terminate GOPs after gop_duration /
-        \\framerate. 'auto' uses one of two fast, perceptual heuristics to detect scene changes,
-        \\depending on the preset and quality level. Zero inputs produce all-intra streams.
-    else
-        \\Terminate GOPs after gop_duration if it is
-        \\terminated by a unit of time (s/ms/μs/us); otherwise, terminate GOPs after gop_duration ÷
-        \\framerate. 'auto' uses one of two fast, perceptual heuristics to detect scene changes,
-        \\depending on the preset and quality level. Zero inputs produce all-intra streams.
-    ),
-    option(false, "full", null, value("", bool, false, parsing.parseBool, ""),
-        \\Preserve full-range when using option -pix. This will reduce playback compatibility.
-    ),
-    option(false, "resume", null, value("", bool, true, parsing.parseBool, ""),
-        \\Allow automatic resumption of a previously-interrupted encoding.
-    ),
+    command("cxx",
+        \\Invoke the internal LLVM Clang C++ compiler.
+    , null, null, null),
+}, null, &.{
     option(false, "version", null, value("", bool, false, parsing.parseBool, ""),
         \\Print version information string and exit.
     ),
 
     option(true, "help", &.{ "-help", "h" }, value("", bool, false, parsing.parseBool, ""),
         \\Print command help message and exit.
-    ),
-    option(true, "ffmpeg", null, value("executable_path", []const u8, "auto", parsing.parsePathOrURL, ""),
-        \\Path to FFmpeg executable. If set to 'auto', the first 'ffmpeg' found in PATH will be used.
-    ),
-    option(true, "hwdec", null, value("", bool, true, parsing.parseBool, ""),
-        \\Allow automatic utilization of hardware decoding devices available to FFmpeg.
     ),
     option(true, "verbose", &.{"v"}, value("", bool, false, parsing.parseBool, ""),
         \\Increment command output verbosity.
@@ -154,16 +81,16 @@ const vpxl_cmd: VPXLCmd = command("vpxl",
 });
 
 // Comptime-only structure assemblers
-fn command(cmd: []const u8, desc: []const u8, cmds: ?[]const VPXLCmd, vals: ?[]const VPXLCmd.ValueT, opts: ?[]const VPXLCmd.OptionT) VPXLCmd {
+fn command(cmd: []const u8, desc: []const u8, cmds: ?[]const WhixyCmd, vals: ?[]const WhixyCmd.ValueT, opts: ?[]const WhixyCmd.OptionT) WhixyCmd {
     return .{ .name = cmd, .vals = vals, .sub_cmds = cmds, .description = replaceNewlines(desc), .hidden = desc.len == 0, .opts = opts, .allow_inheritable_opts = true };
 }
 
-fn option(inherit: bool, opt: []const u8, aliases: ?[]const []const u8, val: VPXLCmd.ValueT, desc: []const u8) VPXLCmd.OptionT {
+fn option(inherit: bool, opt: []const u8, aliases: ?[]const []const u8, val: WhixyCmd.ValueT, desc: []const u8) WhixyCmd.OptionT {
     return .{ .val = val, .name = opt, .long_name = opt, .description = replaceNewlines(desc), .hidden = desc.len == 0, .alias_long_names = aliases, .inheritable = inherit };
 }
 
-fn value(val: []const u8, comptime ValT: type, default: ?ValT, parse: ?*const fn ([]const u8, mem.Allocator) anyerror!ValT, desc: []const u8) VPXLCmd.ValueT {
-    return VPXLCmd.ValueT.ofType(ValT, .{ .name = val, .parse_fn = parse, .default_val = default, .description = replaceNewlines(desc) });
+fn value(val: []const u8, comptime ValT: type, default: ?ValT, parse: ?*const fn ([]const u8, mem.Allocator) anyerror!ValT, desc: []const u8) WhixyCmd.ValueT {
+    return WhixyCmd.ValueT.ofType(ValT, .{ .name = val, .parse_fn = parse, .default_val = default, .description = replaceNewlines(desc) });
 }
 
 /// For readability, some literal strings in this file require comptime transformation before being manipulated at runtime.
@@ -174,6 +101,17 @@ inline fn replaceNewlines(comptime str: []const u8) []const u8 {
         mem.replaceScalar(u8, &buf, nb, spaces[0]);
         const out = buf;
         return &out;
+    }
+}
+
+pub inline fn print(wr: anytype, strs: anytype) !void {
+    inline for (strs) |str| {
+        switch (@typeInfo(@TypeOf(str))) {
+            .array => try wr.writeAll(&str),
+            .pointer => try wr.writeAll(str),
+            .int, .comptime_int => try wr.writeByte(str),
+            else => @compileError("Expected byte or string, got " ++ @typeName(@TypeOf(str))),
+        }
     }
 }
 
@@ -271,16 +209,6 @@ const printing = struct {
         };
     }
 
-    inline fn print(wr: anytype, strs: anytype) !void {
-        inline for (strs) |str| {
-            switch (@typeInfo(@TypeOf(str))) {
-                .pointer => try wr.writeAll(str),
-                .int, .comptime_int => try wr.writeByte(str),
-                else => @compileError("Expected byte or string, got " ++ @typeName(@TypeOf(str))),
-            }
-        }
-    }
-
     fn commandUsage(root: anytype, wr: anytype, _: ?mem.Allocator) !void {
         try print(wr, .{ "USAGE   ", root.name, spaces[0] });
         if (root.sub_cmds != null) try print(wr, " [command]");
@@ -289,7 +217,7 @@ const printing = struct {
 
         const indent = @TypeOf(root.*).indent_fmt;
         try print(wr, .{ns ++ ns ++ indent ++ indent});
-        if (printing.active_scheme) |v| try print(wr, .{v.one});
+        if (active_scheme) |v| try print(wr, .{v.one});
 
         var rcw = nonCSIRuneCountingWriter(wr);
         var it = CharacterGroupIterator{ .buf = root.description };
@@ -299,13 +227,13 @@ const printing = struct {
                 try print(rcw.writer(), .{next.?});
             } else {
                 rcw.rune_count = 0;
-                if (printing.active_scheme) |_| try print(wr, .{zero});
+                if (active_scheme) |_| try print(wr, .{zero});
                 try print(wr, .{ns ++ indent ++ indent});
-                if (printing.active_scheme) |v| try print(wr, .{v.one});
+                if (active_scheme) |v| try print(wr, .{v.one});
                 try print(rcw.writer(), .{if (next.?[0] == spaces[0]) next.?[1..] else next.?});
             }
         }
-        if (printing.active_scheme) |_| try print(wr, .{zero});
+        if (active_scheme) |_| try print(wr, .{zero});
         try print(wr, .{ns ++ ns});
     }
 
@@ -317,7 +245,7 @@ const printing = struct {
                 if (cmd.hidden) continue;
                 var rcw = nonCSIRuneCountingWriter(wr);
                 try print(rcw.writer(), .{ indent ++ indent, root.name, spaces[0], cmd.name, ":  " });
-                if (printing.active_scheme) |v| try print(wr, .{v.one});
+                if (active_scheme) |v| try print(wr, .{v.one});
                 var it = CharacterGroupIterator{ .buf = cmd.description };
                 var next: ?[]const u8 = it.first();
                 while (next != null) : (next = it.next()) {
@@ -325,13 +253,13 @@ const printing = struct {
                         try print(rcw.writer(), .{next.?});
                     } else {
                         rcw.rune_count = 0;
-                        if (printing.active_scheme) |_| try print(wr, .{zero});
+                        if (active_scheme) |_| try print(wr, .{zero});
                         try print(wr, .{ns ++ indent ++ indent});
-                        if (printing.active_scheme) |v| try print(wr, .{v.one});
+                        if (active_scheme) |v| try print(wr, .{v.one});
                         try print(rcw.writer(), .{if (next.?[0] == spaces[0]) next.?[1..] else next.?});
                     }
                 }
-                if (printing.active_scheme) |_| try print(wr, .{zero});
+                if (active_scheme) |_| try print(wr, .{zero});
                 try print(wr, .{ns});
             }
             try print(wr, .{nb});
@@ -374,7 +302,7 @@ const printing = struct {
     }
 
     fn valueUsage(val: anytype, wr: anytype, _: ?mem.Allocator) !void {
-        if (printing.active_scheme) |v| try print(wr, .{v.one});
+        if (active_scheme) |v| try print(wr, .{v.one});
         try print(wr, .{'"'});
         const val_name = val.name();
         if (val_name.len > 0) try print(wr, .{ val_name, spaces[0] });
@@ -388,7 +316,7 @@ const printing = struct {
             try print(wr, .{"string"});
         } else try print(wr, .{child_type});
         try print(wr, .{")\""});
-        if (printing.active_scheme) |_| try print(wr, .{zero});
+        if (active_scheme) |_| try print(wr, .{zero});
 
         var str: []const u8 = undefined;
         if (mem.eql(u8, child_type, "[]const u8")) {
@@ -408,7 +336,7 @@ const printing = struct {
         var rcw = nonCSIRuneCountingWriter(wr);
         try val.usage(rcw.writer());
         try print(rcw.writer(), .{spaces[0..2]});
-        if (printing.active_scheme) |v| try print(wr, .{v.two});
+        if (active_scheme) |v| try print(wr, .{v.two});
         var it = CharacterGroupIterator{ .buf = val.description() };
         var next: ?[]const u8 = it.first();
         while (next != null) : (next = it.next()) {
@@ -416,13 +344,13 @@ const printing = struct {
                 try print(rcw.writer(), .{next.?});
             } else {
                 rcw.rune_count = 0;
-                if (printing.active_scheme) |_| try print(wr, .{zero});
+                if (active_scheme) |_| try print(wr, .{zero});
                 try print(wr, .{ns ++ indent});
-                if (printing.active_scheme) |v| try print(wr, .{v.two});
+                if (active_scheme) |v| try print(wr, .{v.two});
                 try print(rcw.writer(), .{if (next.?[0] == spaces[0]) next.?[1..] else next.?});
             }
         }
-        if (printing.active_scheme) |_| try print(wr, .{zero});
+        if (active_scheme) |_| try print(wr, .{zero});
         try print(wr, .{ns});
     }
 
@@ -443,7 +371,7 @@ const printing = struct {
         try opt.usage(rcw.writer());
 
         try print(rcw.writer(), .{spaces[0..2]});
-        if (printing.active_scheme) |v| try print(wr, .{v.two});
+        if (active_scheme) |v| try print(wr, .{v.two});
         var it = CharacterGroupIterator{ .buf = opt.description };
         var next: ?[]const u8 = it.first();
         while (next != null) : (next = it.next()) {
@@ -451,13 +379,13 @@ const printing = struct {
                 try print(rcw.writer(), .{next.?});
             } else {
                 rcw.rune_count = 0;
-                if (printing.active_scheme) |_| try print(wr, .{zero});
+                if (active_scheme) |_| try print(wr, .{zero});
                 try print(wr, .{ns ++ @TypeOf(opt.*).indent_fmt.?});
-                if (printing.active_scheme) |v| try print(wr, .{v.two});
+                if (active_scheme) |v| try print(wr, .{v.two});
                 try print(rcw.writer(), .{if (next.?[0] == spaces[0]) next.?[1..] else next.?});
             }
         }
-        if (printing.active_scheme) |_| try print(wr, .{zero});
+        if (active_scheme) |_| try print(wr, .{zero});
         try print(wr, .{ns});
     }
 
@@ -470,7 +398,7 @@ const printing = struct {
                 while (it.next()) |arg| {
                     if (arg.len < 5) continue;
                     if (ascii.eqlIgnoreCase("-ansi", arg[0..5])) {
-                        const seps = VPXLCmd.OptionT.opt_val_seps;
+                        const seps = WhixyCmd.OptionT.opt_val_seps;
                         const val = switch (arg[5]) {
                             seps[0], seps[1], spaces[0] => arg[6..],
                             else => arg[5..],
@@ -483,21 +411,21 @@ const printing = struct {
         } else return false;
     }
 };
-const margin = columns - (VPXLCmd.indent_fmt.len * 2);
+const margin = columns - (WhixyCmd.indent_fmt.len * 2);
 const spaces = [_]u8{' '} ** 4; // Adjust as necessary.
 const zero = "\x1b[0m";
 const columns = 100;
 const ns = "\n";
 const nb = '\n';
 
-/// runVPXL() is the entry point for the CLI.
-pub fn runVPXL(pipe: fs.File, ally: mem.Allocator) !void {
+/// runWhixy() is the entry point for the CLI.
+pub fn runWhixy(pipe: fs.File, ally: mem.Allocator) !void {
     var bfwr = io.bufferedWriter(pipe.writer());
     defer bfwr.flush() catch db.panic("{s}", .{"Failed to flush buffered writer to pipe."});
-    try printing.print(bfwr.writer(), .{nb});
-    defer printing.print(pipe.writer(), .{nb}) catch db.panic("{s}", .{"Couldn't print final newline."});
+    try print(bfwr.writer(), .{nb});
+    defer print(pipe.writer(), .{nb}) catch db.panic("{s}", .{"Couldn't print final newline."});
 
-    const vpxl_cli = try vpxl_cmd.init(ally, .{
+    const whixy_cli = try whixy_cmd.init(ally, .{
         .help_config = .{
             .add_cmd_help_group = .DoNotAdd,
             .add_opt_help_group = .DoNotAdd,
@@ -505,13 +433,13 @@ pub fn runVPXL(pipe: fs.File, ally: mem.Allocator) !void {
             .add_help_opts = false,
         },
     });
-    defer vpxl_cli.deinit();
-    defer if (builtin.mode == .Debug) cova.utils.displayCmdInfo(VPXLCmd, vpxl_cli, ally, bfwr.writer(), false) catch
+    defer whixy_cli.deinit();
+    defer if (builtin.mode == .Debug) cova.utils.displayCmdInfo(WhixyCmd, whixy_cli, ally, bfwr.writer(), false) catch
         db.panic("{s}", .{"Failed to display Cova debug info."});
     {
         var arg_it = try cova.ArgIteratorGeneric.init(ally);
         printing.active_scheme = if (try printing.isCSISupported(pipe, &arg_it, ally)) printing.schemes[0] else null;
-        try cova.parseArgs(&arg_it, VPXLCmd, vpxl_cli, bfwr.writer(), .{
+        try cova.parseArgs(&arg_it, WhixyCmd, whixy_cli, bfwr.writer(), .{
             .set_opt_termination_symbol = "--", // This is the most common terminator, even if long flags start with '-'.
             .auto_handle_usage_help = false,
             .enable_opt_termination = true,
@@ -520,8 +448,8 @@ pub fn runVPXL(pipe: fs.File, ally: mem.Allocator) !void {
         (&arg_it).deinit();
     }
     {
-        const cmd = vpxl_cli.sub_cmd orelse {
-            try vpxl_cli.help(bfwr.writer());
+        const cmd = whixy_cli.sub_cmd orelse {
+            try whixy_cli.help(bfwr.writer());
             try bfwr.flush();
             return;
         };
@@ -534,7 +462,7 @@ pub fn runVPXL(pipe: fs.File, ally: mem.Allocator) !void {
     }
 }
 
-/// Parsing callback functions for Cova values
+/// Parsing callback functions for possible CLI inputs
 const parsing = struct {
     fn parseInt(comptime T: type, base: u8) fn ([]const u8, mem.Allocator) anyerror!T {
         return struct {
@@ -544,42 +472,10 @@ const parsing = struct {
         }.parseInt;
     }
 
-    fn parseDeadline(arg: []const u8, _: mem.Allocator) ![]const u8 {
+    fn parseOptimize(arg: []const u8, _: mem.Allocator) ![]const u8 {
         const deadlines = [_][]const u8{ "fast", "good", "best" };
         for (deadlines) |str| if (ascii.eqlIgnoreCase(str, arg)) return str;
-        return error.DeadlineValueUnsupported;
-    }
-
-    fn parsePixelFormat(arg: []const u8, _: mem.Allocator) ![]const u8 {
-        // zig fmt: off
-        const format = [_][]const u8{
-             "yuv420p",  "yuv420p10le",  "yuv420p12le",
-             "yuv422p",  "yuv422p10le",  "yuv422p12le",
-             "yuv440p",  "yuv440p10le",  "yuv440p12le",
-             "yuv444p",  "yuv444p10le",  "yuv444p12le",
-            "yuva420p", "yuva420p10le", "yuva420p12le",
-            "yuva422p", "yuva422p10le", "yuva422p12le",
-            "yuva440p", "yuva440p10le", "yuva440p12le",
-            "yuva444p", "yuva444p10le", "yuva444p12le", "auto",
-        };
-        // zig fmt: on
-        for (format) |str| if (ascii.eqlIgnoreCase(str, arg)) return str;
-        return error.PixelFormatUnsupportedByVPXL;
-    }
-
-    fn parsePathOrURL(arg: []const u8, _: mem.Allocator) ![]const u8 {
-        return arg;
-    }
-
-    fn parsePass(arg: []const u8, _: mem.Allocator) ![]const u8 {
-        const passes = [_][]const u8{ "only", "first", "second" };
-        for (passes) |str| if (ascii.eqlIgnoreCase(str, arg)) return str;
-        return error.PassValueUnsupported;
-    }
-
-    fn parseTime(arg: []const u8, _: mem.Allocator) ![]const u8 {
-        _ = arg;
-        return error.TimeValueUnsupported;
+        return error.OptimizeValueUnsupported;
     }
 
     fn parseBool(arg: []const u8, _: mem.Allocator) !bool {

@@ -60,9 +60,21 @@ _ Arithmetic =
     )
     _ Mul = inline a.type {a.type a b, (compt OverflowBehavior) of}
     (
-        return where of == ( .wrapOnOverflow => a *% b, .panicOnOverflow => a * b )
+        return where of == (
+            .wrapOnOverflow => a *% b
+            .panicOnOverflow => a * b
+        )
     )
     _ Div = inline a.type {a.type a b} ( return a / b )
     _ Mod = inline a.type {a.type a b} ( return a % b )
     _ Neg = inline a.type {a.type a} ( return -a )
 }
+
+_ numStruct
+
+staticStorage void {}
+$(
+    _ a = {uptr b}
+
+)
+

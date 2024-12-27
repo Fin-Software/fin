@@ -29,7 +29,7 @@ class WhixyParserVisitor: public antlr4::tree::AbstractParseTreeVisitor {
 
     virtual std::any visitVolatile(WhixyParser::VolatileContext* context) = 0;
 
-    virtual std::any visitThreadlocal(WhixyParser::ThreadlocalContext* context) = 0;
+    virtual std::any visitThreadl(WhixyParser::ThreadlContext* context) = 0;
 
     virtual std::any visitAssignStmt(WhixyParser::AssignStmtContext* context) = 0;
 
@@ -65,13 +65,17 @@ class WhixyParserVisitor: public antlr4::tree::AbstractParseTreeVisitor {
 
     virtual std::any visitCall(WhixyParser::CallContext* context) = 0;
 
-    virtual std::any visitFuncBlockStmt(WhixyParser::FuncBlockStmtContext* context) = 0;
+    virtual std::any visitBlockStmt(WhixyParser::BlockStmtContext* context) = 0;
 
-    virtual std::any visitProcBlockStmt(WhixyParser::ProcBlockStmtContext* context) = 0;
+    virtual std::any visitDollarOParen(WhixyParser::DollarOParenContext* context) = 0;
 
-    virtual std::any visitPlainRoutineStmt(WhixyParser::PlainRoutineStmtContext* context) = 0;
+    virtual std::any visitRoutineStmt(WhixyParser::RoutineStmtContext* context) = 0;
 
-    virtual std::any visitInlineRoutineStmt(WhixyParser::InlineRoutineStmtContext* context) = 0;
+    virtual std::any visitInline(WhixyParser::InlineContext* context) = 0;
+
+    virtual std::any visitFast(WhixyParser::FastContext* context) = 0;
+
+    virtual std::any visitBare(WhixyParser::BareContext* context) = 0;
 
     virtual std::any visitReturnStmt(WhixyParser::ReturnStmtContext* context) = 0;
 
@@ -83,13 +87,13 @@ class WhixyParserVisitor: public antlr4::tree::AbstractParseTreeVisitor {
 
     virtual std::any visitCaseStmtBlock(WhixyParser::CaseStmtBlockContext* context) = 0;
 
-    virtual std::any visitUnrollWhileStmt(WhixyParser::UnrollWhileStmtContext* context) = 0;
+    virtual std::any visitLoopStmt(WhixyParser::LoopStmtContext* context) = 0;
 
-    virtual std::any visitUnrollForStmt(WhixyParser::UnrollForStmtContext* context) = 0;
+    virtual std::any visitUnroll(WhixyParser::UnrollContext* context) = 0;
 
-    virtual std::any visitPlainWhileStmt(WhixyParser::PlainWhileStmtContext* context) = 0;
+    virtual std::any visitWhile(WhixyParser::WhileContext* context) = 0;
 
-    virtual std::any visitPlainForStmt(WhixyParser::PlainForStmtContext* context) = 0;
+    virtual std::any visitFor(WhixyParser::ForContext* context) = 0;
 
     virtual std::any visitComptStmt(WhixyParser::ComptStmtContext* context) = 0;
 
@@ -104,6 +108,12 @@ class WhixyParserVisitor: public antlr4::tree::AbstractParseTreeVisitor {
     virtual std::any visitExpr(WhixyParser::ExprContext* context) = 0;
 
     virtual std::any visitTypeExpr(WhixyParser::TypeExprContext* context) = 0;
+
+    virtual std::any visitUnderscore(WhixyParser::UnderscoreContext* context) = 0;
+
+    virtual std::any visitPointer(WhixyParser::PointerContext* context) = 0;
+
+    virtual std::any visitThis(WhixyParser::ThisContext* context) = 0;
 
     virtual std::any visitBinaryExpr(WhixyParser::BinaryExprContext* context) = 0;
 
@@ -191,15 +201,15 @@ class WhixyParserVisitor: public antlr4::tree::AbstractParseTreeVisitor {
 
     virtual std::any visitComptExpr(WhixyParser::ComptExprContext* context) = 0;
 
-    virtual std::any visitPlainRoutineExpr(WhixyParser::PlainRoutineExprContext* context) = 0;
-
-    virtual std::any visitInlineRoutineExpr(WhixyParser::InlineRoutineExprContext* context) = 0;
+    virtual std::any visitRoutineExpr(WhixyParser::RoutineExprContext* context) = 0;
 
     virtual std::any visitDQString(WhixyParser::DQStringContext* context) = 0;
 
     virtual std::any visitBSString(WhixyParser::BSStringContext* context) = 0;
 
     virtual std::any visitBTString(WhixyParser::BTStringContext* context) = 0;
+
+    virtual std::any visitRune(WhixyParser::RuneContext* context) = 0;
 
     virtual std::any visitAtom(WhixyParser::AtomContext* context) = 0;
 

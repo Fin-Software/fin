@@ -6,7 +6,7 @@
 
 * Pure and impure codepaths are explicitly delineated in the syntax.
 * Conditions for automatic laziness in an otherwise eager syntax.
-* Value declarations are immutable by default, and passed routine parameters are always immutable.
+* Value Dlarations are immutable by default, and passed routine parameters are always immutable.
 
 ###### Features Conducive to Scripting
 
@@ -18,15 +18,17 @@
 
 ###### Implementation Consistency Guarantees
 
-* Tail call optimization (such that valid code in one implementation doesn't produce a stack overflow in another)
-* Constant-time basic integer operations (otherwise writing secure code could become impossible)
-* All forms of polymorphism must be statically-dispatched (as to incur no runtime overhead)
-* Comptime code execution cannot be delayed until runtime
-* Automatic laziness follows a specified algorithm and cannot be skipped
+* Compilers must halt; interpreters are... permitted.
+* Primitive integer operations must be constant-time.
+* Type inference must follow the specified, halting algorithm.
+* Comptime code execution including constant folding cannot be delayed until runtime.
+* The syntax specifies which expressions the compiler is to treat as unsequenced and handle lazily.
 
 # Governing Implementation Design Goals
 
-#### Compiler
+##### Target Support (unless I'm paid to work on this)
+
+### Compiler
 
 <table><thead>
 	<tr>
@@ -70,34 +72,79 @@
 </tbody>
 </table>
 
-* ISO C23 backend
-* GCC- and/or LLVM-based code generation (selectable when building the compiler)
+* ISO C23 backend; LLVM clang-based code generation
 * JiT'd comptime code generation and execution followed by JiT'd or AoT'd runtime code generation (and possible execution)
-* rustc-level semantic linting and informative errors for compiler-driven development
-* 100% native stdlib with comprehensive support only for modern or appropriately longstanding software technology many programmers need
-* Literal deduplication techniques more advanced than anything I'm aware exists in current code generation tools
+* rustc-level semantic linting (faster, because this language is simpler) and informative errors for compiler-driven development
+* native and ISO C23 stdlib with comprehensive support only for SotA or appropriately longstanding or ubiquitous software
+* struct and literal deduplication
+* per-comptime-loop iteration limit default, possibly 2^16
+* per-file node limit default, possibly 2^32
 
-#### Standard Library
+### Standard Library Structs 
 
-format/container
-format/compressor
-format/encoding
-
-codec/wbe (whixy binary encoding, like the go binary encoding format; E+D)
-codec/pam (arbitrary uncompressed format geared towards image data; E+D)
-codec/base10 (~42% efficient decimal text encoding in standard ascii arabic numerals; E+D)
-codec/base16 (50% efficient uppercase or lowercase hexadecimal text encoding; E+D)
-codec/base32 (base32; 62.5% efficient; E+D)
-codec/base64 (base64; 75% efficient; E+D)
-codec/base85 (base85 or ascii85 or z85; 80% efficient; E+D)
-codec/base91 (Base91 or basE91; ~81-88% efficient; E+D)
-codec/flate (Deflate or Gzip or Zlib compression format; D*)
-codec/lzma (LZMA compression format; D)
-codec/lzma2 (LZMA2 LZMA container format; D)
-codec/brotli (Brotli; D*)
-codec/zstd (Zstandard; D*)
-codec/xz
-
-*encoding eventually
+| source file sans extension |                          contents and priority =>                           |   |
+| :------------------------- | :-------------------------------------------------------------------------- | - |
+| `compressor/brotli`        | (E then D) Brotli compression format                                        |   |
+| `compressor/bzip2`         | (D only)   Bzip2 compression format                                         |   |
+| `compressor/flate`         | (E and D)  Deflate or Gzip or Zlib compression format                       |   |
+| `compressor/lzma`          | (D only)   LZMA compression format                                          |   |
+| `compressor/lzma2`         | (D only)   LZMA2 compression format                                         |   |
+| `compressor/zstd`          | (E then D) Zstandard compression format                                     |   |
+| `container/sevenz`         | (D only)   7-zip LZMA, LZMA2, or Deflate archive format                     |   |
+| `container/tar`            | (E and D)  gnu, ustar, and pax tape archive format                          |   |
+| `container/xz`             | (D only)   XZ LZMA or LZMA2 container format                                |   |
+| `container/zip`            | (E and D)  Zip or Zip64 Deflate archive format                              |   |
+| `encoding/base10`          | (E and D)  ~42% efficient Dimal ASCII                                       |   |
+| `encoding/base16`          | (E and D)  50% efficient uppercase or lowercase hexaDimal ASCII             |   |
+| `encoding/base32`          | (E and D)  62.5% efficient uppercase or lowercase base32 ASCII              |   |
+| `encoding/base64`          | (E and D)  75% efficient base64 ASCII                                       |   |
+| `encoding/base85`          | (E and D)  80% efficient base85 or ascii85 or z85 ASCII                     |   |
+| `encoding/base91`          | (E and D)  ~81-88% efficient basE91 or Base91 ASCII                         |   |
+| `encoding/csv`             | (E and D)                                                                   |   |
+| `encoding/cobr`            | (E and D)                                                                   |   |
+| `encoding/json`            | (E and D)                                                                   |   |
+| `encoding/pam`             | (E and D)  uncompressed binary or ASCII format geared towards image data    |   |
+| `encoding/toml`            | (E and D)                                                                   |   |
+| `encoding/utf-8`           | (E and D)  utf-8 unicode text encoding                                      |   |
+| `encoding/wtf-16`          | (E and D)  wtf-16 unicode text encoding                                     |   |
+| `cova/cova`                | commands, options, values, and arguments; a reprised cli library            |   |
+| `fmt/fmt`                  | value formatting and writing                                                |   |
+| `hw/hw`                    |                                                                             |   |
+| `io/io`                    | standard byte readers and writers API                                       |   |
+| `math/math`                |                                                                             |   |
+| `math/big/big`             |                                                                             |   |
+| `math/big/int`             |                                                                             |   |
+| `math/big/posit`           |                                                                             |   |
+| `math/big/rational`        |                                                                             |   |
+| `mem/mem`                  | generic memory manipulation                                                 |   |
+| `mem/heap`                 | generic memory allocation                                                   |   |
+| `mem/heap/allocator`       | standard generic memory allocator API                                       |   |
+| `mem/heap/arenaalloc`      | allocator wrapper that disables all freeing until deinitialization          |   |
+| `mem/heap/rpmalloc`        | native reimplementation of https://github.com/mjansson/rpmalloc             |   |
+| `mem/heap/stackalloc`      | fixed-buffer allocator; may only free the most recent allocation            |   |
+| `mem/heap/safealloc`       | allocator wrapper that safety checks and panics or warns                    |   |
+| `mem/heap/failalloc`       | allocator wrapper that precisely, randomly, or catastrophically fails       |   |
+| `mem/sort`                 |                                                                             |   |
+| `mime/mime`                |                                                                             |   |
+| `os/os`                    | operating system API                                                        |   |
+| `os/exec`                  |                                                                             |   |
+| `os/fs`                    |                                                                             |   |
+| `os/fs/path`               |                                                                             |   |
+| `os/syscall`               |                                                                             |   |
+| `regex/regex`              |                                                                             |   |
+| `runt/runt`                |                                                                             |   |
+| `runt/debug`               |                                                                             |   |
+| `runt/tracy`               |                                                                             |   |
+| `runt/race`                |                                                                             |   |
+| `sync/atomic`              |                                                                             |   |
+| `sync/sched`               |                                                                             |   |
+| `sync/chan`                |                                                                             |   |
+| `sync/posix`               |                                                                             |   |
+| `sync/coroutine`           |                                                                             |   |
+| `sync/mutex`               |                                                                             |   |
+| `sync/waitgroup`           |                                                                             |   |
+| `time/time`                |                                                                             |   |
+| `time/timezone`            |                                                                             |   |
+| `unicode`                  |                                                                             |   |
 
 + others I don't yet know the importance of in my limited experience as a programmer

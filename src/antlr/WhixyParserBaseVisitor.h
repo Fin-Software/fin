@@ -26,7 +26,7 @@ class WhixyParserBaseVisitor: public WhixyParserVisitor {
 
     virtual std::any visitVolatile(WhixyParser::VolatileContext* ctx) override { return visitChildren(ctx); }
 
-    virtual std::any visitThreadlocal(WhixyParser::ThreadlocalContext* ctx) override { return visitChildren(ctx); }
+    virtual std::any visitThreadl(WhixyParser::ThreadlContext* ctx) override { return visitChildren(ctx); }
 
     virtual std::any visitAssignStmt(WhixyParser::AssignStmtContext* ctx) override { return visitChildren(ctx); }
 
@@ -86,19 +86,17 @@ class WhixyParserBaseVisitor: public WhixyParserVisitor {
 
     virtual std::any visitCall(WhixyParser::CallContext* ctx) override { return visitChildren(ctx); }
 
-    virtual std::any visitFuncBlockStmt(WhixyParser::FuncBlockStmtContext* ctx) override { return visitChildren(ctx); }
+    virtual std::any visitBlockStmt(WhixyParser::BlockStmtContext* ctx) override { return visitChildren(ctx); }
 
-    virtual std::any visitProcBlockStmt(WhixyParser::ProcBlockStmtContext* ctx) override { return visitChildren(ctx); }
+    virtual std::any visitDollarOParen(WhixyParser::DollarOParenContext* ctx) override { return visitChildren(ctx); }
 
-    virtual std::any visitPlainRoutineStmt(WhixyParser::PlainRoutineStmtContext* ctx) override
-    {
-        return visitChildren(ctx);
-    }
+    virtual std::any visitRoutineStmt(WhixyParser::RoutineStmtContext* ctx) override { return visitChildren(ctx); }
 
-    virtual std::any visitInlineRoutineStmt(WhixyParser::InlineRoutineStmtContext* ctx) override
-    {
-        return visitChildren(ctx);
-    }
+    virtual std::any visitInline(WhixyParser::InlineContext* ctx) override { return visitChildren(ctx); }
+
+    virtual std::any visitFast(WhixyParser::FastContext* ctx) override { return visitChildren(ctx); }
+
+    virtual std::any visitBare(WhixyParser::BareContext* ctx) override { return visitChildren(ctx); }
 
     virtual std::any visitReturnStmt(WhixyParser::ReturnStmtContext* ctx) override { return visitChildren(ctx); }
 
@@ -110,19 +108,13 @@ class WhixyParserBaseVisitor: public WhixyParserVisitor {
 
     virtual std::any visitCaseStmtBlock(WhixyParser::CaseStmtBlockContext* ctx) override { return visitChildren(ctx); }
 
-    virtual std::any visitUnrollWhileStmt(WhixyParser::UnrollWhileStmtContext* ctx) override
-    {
-        return visitChildren(ctx);
-    }
+    virtual std::any visitLoopStmt(WhixyParser::LoopStmtContext* ctx) override { return visitChildren(ctx); }
 
-    virtual std::any visitUnrollForStmt(WhixyParser::UnrollForStmtContext* ctx) override { return visitChildren(ctx); }
+    virtual std::any visitUnroll(WhixyParser::UnrollContext* ctx) override { return visitChildren(ctx); }
 
-    virtual std::any visitPlainWhileStmt(WhixyParser::PlainWhileStmtContext* ctx) override
-    {
-        return visitChildren(ctx);
-    }
+    virtual std::any visitWhile(WhixyParser::WhileContext* ctx) override { return visitChildren(ctx); }
 
-    virtual std::any visitPlainForStmt(WhixyParser::PlainForStmtContext* ctx) override { return visitChildren(ctx); }
+    virtual std::any visitFor(WhixyParser::ForContext* ctx) override { return visitChildren(ctx); }
 
     virtual std::any visitComptStmt(WhixyParser::ComptStmtContext* ctx) override { return visitChildren(ctx); }
 
@@ -137,6 +129,12 @@ class WhixyParserBaseVisitor: public WhixyParserVisitor {
     virtual std::any visitExpr(WhixyParser::ExprContext* ctx) override { return visitChildren(ctx); }
 
     virtual std::any visitTypeExpr(WhixyParser::TypeExprContext* ctx) override { return visitChildren(ctx); }
+
+    virtual std::any visitUnderscore(WhixyParser::UnderscoreContext* ctx) override { return visitChildren(ctx); }
+
+    virtual std::any visitPointer(WhixyParser::PointerContext* ctx) override { return visitChildren(ctx); }
+
+    virtual std::any visitThis(WhixyParser::ThisContext* ctx) override { return visitChildren(ctx); }
 
     virtual std::any visitBinaryExpr(WhixyParser::BinaryExprContext* ctx) override { return visitChildren(ctx); }
 
@@ -245,21 +243,15 @@ class WhixyParserBaseVisitor: public WhixyParserVisitor {
 
     virtual std::any visitComptExpr(WhixyParser::ComptExprContext* ctx) override { return visitChildren(ctx); }
 
-    virtual std::any visitPlainRoutineExpr(WhixyParser::PlainRoutineExprContext* ctx) override
-    {
-        return visitChildren(ctx);
-    }
-
-    virtual std::any visitInlineRoutineExpr(WhixyParser::InlineRoutineExprContext* ctx) override
-    {
-        return visitChildren(ctx);
-    }
+    virtual std::any visitRoutineExpr(WhixyParser::RoutineExprContext* ctx) override { return visitChildren(ctx); }
 
     virtual std::any visitDQString(WhixyParser::DQStringContext* ctx) override { return visitChildren(ctx); }
 
     virtual std::any visitBSString(WhixyParser::BSStringContext* ctx) override { return visitChildren(ctx); }
 
     virtual std::any visitBTString(WhixyParser::BTStringContext* ctx) override { return visitChildren(ctx); }
+
+    virtual std::any visitRune(WhixyParser::RuneContext* ctx) override { return visitChildren(ctx); }
 
     virtual std::any visitAtom(WhixyParser::AtomContext* ctx) override { return visitChildren(ctx); }
 
