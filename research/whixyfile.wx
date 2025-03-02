@@ -1,0 +1,150 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright © 2025 The Whixy Authors. All rights reserved.
+# Contributors responsible for this file:
+# @p7r0x7 <mattrbonnette@pm.me>
+
+# For reference only; will compile if used
+def Bitwise = {
+    inline a.type Not {a.type a} ( return !a )
+    inline a.type Or {a.type a b} ( return a | b )
+    inline a.type And {a.type a b} ( return a & b )
+    inline a.type Xor {a.type a b} ( return a ^ b )
+    inline a.type Shl {a.type a b} ( return a << b )
+    inline a.type Shr {a.type a b} ( return a >> b )
+    inline a.type Rotl {a.type a b} ( return a <<% b )
+    inline a.type Rotr {a.type a b} ( return a >>% b )
+}
+
+# For reference only; will compile if used
+def Arithmetic = {
+    def OverflowBehavior = enum ( .wrapOnOverflow, .panicOnOverflow )
+    #
+    # The following functions are generic and improper usage will be caught at comptime:
+    #
+    def Add = inline a.type {a.type a b, (compt OverflowBehavior) of} (
+        return where of == (.wrapOnOverflow => a +% b, .panicOnOverflow => a + b)
+    )
+    def Sub = inline a.type {a.type a b, (compt OverflowBehavior) of} (
+        return where of == (.wrapOnOverflow => a -% b, .panicOnOverflow => a - b)
+    )
+    def Mul = inline a.type {a.type a b, (compt OverflowBehavior) of} (
+        return where of == (.wrapOnOverflow => a *% b, .panicOnOverflow => a * b)
+    )
+    def Div = inline a.type {a.type a b} ( return a / b )
+    def Mod = inline a.type {a.type a b} ( return a % b )
+    def Neg = inline a.type {a.type a} ( return -a )
+}
+
+def RunnableProgram = {
+    u64 counter {} $(
+        def struct = {mut static u64 = 0}
+        struct.static += 1
+        return struct.static
+    )
+
+    u64 fibonacci {n u64} (
+        if (n <= 1) return n; mut prev, curr, i u64 = (0, 1, 2)
+        while (i <= n) (i += 1) \
+            (def next = prev + curr; prev = curr; curr = next)
+        return curr
+    )
+
+    void Main {} $( while (true) fibonacci(counter()) )
+}
+
+type coll = std.collection
+type whatever = (import local_lib).PineapplePasta
+
+__ EveryGoddamnLiteral = (
+    "\n\n    Hello, World!\n\n"
+    `\n\n    Hello, World!\n\n`
+    \\
+    \\    Hello, World!
+    \\
+    '\n'
+    1234567890
+    0b10101010
+    0o77777777
+    0xabcdef01
+
+)
+
+type uselessComputation = <T type>(
+    field0, field1, field2 T
+    field3, field4 = whatever, std.Math
+    mut staticAndGlobalMember = u8(0)
+
+    inline void memberMethod(tt *this) ${
+        tt.field0 += ${
+            tt.field1 = ((tt.field4.Phi*1e20) as T) | 1
+            tt.field1
+        }
+        tt.field2 = tt.field1 ^ (tt.field0 >> 5)
+        [_]T buf = (tt.field2, tt.field1, tt.field0)
+        if (buf.len > 0) tt.field3(*[buf.len*std.runt.SizeOf(buf[0])]u8(*buf[0]))
+        staticAndGlobalMember = tt.field1 * tt.field1 + !tt.field1
+    }
+)
+
+u64 counter() ${
+    type aStruct = (mut u64 aVal = 0) # makes a static value
+    defer aStruct.aVal += 1           # starts with 0
+    return aStruct.aVal
+}
+
+u64 fibonacci(n u64) {
+    if (n <= 1) return n
+    mut u64 prev, curr, i = 0, 1, 2
+    while (i <= n) {i += 1} {
+        u64 next = prev + curr
+        prev = curr
+        curr = next
+    }
+    return curr
+}
+
+u8 Main() ${ return u8(fibonacci(counter())) } # narrowings must be explicit
+
+void EraseBuffer @{buf []any} ${
+    coll.isInAnd(buf.type, (coll.NumericType)) # triggers a compilation error if t is not a member of all passed collections
+    for () {}
+}
+
+compt type newWriterType(inner io.Writer) {
+    return (
+
+    )
+}
+
+u8 Main() ${
+    [10 << 20]u8 buffer
+    __ lambda = |&buffer| {
+
+    }
+}
+
+inline impl Fn() operator(op ||{}) {
+    |op| {
+        if (nums.len == 0) return 0; mut t cum = nums[0]
+        unroll for (nums[1..]) |num| cum = op(cum, num); cum
+    }
+}
+
+__ Arithmetic = (
+
+    __ add = operator(|a, b| a + b)
+
+
+    inline t add(t type, nums any) {
+
+    }
+)
+
+compt type BufferedWriter(wrapped io.Writer, len uptr) {
+    (
+        inner io.Writer = wrapped,
+        buffer [len]u8,
+
+        uptr write() { 0 }
+    )
+}

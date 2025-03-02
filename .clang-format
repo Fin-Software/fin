@@ -21,36 +21,20 @@ AlignTrailingComments: Always
 AllowAllArgumentsOnNextLine: true
 AllowAllParametersOfDeclarationOnNextLine: true
 AllowBreakBeforeNoexceptSpecifier: Never
-AllowShortBlocksOnASingleLine: true
+AllowShortBlocksOnASingleLine: Always
 AllowShortCaseLabelsOnASingleLine: true
+AllowShortCompoundRequirementOnASingleLine: true
 AllowShortEnumsOnASingleLine: true
 AllowShortFunctionsOnASingleLine: All
-AllowShortIfStatementsOnASingleLine: true
+AllowShortIfStatementsOnASingleLine: WithoutElse
+AllowShortLambdasOnASingleLine: All
 AllowShortLoopsOnASingleLine: true
 BreakAfterReturnType: None
-BreakBeforeBraces: Custom
-BraceWrapping:
-    IndentBraces: false
-    BeforeWhile: true
-    AfterEnum: false
-    AfterStruct: false
-    SplitEmptyFunction: false
-    SplitEmptyNamespace: false
-    SplitEmptyRecord: false
-    AfterClass: false
-    AfterCaseLabel: false
-    AfterControlStatement: Never
-    AfterFunction: true
-    AfterNamespace: false
-    AfterUnion: false
-    AfterExternBlock: false
-    BeforeCatch: false
-    BeforeElse: true
-    BeforeLambdaBody: true
+BreakBeforeBraces: Attach
 BreakBeforeBinaryOperators: NonAssignment
 BreakInheritanceList: AfterColon
 BreakStringLiterals: true
-IndentPPDirectives: None
+IndentPPDirectives: BeforeHash
 PointerAlignment: Left
 ReflowComments: false
 SpaceAfterCStyleCast: false
@@ -65,5 +49,6 @@ SpaceBeforeParens: ControlStatementsExceptControlMacros
 SpaceBeforeRangeBasedForLoopColon: false
 SpaceBeforeSquareBrackets: false
 SpaceInEmptyBlock: false
-SpacesInAngles: false
-SpacesInContainerLiterals: false
+SpacesInParens: Never
+
+PenaltyExcessCharacter: 10

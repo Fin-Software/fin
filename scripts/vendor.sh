@@ -12,11 +12,12 @@ llvm()
 {
 	start llvm
 
-	semv=19.1.5 deps="clang cmake compiler-rt libunwind lld llvm openmp polly"
-	url="https://github.com/llvm/llvm-project/releases/download/llvmorg-$semv"; base="llvm-project-$semv.src.tar.xz"
-	dl 664048444577925c129c7299793389e61ba50da27ffd612549e8435d6be84416
-	dec e -so "$srcs/$base" | tar -xf - --strip-components=1 -C "$pkg" $(printf "llvm-project-$semv.src/%s\n" $deps)
+	semv=19.1.7 deps="clang cmake compiler-rt libunwind lld llvm openmp polly"; base="llvm-project-$semv.src.tar.xz"
+	url="https://github.com/llvm/llvm-project/releases/download/llvmorg-$semv/$base"
 	(
+		dl 63cec7bc0d8c415bc86fa8de99eb49910ae29ab4514bc3e94b4e7e915fff94f4
+		dec e -so "$srcs/$base" | tar -xf - --strip-components=1 -C "$pkg" $(printf "llvm-project-$semv.src/%s\n" $deps)
+
 		cd "$pkg"; for dep in $deps; do mv "$dep" "$dep-$semv"; done
 		rm -rf -- */benchmark* llvm-*/bindings polly-*/lib/External/isl/test_inputs
 		find . \( -type d -name examples -o -type d -name doc -o -type d -name docs -o -type d -name test \
@@ -24,33 +25,28 @@ llvm()
 	)
 	finish
 }
-common()
+other()
 {
-	start common
+	start other
 
-	semv=4.13.2; base="antlr-$semv-complete.jar"; url=https://www.antlr.org/download
-	{
-		dl 3922e3a76a095b4d5b38573c28ea59dce5e7342a557f9fce0f5a6c58489aae7b
-		dec x "$srcs/$base" -o"$pkg/antlr-$semv" >/dev/null
-	} &
-	base="antlr4-cpp-runtime-$semv-source.zip"
-	{
-		dl 0fac612afb44eb1e188f4de50f00ffd4972022480084cc6afb4d9222244aef6c
-		install "$pkg/antlr-cpp-runtime-$semv"; dec x "$srcs/$base" -o"$pkg/antlr-cpp-runtime-$semv" >/dev/null
+	semv=master; base=LRSTAR-$semv.tar.gz; url="https://github.com/p7r0x7/LRSTAR/archive/$semv.tar.gz"
+	(
+		dl 50dc3a5c181655b7da2f6a7d232e081c8c8721524c11607fb1db24137857b0c1
+		install "$pkg/lrstar-$semv"; dec e -so "$srcs/$base" | tar -xf - --strip-components=1 -C "$pkg/lrstar-$semv"
 
-		rm -rf "$pkg/antlr-cpp-runtime-$semv/demo"
-	} &
+		cd "$pkg/lrstar-$semv"; rm -rf -- bin doc examples grammars */*.bat */*.html */workspace*
+	) &
 
-	semv=1.5.6; base="zstd-$semv.tar.zst"; url="https://github.com/facebook/zstd/releases/download/v$semv"
-	{
-		dl eaec93bd5737d25a816d33f0cee57443230f0ecc980f0eb0573602239f3e484e
+	semv=1.5.7; base="zstd-$semv.tar.zst"; url="https://github.com/facebook/zstd/releases/download/v$semv/$base"
+	(
+		dl 910e80e17ac5857f357f0beacc6554677ba5fceeada0e80089115058295deecc
 		install "$pkg/zstd-$semv"; zstd -cd "$srcs/$base" | tar -xf - --strip-components=1 -C "$pkg/zstd-$semv"
 
 		cd "$pkg/zstd-$semv"; rm -rf contrib build/meson build/VS* doc lib/legacy programs tests zlibWrapper
 		find . \( -type d -name example -o -type d -name examples \) -exec rm -rf {} +
-	} &
+	) &
 
-	wait && finish
+	wait; finish
 }
 
 start()
@@ -60,7 +56,7 @@ start()
 }
 dl()
 {
-	hash="$1"; [ -f "$srcs/$base" ] || curl "$url/$base" -o "$srcs/$base"
+	hash="$1"; [ -f "$srcs/$base" ] || curl "$url" -o "$srcs/$base"
 	actual="$(b3sum < "$srcs/$base")"; [ "$actual" = "$hash  -" ] \
 		|| { printf '%s !=\n%s\n' "$hash" "${actual%  -}"; rm -rf "$srcs/$base" & return 1; }
 }
@@ -80,4 +76,4 @@ curl() { command curl -sL "$@"; }
 
 [ $# = 0 ] || return 0 # Sourcing mode ends here.
 install "$srcs" vendor; cd vendor
-llvm & common & wait
+llvm & other & wait

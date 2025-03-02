@@ -28,49 +28,17 @@
 
 ##### Target Support (unless I'm paid to work on this)
 
+
+
 ### Compiler
 
-<table><thead>
-	<tr>
-		<th></th>
-		<th></th>
-		<th colspan="4">Release Modes</th>
-	</tr></thead>
-<tbody>
-	<tr>
-		<td></td>
-		<td>JiT</td>
-		<td>debug</td>
-		<td>safe</td>
-		<td>fast</td>
-		<td>tiny</td>
-	</tr>
-	<tr>
-		<td>Clang</td>
-		<td>-O1</td>
-		<td>-O0 -g</td>
-		<td>-O3 -mllvm -polly -mllvm -polly-vectorizer=stripmine</td>
-		<td>-O3 -mllvm -polly -mllvm -polly-vectorizer=stripmine</td>
-		<td>-Oz</td>
-	</tr>
-	<tr>
-		<td>GCC</td>
-		<td>-O1</td>
-		<td>-O0 -g</td>
-		<td>-O3</td>
-		<td>-O3</td>
-		<td>-Oz</td>
-	</tr>
-	<tr>
-		<td>safety</td>
-		<td>✔️</td>
-		<td>✔️</td>
-		<td>✔️</td>
-		<td>✖️</td>
-		<td>✖️</td>
-	</tr>
-</tbody>
-</table>
+|   Mode  |                Tentative Implementation                | Safety |
+| :------ | :----------------------------------------------------- | :----: |
+| `jit`   | `-O1`                                                  |   ✔️    |
+| `debug` | `-O0 -g`                                               |   ✔️    |
+| `safe`  | `-O3 -mllvm -polly -mllvm -polly-vectorizer=stripmine` |   ✔️    |
+| `fast`  | `-O3 -mllvm -polly -mllvm -polly-vectorizer=stripmine` |   ✖️    |
+| `tiny`  | `-Oz`                                                  |   ✖️    |
 
 * ISO C23 backend; LLVM clang-based code generation
 * JiT'd comptime code generation and execution followed by JiT'd or AoT'd runtime code generation (and possible execution)
@@ -80,7 +48,7 @@
 * per-comptime-loop iteration limit default, possibly 2^16
 * per-file node limit default, possibly 2^32
 
-### Standard Library Structs 
+### Standard Library Structs
 
 | source file sans extension |                          contents and priority =>                           |   |
 | :------------------------- | :-------------------------------------------------------------------------- | - |
@@ -94,57 +62,68 @@
 | `container/tar`            | (E and D)  gnu, ustar, and pax tape archive format                          |   |
 | `container/xz`             | (D only)   XZ LZMA or LZMA2 container format                                |   |
 | `container/zip`            | (E and D)  Zip or Zip64 Deflate archive format                              |   |
-| `encoding/base10`          | (E and D)  ~42% efficient Dimal ASCII                                       |   |
-| `encoding/base16`          | (E and D)  50% efficient uppercase or lowercase hexaDimal ASCII             |   |
+| `cova/cova`                | commands, options, values, and arguments; a reprised cli library            |   |
+| `encoding/base2`           | (E and D)  12.5% efficient binary ASCII                                     |   |
+| `encoding/base8`           | (E and D)  ~33.3% efficient octal ASCII                                     |   |
+| `encoding/base10`          | (E and D)  ~42% efficient decimal ASCII                                     |   |
+| `encoding/base16`          | (E and D)  50% efficient uppercase or lowercase hexadecimal ASCII           |   |
 | `encoding/base32`          | (E and D)  62.5% efficient uppercase or lowercase base32 ASCII              |   |
 | `encoding/base64`          | (E and D)  75% efficient base64 ASCII                                       |   |
 | `encoding/base85`          | (E and D)  80% efficient base85 or ascii85 or z85 ASCII                     |   |
 | `encoding/base91`          | (E and D)  ~81-88% efficient basE91 or Base91 ASCII                         |   |
 | `encoding/csv`             | (E and D)                                                                   |   |
-| `encoding/cobr`            | (E and D)                                                                   |   |
+| `encoding/cbor`            | (E and D)                                                                   |   |
 | `encoding/json`            | (E and D)                                                                   |   |
 | `encoding/pam`             | (E and D)  uncompressed binary or ASCII format geared towards image data    |   |
 | `encoding/toml`            | (E and D)                                                                   |   |
 | `encoding/utf-8`           | (E and D)  utf-8 unicode text encoding                                      |   |
 | `encoding/wtf-16`          | (E and D)  wtf-16 unicode text encoding                                     |   |
-| `cova/cova`                | commands, options, values, and arguments; a reprised cli library            |   |
 | `fmt/fmt`                  | value formatting and writing                                                |   |
-| `hw/hw`                    |                                                                             |   |
-| `io/io`                    | standard byte readers and writers API                                       |   |
-| `math/math`                |                                                                             |   |
-| `math/big/big`             |                                                                             |   |
-| `math/big/int`             |                                                                             |   |
-| `math/big/posit`           |                                                                             |   |
-| `math/big/rational`        |                                                                             |   |
+| `gnuc/gnuc`                | GNU C builtins                                                              | 0 |
+| `hw/cpu`                   | cpu and cpu feature detection                                               |   |
+| `hw/cpu`                   | cpu and cpu feature detection                                               |   |
+| `io/io`                    | generic readers and writers                                                 |   |
+| `llvm/llvm`                | LLVM IR intrinsics                                                          | 0 |
+| `math/math`                | higher-level mathematics library                                            |   |
+| `math/big/big`             | arbitrary-precision arithmetic and bitwise operation library                |   |
+| `math/big/int`             | arbitrary-precision integer                                                 |   |
+| `math/big/posit`           | arbitrary-precision posit                                                   |   |
+| `math/big/rational`        | arbitrary-precision rational                                                |   |
 | `mem/mem`                  | generic memory manipulation                                                 |   |
 | `mem/heap`                 | generic memory allocation                                                   |   |
-| `mem/heap/allocator`       | standard generic memory allocator API                                       |   |
+| `mem/heap/allocator`       | generic memory allocator                                                    |   |
 | `mem/heap/arenaalloc`      | allocator wrapper that disables all freeing until deinitialization          |   |
-| `mem/heap/rpmalloc`        | native reimplementation of https://github.com/mjansson/rpmalloc             |   |
+| `mem/heap/rpmalloc`        | reimplementation of https://github.com/mjansson/rpmalloc                    |   |
 | `mem/heap/stackalloc`      | fixed-buffer allocator; may only free the most recent allocation            |   |
 | `mem/heap/safealloc`       | allocator wrapper that safety checks and panics or warns                    |   |
 | `mem/heap/failalloc`       | allocator wrapper that precisely, randomly, or catastrophically fails       |   |
-| `mem/sort`                 |                                                                             |   |
-| `mime/mime`                |                                                                             |   |
-| `os/os`                    | operating system API                                                        |   |
-| `os/exec`                  |                                                                             |   |
-| `os/fs`                    |                                                                             |   |
-| `os/fs/path`               |                                                                             |   |
-| `os/syscall`               |                                                                             |   |
-| `regex/regex`              |                                                                             |   |
-| `runt/runt`                |                                                                             |   |
-| `runt/debug`               |                                                                             |   |
-| `runt/tracy`               |                                                                             |   |
-| `runt/race`                |                                                                             |   |
-| `sync/atomic`              |                                                                             |   |
-| `sync/sched`               |                                                                             |   |
-| `sync/chan`                |                                                                             |   |
+| `mem/sort`                 | generic memory sorting                                                      |   |
+| `mime/mime`                | filetype detection                                                          |   |
+| `os/os`                    | operating system interaction                                                |   |
+| `os/exec`                  | program execution                                                           |   |
+| `os/fs`                    | filesystem interaction                                                      |   |
+| `os/fs/path`               | filepath traversal and manipulation                                         |   |
+| `os/syscall`               | kernel interaction                                                          |   |
+| `regex/regex`              | custom regex engine                                                         |   |
+| `runt/runt`                | whixy's runtime                                                             |   |
+| `runt/tracy`               | execution tracing                                                           |   |
+| `runt/race`                | race detection                                                              |   |
+| `sync/atomic`              | atomic primitives                                                           |   |
+| `sync/sched`               | generic and default scheduler                                               |   |
+| `sync/chan`                | generic and default channels                                                |   |
 | `sync/posix`               |                                                                             |   |
 | `sync/coroutine`           |                                                                             |   |
 | `sync/mutex`               |                                                                             |   |
 | `sync/waitgroup`           |                                                                             |   |
 | `time/time`                |                                                                             |   |
-| `time/timezone`            |                                                                             |   |
-| `unicode`                  |                                                                             |   |
+| `time/tz`                  |                                                                             |   |
+| `unicode`                  | current unicode tables                                                      |   |
 
 + others I don't yet know the importance of in my limited experience as a programmer
+
+## Notes
+
+- goto is limited to intra-routine jumps
+- type-punning via aliasing pointer casting is limited to types of the same size in memory
+- slicewise operators are vectorized where possible and must occur between identically-shaped integer or float slices
+- overflow checks are opt-out at the operation level and are inlined

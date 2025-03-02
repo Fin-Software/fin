@@ -16,3 +16,21 @@ pub fn main() !void {
         try cli.runWhixy(stderr, fba.allocator());
     }
 }
+
+test "passes" {
+    const message =
+        \\⊌
+    ;
+    const List = @import("std").ArrayList;
+    const testing = @import("std").testing;
+    const passes = @import("transpiler/src_passes.zig");
+
+    var ta = testing.allocator_instance;
+    //defer ta.deinit();
+
+    var list = List(u8).init(ta.allocator());
+    const lw = list.writer();
+    var euw = passes.escapedUTF8Writer(lw);
+    try euw.writer().writeAll(message);
+    try io.getStdErr().writeAll(list.items);
+}
