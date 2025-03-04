@@ -25,13 +25,13 @@ static u64 counter() {
     }
     return curr;
 }
-inline u64 eval_lazy_u64_u64(lazy_1* call) { return ((u64(*)(u64))call->func)((u64)(uintptr_t)call->arg0); }
+inline u64 eval_lazy_u64_u64(lazy_1* call) { return ((u64(*)(u64))call->func)((u64)call->arg0); }
 inline lazy_1 make_lazy_u64_u64(u64 (*func)(u64), u64 n) {
-    return (lazy_1){(void* (*)(void*))func, (void*)(uintptr_t)n};
+    return (lazy_1){(void* (*)(void*))func, (void*)n};
 }
 
 // This would have a custom _start() spinning up runt and calling Main()
-int main() {
+int main(void) {
     lazy_1 t0 = make_lazy_u64_u64(fibonacci, counter());
     return (int)(eval_lazy_u64_u64(&t0) & (1 << 8) - 1);
 }

@@ -31,7 +31,7 @@ pub fn build(b: *Build) void {
     //whixy.root_module.strip = optimize == .ReleaseFast;
     //whixy.linkLibrary(parser);
     b.installArtifact(whixy);
-    whixy.linkLibCpp();
+    //whixy.linkLibCpp();
 
     // Compile external libraries for statically linking to.
     if (b.build_root.handle.openDir(".build", .{}) == error.FileNotFound) {

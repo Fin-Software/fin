@@ -11,11 +11,12 @@
 #if __STDC_VERSION__ < 202000L
     #error "C23 required."
 #endif
+#if __CHAR_BIT__ != 8
+    #error "Whixy only supports octal bytes."
+#endif
 
 #include "lazy.h"
 #include "ops.h"
 #include "types.h"
-
-enum { _false = 0, _true = 1 };
 
 [[noreturn, gnu::always_inline]] void unreachable(void) { __builtin_unreachable(); }

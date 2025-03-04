@@ -5,8 +5,6 @@
 
 #pragma once
 
-#include <stdint.h>
-
 #define INTS(x) unsigned typedef _BitInt(x) u##x; typedef _BitInt(x) i##x;
 INTS(2)   INTS(3)   INTS(4)   INTS(5)   INTS(6)   INTS(7)   INTS(8)   INTS(9)
 INTS(10)  INTS(11)  INTS(12)  INTS(13)  INTS(14)  INTS(15)  INTS(16)  INTS(17)
@@ -25,12 +23,12 @@ INTS(106) INTS(107) INTS(108) INTS(109) INTS(110) INTS(111) INTS(112) INTS(113)
 INTS(114) INTS(115) INTS(116) INTS(117) INTS(118) INTS(119) INTS(120) INTS(121)
 INTS(122) INTS(123) INTS(124) INTS(125) INTS(126) INTS(127) INTS(128)
 
-#if __INTPTR_WIDTH__ == 64
+#if __SIZEOF_POINTER__ == 8
     typedef u64 uptr; typedef i64 iptr;
-#elif __INTPTR_WIDTH__ == 32
+#elif __SIZEOF_POINTER__ == 4 || __SIZEOF_POINTER__ == 2
     typedef u32 uptr; typedef i32 iptr;
 #else
-    #error This Whixy implementation fails to support pointer widths other than 32 or 64.
+    #error "Whixy only supports 64-, 32-, and 16-bit nominal pointer sizes."
 #endif
 
 typedef _Float16    f16;
@@ -38,6 +36,6 @@ typedef __bf16      bf16;
 typedef float       f32;
 typedef double      f64;
 typedef long double f80;
-typedef _Float128   f128;
-typedef u2          u1;    // 0 or 1
-typedef i2          i1;    // 0 or -1
+typedef __float128  f128;
+typedef u2          u1;   // 0 or 1
+typedef i2          i1;   // 0 or -1

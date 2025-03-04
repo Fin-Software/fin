@@ -32,13 +32,14 @@
 
 ### Compiler
 
-|   Mode  |                Tentative Implementation                | Safety |
-| :------ | :----------------------------------------------------- | :----: |
-| `jit`   | `-O1`                                                  |   ✔️    |
-| `debug` | `-O0 -g`                                               |   ✔️    |
-| `safe`  | `-O3 -mllvm -polly -mllvm -polly-vectorizer=stripmine` |   ✔️    |
-| `fast`  | `-O3 -mllvm -polly -mllvm -polly-vectorizer=stripmine` |   ✖️    |
-| `tiny`  | `-Oz`                                                  |   ✖️    |
+|   Mode  |                             Tentative Implementation                             | Runtime Safety |
+| :------ | :------------------------------------------------------------------------------- | :------------: |
+| `jit`   | `-O1 -DSAFETY`                                                                   |        ✔️       |
+| `debug` | `-O0 -g -DSAFETY`                                                                |        ✔️       |
+| `safe`  | `-O3 -mllvm -polly -mllvm -polly-vectorizer=stripmine -DSAFETY`                  |        ✔️       |
+| `fast`  | `-O3 -mllvm -polly -mllvm -polly-vectorizer=stripmine`                           |        ✖️       |
+| `tiny`  | `-Oz`                                                                            |        ✖️       |
+|    +    | `-Wall -Wextra -fwrapv -Wno-cast-function-type-mismatch -nostdlib -nostartfiles` |       n/a      |
 
 * ISO C23 backend; LLVM clang-based code generation
 * JiT'd comptime code generation and execution followed by JiT'd or AoT'd runtime code generation (and possible execution)
@@ -86,12 +87,12 @@
 | `llvm/llvm`                | LLVM IR intrinsics                                                          | 0 |
 | `math/math`                | higher-level mathematics library                                            |   |
 | `math/big/big`             | arbitrary-precision arithmetic and bitwise operation library                |   |
-| `math/big/int`             | arbitrary-precision integer                                                 |   |
-| `math/big/posit`           | arbitrary-precision posit                                                   |   |
-| `math/big/rational`        | arbitrary-precision rational                                                |   |
+| `math/big/int`             | arbitrary-precision integer arithmetic                                      |   |
+| `math/big/posit`           | arbitrary-precision posit arithmetic                                        |   |
+| `math/big/rational`        | arbitrary-precision rational arithmetic                                     |   |
 | `mem/mem`                  | generic memory manipulation                                                 |   |
 | `mem/heap`                 | generic memory allocation                                                   |   |
-| `mem/heap/allocator`       | generic memory allocator                                                    |   |
+| `mem/heap/allocator`       | memory allocator face                                                       |   |
 | `mem/heap/arenaalloc`      | allocator wrapper that disables all freeing until deinitialization          |   |
 | `mem/heap/rpmalloc`        | reimplementation of https://github.com/mjansson/rpmalloc                    |   |
 | `mem/heap/stackalloc`      | fixed-buffer allocator; may only free the most recent allocation            |   |
@@ -99,22 +100,22 @@
 | `mem/heap/failalloc`       | allocator wrapper that precisely, randomly, or catastrophically fails       |   |
 | `mem/sort`                 | generic memory sorting                                                      |   |
 | `mime/mime`                | filetype detection                                                          |   |
-| `os/os`                    | operating system interaction                                                |   |
-| `os/exec`                  | program execution                                                           |   |
-| `os/fs`                    | filesystem interaction                                                      |   |
+| `os/os`                    | higher-level operating system interaction                                   |   |
+| `os/exec`                  | higher-level program execution                                              |   |
+| `os/fs`                    | higher-level filesystem interaction                                         |   |
 | `os/fs/path`               | filepath traversal and manipulation                                         |   |
-| `os/syscall`               | kernel interaction                                                          |   |
+| `os/posix`                 | low-level POSIX interaction                                                 |   |
+| `os/syscall`               | low-level kernel interaction                                                | 0 |
 | `regex/regex`              | custom regex engine                                                         |   |
-| `runt/runt`                | whixy's runtime                                                             |   |
+| `runt/runt`                | whixy's minimal runtime                                                     | 0 |
 | `runt/tracy`               | execution tracing                                                           |   |
-| `runt/race`                | race detection                                                              |   |
-| `sync/atomic`              | atomic primitives                                                           |   |
-| `sync/sched`               | generic and default scheduler                                               |   |
-| `sync/chan`                | generic and default channels                                                |   |
-| `sync/posix`               |                                                                             |   |
-| `sync/coroutine`           |                                                                             |   |
-| `sync/mutex`               |                                                                             |   |
-| `sync/waitgroup`           |                                                                             |   |
+| `sync/atomic`              | low-level atomic primitives                                                 | 1 |
+| `sync/sched`               | scheduler face and default schedulers                                       | 1 |
+| `sync/chan`                | channel face and default channels                                           | 1 |
+| `sync/thread`              | thread face and posix threads                                               | 1 |
+| `sync/coroutine`           | userspace threads                                                           | 3 |
+| `sync/mutex`               | mutex face and (rw)mutexes                                                  | 1 |
+| `sync/waitgroup`           | waitgroups                                                                  | 1 |
 | `time/time`                |                                                                             |   |
 | `time/tz`                  |                                                                             |   |
 | `unicode`                  | current unicode tables                                                      |   |

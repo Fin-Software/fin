@@ -1,5 +1,6 @@
 .{
-    .name = "whixy",
+    .name = .whixy,
+    .fingerprint = 0xfa7bdee7cf399c3b, // Changing this has security and trust implications.
     .version = "0.0.0",
     .dependencies = .{
         .builddef = .{
@@ -11,13 +12,5 @@
             .hash = "12201386743e7862d71bdb723ec0517a16b0f324acf2710fc0c5329e31ae029d0dd4",
         },
     },
-    .paths = .{
-        "scripts",
-        "src",
-        "std",
-        "vendor",
-        "build.zig",
-        "build.zig.zon",
-        "hash.zig",
-    },
+    .paths = .{ "scripts", "src", "std", "vendor", "build.zig", "build.zig.zon", "hash.zig" },
 }
