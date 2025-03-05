@@ -12,10 +12,10 @@ llvm()
 {
 	start llvm
 
-	semv=19.1.7 deps="clang cmake compiler-rt libunwind lld llvm openmp polly"; base="llvm-project-$semv.src.tar.xz"
+	semv=20.1.0 deps="clang cmake compiler-rt libunwind lld llvm openmp polly"; base="llvm-project-$semv.src.tar.xz"
 	url="https://github.com/llvm/llvm-project/releases/download/llvmorg-$semv/$base"
 	(
-		dl 63cec7bc0d8c415bc86fa8de99eb49910ae29ab4514bc3e94b4e7e915fff94f4
+		dl 168b9948df0b629e1f7a656d130d00169e28ff2c152c3a6abe54198ac4cf57c1
 		dec e -so "$srcs/$base" | tar -xf - --strip-components=1 -C "$pkg" $(printf "llvm-project-$semv.src/%s\n" $deps)
 
 		cd "$pkg"; for dep in $deps; do mv "$dep" "$dep-$semv"; done
@@ -23,6 +23,7 @@ llvm()
 		find . \( -type d -name examples -o -type d -name doc -o -type d -name docs -o -type d -name test \
 			-o -type d -name tests -o -type d -name unittests -o -type d -name www \) -exec rm -rf {} +
 	)
+
 	finish
 }
 other()
@@ -36,7 +37,6 @@ other()
 
 		cd "$pkg/lrstar-$semv"; rm -rf -- bin doc examples grammars */*.bat */*.html */workspace*
 	) &
-
 	semv=1.5.7; base="zstd-$semv.tar.zst"; url="https://github.com/facebook/zstd/releases/download/v$semv/$base"
 	(
 		dl 910e80e17ac5857f357f0beacc6554677ba5fceeada0e80089115058295deecc

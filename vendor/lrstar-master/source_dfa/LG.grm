@@ -1,0 +1,130 @@
+
+/*--- DFA Lexical Grammar Syntax. ---*/
+
+/*--- Terminal Symbols. ------*/
+
+	T_ERROR			<error>        => error ();
+	T_ALPHA			<alpha>        => first ({alpha});
+	T_LEXICAL   	<lexical>      => first ({lexical});
+	T_IGNORE   		<ignore>       => first ({ignore});
+	T_ESCAPE 		<escape>       => first ({escape});
+	T_LITERAL		<literal>		=> first ({literal});
+	T_INTEGER		<integer>		;
+	T_EOF				<eof>				;
+
+	T_ARROW  		'->'				=> arrow ();
+	T_LEFTP			'('				;
+	T_RIGHTP			')'				;
+	T_PLUS			'+'				;
+	T_STAR			'*'				;
+	T_QUEST			'?'				;
+	T_DOTS			'..'				;
+	T_BAR				'|'				;
+	T_DASH			'-'				;
+	T_SEMI 			';'				;
+
+/*--- Nonterminal Symbols. ---*/
+
+   Goal           	-> Grammar <eof>
+
+	Grammar        	-> TokenProd... (NonterminalDef|SetDef|EscapeDef)...
+
+/*--- Token Definitions ---*/
+
+   TokenProd      	-> Token ReturnValue
+
+   Token          	-> {lexical}	   					      => ADD_TOKEN  (1)
+                     -> {literal}  					   	      => ADD_TOKEN2 (1)
+
+	ReturnValue	   	-> <integer>                           => ADD_TERMNO (1)
+							-> <alpha>                             => ADD_DEFCON (1)
+
+/*--- Nonterminal Definitions ---*/
+
+   NonterminalDef    -> HeadSymbol ArrowProd...
+
+   HeadSymbol			-> {alpha}								      => ADD_HEAD(1)
+                     -> {lexical}							      => ADD_HEADLEX(1)
+                     -> {ignore}								      => ADD_HEADIGNORE(1)
+
+   ArrowProd			-> Arrow TailExprList
+   Arrow					-> '->'                                => ADD_PROD()
+
+   TailExprList     	-> TailExpr...                         => POP_ALL()
+
+   TailExpr       	-> TailSymbol
+                  	-> TailSymbol '+'								=> PUSH_PLUS()
+                  	-> TailSymbol '*'								=> PUSH_ASTER()
+                  	-> TailSymbol '?'								=> PUSH_QUEST()
+                  	-> GroupStart List GroupEnd
+
+   List           	-> TailExpr
+                  	-> List TailExpr
+                  	-> List Or TailExpr
+
+   Or             	-> '|'                                 => PUSH_OR()
+   GroupStart     	-> '('                                 => PUSH_GBEG()
+   GroupEnd       	-> ')'                                 => PUSH_GEND()
+                  	-> ')' '+'										=> PUSH_GPLUS()
+                  	-> ')' '*'										=> PUSH_GASTER()
+                  	-> ')' '?'										=> PUSH_GQUEST()
+
+   TailSymbol     	-> <alpha>										=> PUSH_TAIL (1)
+                  	-> <escape>										=> PUSH_TAIL (1)
+                  	-> <lexical>                           => PUSH_TAIL (1)
+                  	-> <literal>									=> PUSH_TAIL (1)
+                  	-> <integer>									=> PUSH_TAIL (1)
+
+/*--- Set Definitions ---*/
+
+	SetDef     			-> AlphaSymbol Equals SetExpr [';']		=> DEF_SET()
+
+   AlphaSymbol			-> {alpha}								      => ADD_HEADSET(1)
+   Equals				-> '='                                 => ADD_PROD()
+
+   SetExpr         	-> Range                               => FIRST_RANGE(1)
+
+                  	-> FCharacter '|' Range						=> ADD_RANGE(3)
+                  	-> FCharacter '|' Character				=> ADD_CHAR(3)
+                  	-> FCharacter '|' SetItem					=> ADD_SET(3)
+                  	-> FCharacter '-' Range						=> SUB_RANGE(3)
+                  	-> FCharacter '-' Character				=> SUB_CHAR(3)
+                  	-> FCharacter '-' SetItem					=> SUB_SET(3)
+
+                  	-> FSetItem   '|' Range						=> ADD_RANGE(3)
+                  	-> FSetItem   '|' Character				=> ADD_CHAR(3)
+                  	-> FSetItem   '|' SetItem					=> ADD_SET(3)
+                  	-> FSetItem   '-' Range						=> SUB_RANGE(3)
+                  	-> FSetItem   '-' Character				=> SUB_CHAR(3)
+                  	-> FSetItem   '-' SetItem					=> SUB_SET(3)
+
+                  	-> SetExpr    '|' Range						=> ADD_RANGE(3)
+                  	-> SetExpr    '|' Character				=> ADD_CHAR(3)
+                  	-> SetExpr    '|' SetItem					=> ADD_SET(3)
+                  	-> SetExpr    '-' Range						=> SUB_RANGE(3)
+                  	-> SetExpr    '-' Character				=> SUB_CHAR(3)
+                  	-> SetExpr    '-' SetItem					=> SUB_SET(3)
+
+   Range          	-> RangeStart '..' RangeEnd
+   RangeEnd         	-> Character									=> RANGE_END(1)
+   RangeStart     	-> Character                           => RANGE_START(1)
+
+	FCharacter			-> Character									=> FIRST_CHAR(1)
+	FSetItem				-> SetItem										=> FIRST_SET(1)
+
+   Character         -> <literal>
+                  	-> <integer>
+
+  	SetItem				-> <alpha>
+  							-> <escape>
+
+/*--- Escape Definitions ---*/
+
+	EscapeDef        	-> EscapeSymbol Equals Number [';']
+
+   EscapeSymbol		-> {escape}								      => ADD_HEADSET(1)
+
+	Number				-> <integer>									=> FIRST_CHAR(1)
+
+/*--- End of Grammar. ---*/
+

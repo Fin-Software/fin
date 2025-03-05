@@ -1,0 +1,64 @@
+
+/* DFA Lexical-Grammar Tokens. */
+
+  	<eof>					-> \z
+
+	<alpha>        	->         alpha
+							->         alpha '_'
+							->     '_' alpha
+							->     '_' alpha '_'
+							->         alpha '_' '_'
+							-> '_' '_' alpha
+							-> '_' '_' alpha '_' '_'
+
+	<lexical>      	-> '<' <alpha> '>'
+
+	<ignore>   			-> '{' <alpha> '}'
+
+	<escape>				-> '\' <alpha>
+
+	alpha          	->       letter
+							-> alpha letter
+							-> alpha digit
+							-> alpha '_' letter
+							-> alpha '_' digit
+
+	<integer>   		-> digit+
+
+	<literal>   		-> ''' ' ' '''
+							-> ''' ''' '''
+							-> ''' '"' '''
+							-> ''' '\' '''
+							-> ''' lchar+ '''
+
+   lchar             -> '\' '''
+							-> '\' '\'
+   						->	'\' '"'
+							-> lany
+
+	{whitespace}		-> ( \t | \n | \r | ' ' )+
+	{commentline}		-> '/' '/' neol*
+	{commentblock}		-> '/' '*' na* '*'+ (nans na* '*'+)* '/'
+
+/* Character Sets */
+
+	lany					=  33..254 - ''' - '"' - '\'
+
+	letter      		= 'a'..'z' | 'A'..'Z'
+	digit       		= '0'..'9'
+
+	na             	= any - '*'				// not asterisk
+	nans           	= any - '*' - '/'		// not asterisk not slash
+	neol           	= any - \n				// not end of line
+
+	any					= 1..254 - \z			// any character except end of file
+
+	\t						=  9						// tab
+	\n						= 10						// newline
+	\v						= 11						// vertical feed
+	\f						= 12						// form feed
+	\r						= 13						// return
+	\z						= 26						// end of file
+
+/* End of Lexical Grammar. */
+

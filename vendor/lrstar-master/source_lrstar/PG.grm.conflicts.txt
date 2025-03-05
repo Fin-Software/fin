@@ -1,0 +1,7 @@
+
+Shift-Reduce and Reduce-Reduce Conflicts Report
+
+    0 conflict states.
+    0 shift-reduce conflicts.
+    0 reduce-reduce conflicts.
+

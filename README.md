@@ -32,14 +32,15 @@
 
 ### Compiler
 
-|   Mode  |                             Tentative Implementation                             | Runtime Safety |
-| :------ | :------------------------------------------------------------------------------- | :------------: |
-| `jit`   | `-O1 -DSAFETY`                                                                   |        ✔️       |
-| `debug` | `-O0 -g -DSAFETY`                                                                |        ✔️       |
-| `safe`  | `-O3 -mllvm -polly -mllvm -polly-vectorizer=stripmine -DSAFETY`                  |        ✔️       |
-| `fast`  | `-O3 -mllvm -polly -mllvm -polly-vectorizer=stripmine`                           |        ✖️       |
-| `tiny`  | `-Oz`                                                                            |        ✖️       |
-|    +    | `-Wall -Wextra -fwrapv -Wno-cast-function-type-mismatch -nostdlib -nostartfiles` |       n/a      |
+|   Mode  |                              Tentative Implementation                              |
+| :------ | :--------------------------------------------------------------------------------- |
+| `jit`   | `$reqd -O1 $safety`                                                                |
+| `debug` | `$reqd -O0 -g $safety`                                                             |
+| `safe`  | `$reqd -O3 -mllvm -polly -mllvm -polly-vectorizer=stripmine -fopenmp-simd $safety` |
+| `fast`  | `$reqd -O3 -mllvm -polly -mllvm -polly-vectorizer=stripmine -fopenmp-simd`         |
+| `tiny`  | `$reqd -Oz`                                                                        |
+|         | `safety = -DSAFETY -Wall -Wextra -Wno-cast-function-type-mismatch`                 |
+|         | `reqd = -fwrapv -nostdlib -nostartfiles`                                           |
 
 * ISO C23 backend; LLVM clang-based code generation
 * JiT'd comptime code generation and execution followed by JiT'd or AoT'd runtime code generation (and possible execution)

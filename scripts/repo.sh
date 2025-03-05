@@ -7,7 +7,7 @@
 
 set -eu; umask 0022; rm -rf src/lrstar; install -dm 0755 src/lrstar .build
 
-#opt="-O3 -mllvm -polly -mllvm -polly-vectorizer=stripmine -fopenmp -mllvm -polly-parallel"
+#opt="-O3 -mllvm -polly -mllvm -polly-vectorizer=stripmine -fopenmp -fopenmp-simd -mllvm -polly-parallel"
 [ -f .build/lrstar ] || zig c++ -O3 -w -lc++ -o .build/lrstar vendor/lrstar-master/source_lrstar/*.cpp &
 [ -f .build/dfa ] || zig c++ -O3 -w -lc++ -o .build/dfa vendor/lrstar-master/source_dfa/*.cpp & wait
 

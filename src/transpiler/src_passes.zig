@@ -7,7 +7,7 @@ const io = @import("std").io;
 const fmt = @import("std").fmt;
 const mem = @import("std").mem;
 const uni = @import("std").unicode;
-const print = @import("cli.zig").print;
+const print = @import("../cli.zig").print;
 
 //pub fn WhixyContextValidatingWriter(comptime Wrapped: type) type {
 //    return struct {

@@ -5,7 +5,7 @@
     .dependencies = .{
         .builddef = .{
             .url = "https://github.com/p7r0x7/builddef/archive/master.tar.gz",
-            .hash = "1220c97f5b65bc98340a4c114b108db4f5b4a97fbaf78bec57066d4476650e8054c5",
+            .hash = "12208f29f369eeca5248464bec120a80cfa3b430b39bc2700e5a16c4bd24fd733291",
         },
         .cova = .{
             .url = "https://github.com/00JCIV00/cova/archive/zig-v0.14.tar.gz",

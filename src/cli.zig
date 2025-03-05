@@ -52,7 +52,7 @@ const WhixyCmd = cmd: {
 
 /// Comptime-assembled Cova command definition for Whixy
 const whixy_cmd: WhixyCmd = command("whixy",
-    \\Build and execute Whixy programs.
+    \\Just-in-Time compile and execute one-file Whixy (build) scripts.
 , &.{
     command("cc",
         \\Invoke the internal LLVM Clang C compiler.
@@ -60,6 +60,14 @@ const whixy_cmd: WhixyCmd = command("whixy",
 
     command("cxx",
         \\Invoke the internal LLVM Clang C++ compiler.
+    , null, null, null),
+
+    command("lsp",
+        \\Start the Whixy language server daemon.
+    , null, null, null),
+
+    command("fmt",
+        \\Format Whixy files.
     , null, null, null),
 }, null, &.{
     option(false, "version", null, value("", bool, false, parsing.parseBool, ""),
@@ -84,11 +92,9 @@ const whixy_cmd: WhixyCmd = command("whixy",
 fn command(cmd: []const u8, desc: []const u8, cmds: ?[]const WhixyCmd, vals: ?[]const WhixyCmd.ValueT, opts: ?[]const WhixyCmd.OptionT) WhixyCmd {
     return .{ .name = cmd, .vals = vals, .sub_cmds = cmds, .description = replaceNewlines(desc), .hidden = desc.len == 0, .opts = opts, .allow_inheritable_opts = true };
 }
-
 fn option(inherit: bool, opt: []const u8, aliases: ?[]const []const u8, val: WhixyCmd.ValueT, desc: []const u8) WhixyCmd.OptionT {
     return .{ .val = val, .name = opt, .long_name = opt, .description = replaceNewlines(desc), .hidden = desc.len == 0, .alias_long_names = aliases, .inheritable = inherit };
 }
-
 fn value(val: []const u8, comptime ValT: type, default: ?ValT, parse: ?*const fn ([]const u8, mem.Allocator) anyerror!ValT, desc: []const u8) WhixyCmd.ValueT {
     return WhixyCmd.ValueT.ofType(ValT, .{ .name = val, .parse_fn = parse, .default_val = default, .description = replaceNewlines(desc) });
 }
@@ -118,8 +124,8 @@ pub inline fn print(wr: anytype, strs: anytype) !void {
 /// Printing callback functions for Cova commands and options
 const printing = struct {
     const schemes = [_]ColorScheme{
-        ColorScheme{ .one = "\x1b[40;1;38;5;230m", .two = "\x1b[38;5;111m" }, // discord: buttercream, blurple
-        //ColorScheme{ .one = "\x1b[40;1;38;5;220m", .two = "\x1b[38;5;36m" }, // transit: schoolbus yellow, highway sign green
+        ColorScheme{ .one = "\x1b[48;5;232;38;5;230;1m", .two = "\x1b[38;5;111m" }, // discord: buttercream, blurple
+        //ColorScheme{ .one = "\x1b[48;5;232;38;5;220;1m", .two = "\x1b[38;5;36m" }, // transit: schoolbus yellow, highway sign green
     };
     const ColorScheme = struct { one: []const u8, two: []const u8 };
     var active_scheme: ?ColorScheme = null; // Global runtime variable.
@@ -455,7 +461,7 @@ pub fn runWhixy(pipe: fs.File, ally: mem.Allocator) !void {
         };
         var values = try cmd.getVals(.{});
         const input = values.get("input_path");
-        if (cmd.checkOpts(&.{"help"}, .{}) or !input.?.generic.string.is_set) {
+        if (cmd.checkOpts(&.{"help"}, .{}) or input == null) {
             try cmd.help(bfwr.writer());
             try bfwr.flush();
         }
