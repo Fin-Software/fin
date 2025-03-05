@@ -5,18 +5,18 @@
 
 #pragma once
 
-#ifndef __GNUC__
-    #error "GNU C required."
-#endif
-#if __STDC_VERSION__ < 202000L
-    #error "C23 required."
-#endif
 #if __CHAR_BIT__ != 8
     #error "Whixy only supports octal bytes."
 #endif
+#if __GNUC__ && __STDC_VERSION__ < 202000L
+    #error "Lowercase whixy's C backend requires GNU C23."
+#endif
+#if __BITINT_MAXWIDTH__ < 128
+    #error "Lowercase whixy's C backend requires C23 BitInt(N) compiler support."
+#endif
 
-#include "lazy.h"
 #include "ops.h"
+#include "lazy.h"
 #include "types.h"
 
 [[noreturn, gnu::always_inline]] void unreachable(void) { __builtin_unreachable(); }

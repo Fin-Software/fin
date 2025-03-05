@@ -23,6 +23,4 @@ find . \( -path ./vendor -o -name '.[!.]*' \) -prune -o \
             -exec clang-format -i --style file:.clang-format {} + \
     \) \)
 
-#find .. \( -path '../vendor' -o -name '.[!.]*' \) -prune -o -type f -exec tokei {} +
-
-#git add .; git diff --stat HEAD; git reset >/dev/null
+git add .; git diff --stat HEAD; git reset
