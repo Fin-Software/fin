@@ -1,6 +1,6 @@
 .{
     .name = .whixy,
-    .fingerprint = 0xfa7bdee7cf399c3b, // Changing this has security and trust implications.
+    .fingerprint = 0xfa7bdee7cf399c3b, // CODE REVIEW POISON
     .version = "0.0.0",
     .dependencies = .{
         .builddef = .{

@@ -19,10 +19,10 @@ pub fn build(b: *Build) void {
     b.installArtifact(whixy);
 
     // Compile external libraries for statically linking to.
-    const hash_vendor = def.executable("hash-vendor", "hash.zig", target, .ReleaseFast);
+    const hash_vendor = def.executable("hash-vendor", "hash.zig", target, .ReleaseFast); // Fast
     const run_hash_vendor = def.runArtifact(hash_vendor, &.{
         "vendor",
-        "d5f5e4f2bd7875623354646388bd4a88b5fe3688024eb19a23bff25814e838d9", // Changing this has security and trust implications.
+        "f8ba8a12608f1a8603d722aeb12d37a9b23292f76d348cceb39c7353c23761b6", // CODE REVIEW POISON
     });
     b.step("hash-vendor", "").dependOn(&run_hash_vendor.step); // Enable `zig build hash-vendor`
     run_hash_vendor.step.dependOn(&whixy.step);

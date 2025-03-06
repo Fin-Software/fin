@@ -140,7 +140,7 @@ __ Arithmetic = (
     }
 )
 
-compt type BufferedWriter(wrapped io.Writer, len uptr) {
+compt: type BufferedWriter(wrapped io.Writer, len uptr) {
     (
         inner io.Writer = wrapped,
         buffer [len]u8,
@@ -148,3 +148,5 @@ compt type BufferedWriter(wrapped io.Writer, len uptr) {
         uptr write() { 0 }
     )
 }
+
+mut volatile: (thing, thing2, thing3) intType = (7, 8, 9)
