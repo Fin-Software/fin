@@ -3,150 +3,97 @@
 # Contributors responsible for this file:
 # @p7r0x7 <mattrbonnette@pm.me>
 
-# For reference only; will compile if used
-def Bitwise = {
-    inline a.type Not {a.type a} ( return !a )
-    inline a.type Or {a.type a b} ( return a | b )
-    inline a.type And {a.type a b} ( return a & b )
-    inline a.type Xor {a.type a b} ( return a ^ b )
-    inline a.type Shl {a.type a b} ( return a << b )
-    inline a.type Shr {a.type a b} ( return a >> b )
-    inline a.type Rotl {a.type a b} ( return a <<% b )
-    inline a.type Rotr {a.type a b} ( return a >>% b )
-}
+io := {
+    # Mixins (without overriding) share all its member defaults with any superset of its fields that also implements
+    # its unimplemented methods.
 
-# For reference only; will compile if used
-def Arithmetic = {
-    def OverflowBehavior = enum ( .wrapOnOverflow, .panicOnOverflow )
-    #
-    # The following functions are generic and improper usage will be caught at comptime:
-    #
-    def Add = inline a.type {a.type a b, (compt OverflowBehavior) of} (
-        return where of == (.wrapOnOverflow => a +% b, .panicOnOverflow => a + b)
-    )
-    def Sub = inline a.type {a.type a b, (compt OverflowBehavior) of} (
-        return where of == (.wrapOnOverflow => a -% b, .panicOnOverflow => a - b)
-    )
-    def Mul = inline a.type {a.type a b, (compt OverflowBehavior) of} (
-        return where of == (.wrapOnOverflow => a *% b, .panicOnOverflow => a * b)
-    )
-    def Div = inline a.type {a.type a b} ( return a / b )
-    def Mod = inline a.type {a.type a b} ( return a % b )
-    def Neg = inline a.type {a.type a} ( return -a )
-}
+    Reader := mixin {
+        Error := error (.EOF)
 
-def RunnableProgram = {
-    u64 counter {} $(
-        def struct = {mut static u64 = 0}
-        struct.static += 1
-        return struct.static
-    )
+        ## Consume the next bytes of some stream to fill the beginning of `buf`; the count read is returned. An error
+        ## should be returned if EOF hasn't been reached and fewer bytes than `buf.len` have been read.
+        u32!error $ReadSome(rd *this, buf []mut u8)
 
-    u64 fibonacci {n u64} (
-        if (n <= 1) return n; mut prev, curr, i u64 = (0, 1, 2)
-        while (i <= n) (i += 1) \
-            (def next = prev + curr; prev = curr; curr = next)
-        return curr
-    )
 
-    void Main {} $( while (true) fibonacci(counter()) )
-}
+        ## Completely fill `buf` from its beginning to its end consuming the next bytes of some stream.
+        void!error $Read(rd *this, buf []mut u8) { rd.ReadAtLeast(buf, buf.len)! }
 
-type coll = std.collection
-type whatever = (import local_lib).PineapplePasta
-
-__ EveryGoddamnLiteral = (
-    "\n\n    Hello, World!\n\n"
-    `\n\n    Hello, World!\n\n`
-    \\
-    \\    Hello, World!
-    \\
-    '\n'
-    1234567890
-    0b10101010
-    0o77777777
-    0xabcdef01
-
-)
-
-type uselessComputation = <T type>(
-    field0, field1, field2 T
-    field3, field4 = whatever, std.Math
-    mut staticAndGlobalMember = u8(0)
-
-    inline void memberMethod(tt *this) ${
-        tt.field0 += ${
-            tt.field1 = ((tt.field4.Phi*1e20) as T) | 1
-            tt.field1
+        ## Consume the next bytes of some stream to fill the beginning of `buf` with at least `len` bytes; `len`
+        ## exceeding `buf.len` is UB.
+        void!error $ReadAtLeast(rd *this, buf []mut u8, len u32) {
+            if (buf.len < len) unreachable
+            r mut = 0; while (r < bytes.len) r += rd.ReadSome(bytes[r..]) \
+                catch |err| return if (err == error.EOF && r >= len) void else err
         }
-        tt.field2 = tt.field1 ^ (tt.field0 >> 5)
-        [_]T buf = (tt.field2, tt.field1, tt.field0)
-        if (buf.len > 0) tt.field3(*[buf.len*std.runt.SizeOf(buf[0])]u8(*buf[0]))
-        staticAndGlobalMember = tt.field1 * tt.field1 + !tt.field1
     }
-)
 
-u64 counter() ${
-    type aStruct = (mut u64 aVal = 0) # makes a static value
-    defer aStruct.aVal += 1           # starts with 0
-    return aStruct.aVal
-}
+    Writer := mixin {
+        ## Copy from the beginning of `bytes` to somewhere; return the count of bytes consumed.
+        u32!error $WriteSome(wr *this, bytes []u8)
 
-u64 fibonacci(n u64) {
-    if (n <= 1) return n
-    mut u64 prev, curr, i = 0, 1, 2
-    while (i <= n) {i += 1} {
-        u64 next = prev + curr
-        prev = curr
-        curr = next
-    }
-    return curr
-}
 
-u8 Main() ${ return u8(fibonacci(counter())) } # narrowings must be explicit
+        ## Fully consume `bytes` from its beginning to its end copying to somewhere.
+        void!error $Write(wr *this, bytes []u8) { w mut = 0; while (w < bytes.len) w += wr.WriteSome(bytes[w..])! }
 
-void EraseBuffer @{buf []any} ${
-    coll.isInAnd(buf.type, (coll.NumericType)) # triggers a compilation error if t is not a member of all passed collections
-    for () {}
-}
-
-compt type newWriterType(inner io.Writer) {
-    return (
-
-    )
-}
-
-u8 Main() ${
-    [10 << 20]u8 buffer
-    __ lambda = |&buffer| {
-
+        ## Fully write out previously consumed bytes. Use this after every complete group of writing calls.
+        void!error $Flush(_ *this) {}
     }
 }
 
-inline impl Fn() operator(op ||{}) {
-    |op| {
-        if (nums.len == 0) return 0; mut t cum = nums[0]
-        unroll for (nums[1..]) |num| cum = op(cum, num); cum
+## BufferedReader wraps another Reader and buffers it with an array of length `len`.
+type BufferedReader(wrapped io.Reader, len u32) {
+    {
+        highSt, highLn, lowSt, lowLn u32,
+        buf [len]u8, Inner io.Reader = wrapped,
+
+        Error := wrapped.Error ++ io.Reader.Error
+
+        u32!Error $ReadSome(br *this, buf []mut u8) {
+        }
+
+        ## Peek reads at least `buf.len` bytes into `buf` without moving `br.end`; `buf.len` exceeding `br.buf.len` is
+        ## UB.
+        void!Error $Peek(br this, buf []mut u8) {
+            if (len < buf.len) unreachable
+
+            if (br.lowLn+br.highLn >= buf.len) {
+                if (br.lowLn >= buf.len) { buf (=) br.buf[br.lowSt..br.lowSt+buf.len]; return }
+                # copy low then high and return
+
+            } else {
+                tmp mut = [len]u8
+                # when peek has to get more new bytes than it has, get br.buf.len - unconsumed remaining in buffer
+            }
+        }
     }
 }
 
-__ Arithmetic = (
+## BufferedWriter wraps another Writer and buffers it with an array of length `len`.
+type BufferedWriter(wrapped io.Writer, len u32) {
+    {
+        end = 0, buf [len]u8, Inner io.Writer = wrapped, Error := wrapped.Error
 
-    __ add = operator(|a, b| a + b)
+        u32!Error $WriteSome(bw *this, bytes []u8) {
+            if (bytes.len == 0) return 0; w := len - bw.end
 
+            if (bytes.len < w) { bw.buf[bw.end..bw.end+bytes.len] (=) bytes; bw.end += bytes.len; goto :end }
 
-    inline t add(t type, nums any) {
+            if (bw.end > 0) { bw.buf[bw.end..bw.end+w] (=) bytes[..w]; bw.Inner.Write(bw.buf)! }
 
+            rem, t := bytes.len-w, @mut(0); where (rem <=> len) {
+            0 =>
+                bw.end = 0; bw.Inner.Write(bytes[w..w+len])!,
+            1 =>
+                t = rem/len*len+w; bw.Inner.Write(bytes[w..t])!; fallthrough,
+            -1 =>
+                bw.end = bytes.len-t; if (bw.end > 0) bw.buf[..bw.end] (=) bytes[w..bw.end],
+            }
+            end: return bytes.len
+        }
+
+        void!Error $Flush(bw *this) {
+            if (bw.end > 0) { bw.Inner.Write(bw.buf[0..bw.end])!; bw.end = 0 }
+            bw.Inner.Flush()!
+        }
     }
-)
-
-compt: type BufferedWriter(wrapped io.Writer, len uptr) {
-    (
-        inner io.Writer = wrapped,
-        buffer [len]u8,
-
-        uptr write() { 0 }
-    )
 }
-
-mut volatile: (thing, thing2, thing3) intType = (7, 8, 9)
