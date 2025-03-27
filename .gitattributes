@@ -1,2 +1,2 @@
 vendor/** linguist-vendored
-*.wx linguist-language=Ruby
+*.wx linguist-language=Nim
