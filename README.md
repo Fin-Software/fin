@@ -26,9 +26,10 @@
 
 # Governing Implementation Design Goals
 
-##### Target Support (unless I'm paid to work on this)
+##### Support Targets (unless I'm paid to work on this)
 
-
+OSes: MacOS, Windows, Linux, and FreeBSD
+ISAs: x86 (32 and 64), arm (16, 32, and 64), riscv (32 and 64)
 
 ### Compiler
 
@@ -42,18 +43,19 @@
 |         | `safety = -DSAFETY -Wall -Wextra -Wno-cast-function-type-mismatch`                 |
 |         | `reqd = -fwrapv -nostdlib -nostartfiles`                                           |
 
-* ISO C23 backend; LLVM clang-based code generation
+* LLVM-based code generation
 * JiT'd comptime code generation and execution followed by JiT'd or AoT'd runtime code generation (and possible execution)
-* rustc-level semantic linting (faster, because this language is simpler) and informative errors for compiler-driven development
-* native and ISO C23 stdlib with comprehensive support only for SotA or appropriately longstanding or ubiquitous software
+* rustc-level informative errors for compiler-driven development (faster, due to less strict and less complex semantics)
+* native and LLVM IR stdlib with comprehensive support only for SotA or appropriately longstanding or ubiquitous software
 * struct and literal deduplication
-* per-comptime-loop iteration limit default, possibly 2^16
+* per-comptime backwards jump limit default, possibly 2^16
 * per-file node limit default, possibly 2^32
 
 ### Standard Library Structs
 
 | source file sans extension |                          contents and priority =>                           |   |
 | :------------------------- | :-------------------------------------------------------------------------- | - |
+| `builtin/builtin`          | builtin intrinsics                                                          | 0 |
 | `compressor/brotli`        | (E then D) Brotli compression format                                        |   |
 | `compressor/bzip2`         | (D only)   Bzip2 compression format                                         |   |
 | `compressor/flate`         | (E and D)  Deflate or Gzip or Zlib compression format                       |   |
@@ -81,11 +83,12 @@
 | `encoding/utf-8`           | (E and D)  utf-8 unicode text encoding                                      |   |
 | `encoding/wtf-16`          | (E and D)  wtf-16 unicode text encoding                                     |   |
 | `fmt/fmt`                  | value formatting and writing                                                |   |
-| `gnuc/gnuc`                | GNU C builtins                                                              | 0 |
 | `hw/cpu`                   | cpu and cpu feature detection                                               |   |
-| `hw/cpu`                   | cpu and cpu feature detection                                               |   |
+| `hw/gpu`                   | gpu and gpu feature detection                                               |   |
+| `hw/disk`                  | disk and disk feature detection                                             |   |
 | `io/io`                    | generic readers and writers                                                 |   |
-| `llvm/llvm`                | LLVM IR intrinsics                                                          | 0 |
+| `io/reader`                | generic readers and writers                                                 |   |
+| `io/writer`                | generic readers and writers                                                 |   |
 | `math/math`                | higher-level mathematics library                                            |   |
 | `math/big/big`             | arbitrary-precision arithmetic and bitwise operation library                |   |
 | `math/big/int`             | arbitrary-precision integer arithmetic                                      |   |
@@ -93,7 +96,7 @@
 | `math/big/rational`        | arbitrary-precision rational arithmetic                                     |   |
 | `mem/mem`                  | generic memory manipulation                                                 |   |
 | `mem/heap`                 | generic memory allocation                                                   |   |
-| `mem/heap/allocator`       | memory allocator face                                                       |   |
+| `mem/heap/allocator`       | memory allocator mixin                                                      |   |
 | `mem/heap/arenaalloc`      | allocator wrapper that disables all freeing until deinitialization          |   |
 | `mem/heap/rpmalloc`        | reimplementation of https://github.com/mjansson/rpmalloc                    |   |
 | `mem/heap/stackalloc`      | fixed-buffer allocator; may only free the most recent allocation            |   |
@@ -105,21 +108,22 @@
 | `os/exec`                  | higher-level program execution                                              |   |
 | `os/fs`                    | higher-level filesystem interaction                                         |   |
 | `os/fs/path`               | filepath traversal and manipulation                                         |   |
-| `os/posix`                 | low-level POSIX interaction                                                 |   |
+| `os/posix`                 | low-level POSIX interaction                                                 | 1 |
 | `os/syscall`               | low-level kernel interaction                                                | 0 |
-| `regex/regex`              | custom regex engine                                                         |   |
+| `regex/regex`              | custom regex engine                                                         | 4 |
 | `runt/runt`                | whixy's minimal runtime                                                     | 0 |
 | `runt/tracy`               | execution tracing                                                           |   |
 | `sync/atomic`              | low-level atomic primitives                                                 | 1 |
-| `sync/sched`               | scheduler face and default schedulers                                       | 1 |
-| `sync/chan`                | channel face and default channels                                           | 1 |
-| `sync/thread`              | thread face and posix threads                                               | 1 |
+| `sync/sched`               | scheduler mixin and default schedulers                                      | 3 |
+| `sync/chan`                | channel mixin and default channels                                          | 1 |
 | `sync/coroutine`           | userspace threads                                                           | 3 |
-| `sync/mutex`               | mutex face and (rw)mutexes                                                  | 1 |
+| `sync/future`              | future mixin                                                                | 1 |
+| `sync/mutex`               | mutex mixin and (rw)mutexes                                                 | 1 |
+| `sync/thread`              | thread mixin and posix threads                                              | 1 |
 | `sync/waitgroup`           | waitgroups                                                                  | 1 |
-| `time/time`                |                                                                             |   |
-| `time/tz`                  |                                                                             |   |
-| `unicode`                  | current unicode tables                                                      |   |
+| `time/time`                |                                                                             | 2 |
+| `time/tz`                  |                                                                             | 2 |
+| `unicode`                  | current unicode tables                                                      | 2 |
 
 + others I don't yet know the importance of in my limited experience as a programmer
 
@@ -128,4 +132,4 @@
 - goto is limited to intra-routine jumps
 - type-punning via aliasing pointer casting is limited to types of the same size in memory
 - slicewise operators are vectorized where possible and must occur between identically-shaped integer or float slices
-- overflow checks are opt-out at the operation level and are inlined
+- overflow checks are opt-out at the operation level and are inlined; some safety checks always occur at runtime, while others 
