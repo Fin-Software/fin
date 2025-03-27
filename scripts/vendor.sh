@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # SPDX-License-Identifier: Apache-2.0
-# Copyright © 2024 The Whixy Authors. All rights reserved.
+# Copyright © 2025 The Whixy Authors. All rights reserved.
 # Contributors responsible for this file:
 # @p7r0x7 <mattrbonnette@pm.me>
 
@@ -34,13 +34,13 @@ finish()
     for file in "$pkg"/*; do rm -rf "./${file##*/}"; done; mv "$pkg"/* .; rmdir "$pkg"
 }
 
-# Separately-contained packages for parallel dependency acquisition and verification.
+# Separate collections of parallelly-acquiesced dependencies.
 llvm()
 {
-	start llvm; semv=20.1.0 base="llvm-project-$semv.src.tar.xz" deps="clang cmake compiler-rt lld llvm openmp polly"
+	start llvm; semv=20.1.1 base="llvm-project-$semv.src.tar.xz" deps="clang cmake compiler-rt lld llvm polly"
 	url="https://github.com/llvm/llvm-project/releases/download/llvmorg-$semv/$base"
 	(
-		get 168b9948df0b629e1f7a656d130d00169e28ff2c152c3a6abe54198ac4cf57c1
+		get f80aafe8e60e3a574c7d44a3ba8f05eb11ad21ae88c85dec735f70fb44837911
 		dec e -so "$srcs/$base" \
 			| tar -xf - --strip-components=1 -C "$pkg" $(printf "llvm-project-$semv.src/%s\n" $deps)
 
@@ -52,16 +52,7 @@ llvm()
 }
 other()
 {
-	start other; semv=master base=berkeley-softfloat-3-$semv.tar.gz
-	url="https://github.com/ucb-bar/berkeley-softfloat-3/archive/$semv.tar.gz"
-	(
-		get cd31d785b624f13c80c79b460580d0c0744ab791bbf958226f9b5f26eddff3db; install "$pkg/softfloat-$semv"
-		dec e -so "$srcs/$base" | tar -xf - --strip-components=1 -C "$pkg/softfloat-$semv";
-
-		rm -rf "$pkg/softfloat-$semv/doc"
-	) &
-
-	semv=master base=LRSTAR-$semv.tar.gz url="https://github.com/p7r0x7/LRSTAR/archive/$semv.tar.gz"
+	start other; semv=master base=LRSTAR-$semv.tar.gz url="https://github.com/p7r0x7/LRSTAR/archive/$semv.tar.gz"
 	(
 		get 50dc3a5c181655b7da2f6a7d232e081c8c8721524c11607fb1db24137857b0c1; install "$pkg/lrstar-$semv"
 		dec e -so "$srcs/$base" | tar -xf - --strip-components=1 -C "$pkg/lrstar-$semv"
