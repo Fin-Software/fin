@@ -22,7 +22,7 @@ pub fn build(b: *Build) void {
     const hash_vendor = def.executable("hash-vendor", "hash.zig", target, .ReleaseFast); // Fast
     const run_hash_vendor = def.runArtifact(hash_vendor, &.{
         "vendor",
-        "f8ba8a12608f1a8603d722aeb12d37a9b23292f76d348cceb39c7353c23761b6", // CODE REVIEW POISON
+        "a7f50c4fb819d2fcc694e05728fcd8ab3877e99775032db4f6abe34d6757d06b", // CODE REVIEW POISON
     });
     b.step("hash-vendor", "").dependOn(&run_hash_vendor.step); // Enable `zig build hash-vendor`
     run_hash_vendor.step.dependOn(&whixy.step);

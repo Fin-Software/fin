@@ -37,10 +37,10 @@ finish()
 # Separate collections of parallelly-acquiesced dependencies.
 llvm()
 {
-	start llvm; semv=20.1.1 base="llvm-project-$semv.src.tar.xz" deps="clang cmake compiler-rt lld llvm polly"
+	start llvm; semv=20.1.2 base="llvm-project-$semv.src.tar.xz" deps="clang cmake compiler-rt lld llvm polly"
 	url="https://github.com/llvm/llvm-project/releases/download/llvmorg-$semv/$base"
 	(
-		get f80aafe8e60e3a574c7d44a3ba8f05eb11ad21ae88c85dec735f70fb44837911
+		get 6054e9b0e1b1f991875a2361f80844f7b6ff6614f1352c0bb7a144cd43c2651b
 		dec e -so "$srcs/$base" \
 			| tar -xf - --strip-components=1 -C "$pkg" $(printf "llvm-project-$semv.src/%s\n" $deps)
 
