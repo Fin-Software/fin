@@ -12,32 +12,32 @@ io := {
 
         ## Consume the next bytes of some stream to fill the beginning of `buf`; the count read is returned. An error
         ## should be returned if EOF hasn't been reached and fewer bytes than `buf.len` have been read.
-        u32!error $ReadSome(rd *this, buf []mut u8) end
+        u32!error $ReadSome(rd *this, buf []mut u8) fin
 
         ## Completely fill `buf` from its beginning to its end consuming the next bytes of some stream.
-        void!error $Read(rd *this, buf []mut u8) rd.ReadAtLeast(buf, buf.len)! end
+        void!error $Read(rd *this, buf []mut u8) rd.ReadAtLeast(buf, buf.len)! fin
 
         ## Consume the next bytes of some stream to fill the beginning of `buf` with at least `len` bytes; `len`
         ## exceeding `buf.len` is UB.
         void!error $ReadAtLeast(rd *this, buf []mut u8, len u32)
-            if (buf.len < len) unreachable end
-            r mut = 0 while (r < bytes.len)
-                r += rd.ReadSome(bytes[r..]) catch |err| if (err != error.EOF || r < len) return err end
-            end
-        end
+            if (buf.len < len) unreachable fin
+            r mut = 0; while (r < bytes.len)
+                r += rd.ReadSome(bytes[r..]) catch |err| if (err != error.EOF || r < len) return err fin fin
+            fin
+        fin
     }
 
     Writer := mixin {
         ## Copy from the beginning of `bytes` to somewhere; return the count of bytes consumed.
-        u32!error $WriteSome(wr *this, bytes []u8) end
+        u32!error $WriteSome(wr *this, bytes []u8) fin
 
         ## Fully consume `bytes` from its beginning to its end copying to somewhere.
         void!error $Write(wr *this, bytes []u8)
-            w mut = 0 while (w < bytes.len) w += wr.WriteSome(bytes[w..])! end
-        end
+            w mut = 0; while (w < bytes.len) w += wr.WriteSome(bytes[w..])! fin
+        fin
 
         ## Fully write out previously consumed bytes. Use this after every complete group of writing calls.
-        void!error $Flush(_ *this) return end
+        void!error $Flush(_ *this) return fin
     }
 }
 
@@ -49,22 +49,22 @@ compt type BufferedReader(wrapped io.Reader, len u32)
 
         Error := wrapped.Error ++ io.Reader.Error
 
-        u32!Error $ReadSome(br *this, buf []mut u8) end
+        u32!Error $ReadSome(br *this, buf []mut u8) fin
 
         ## Peek reads at least `buf.len` bytes into `buf` without moving `br.end`; `buf.len` exceeding `br.buf.len` is
         ## UB.
         void!Error $Peek(br this, buf []mut u8)
-            if (len < buf.len) unreachable end
+            if (len < buf.len) unreachable fin
             if (br.lowLn+br.highLn >= buf.len)
-                if (br.lowLn >= buf.len) buf (=) br.buf[br.lowSt..br.lowSt+buf.len] return end
+                if (br.lowLn >= buf.len) buf (=) br.buf[br.lowSt..br.lowSt+buf.len] return fin
                 # copy low then high and return
             else
                 tmp mut = [len]u8
                 # when peek has to get more new bytes than it has, get br.buf.len - unconsumed remaining in buffer
-            end
-        end
+            fin
+        fin
     }
-end
+fin
 
 ## BufferedWriter wraps another Writer and buffers it with an array of length `len`.
 compt type BufferedWriter(wrapped io.Writer, len u32)
@@ -72,36 +72,33 @@ compt type BufferedWriter(wrapped io.Writer, len u32)
         end = 0, buf [len]u8, Inner io.Writer = wrapped, Error := wrapped.Error
 
         u32!Error $WriteSome(bw *this, bytes []u8)
-            if (bytes.len == 0) return 0 w := len - bw.end
+            if (bytes.len == 0) return 0 fin; w := len - bw.end
 
             if (bytes.len < w)
-                bw.buf[bw.end..bw.end+bytes.len] (=) bytes
-                bw.end += bytes.len
-                goto ret
-            end
+                bw.buf[bw.end..bw.end+bytes.len] (=) bytes; bw.end += bytes.len; goto ret
+            fin
 
             if (bw.end > 0)
-                bw.buf[bw.end..bw.end+w] (=) bytes[..w]
-                bw.Inner.Write(bw.buf)!
-            end
+                bw.buf[bw.end..bw.end+w] (=) bytes[..w]; bw.Inner.Write(bw.buf)!
+            fin
 
-            rem, t := bytes.len-w, @mut(0) where (rem <=> len)
+            rem, t := bytes.len-w, @mut(0); where (rem <=> len)
             0 =>
-                bw.end = 0 bw.Inner.Write(bytes[w..w+len])!,
+                bw.end = 0; bw.Inner.Write(bytes[w..w+len])!,
             1 =>
-                t = rem/len*len+w bw.Inner.Write(bytes[w..t])! fallthrough,
+                t = rem/len*len+w; bw.Inner.Write(bytes[w..t])!; fallthrough,
             -1 =>
-                bw.end = bytes.len-t if (bw.end > 0) bw.buf[..bw.end] (=) bytes[w..bw.end] end,
-            end
+                bw.end = bytes.len-t; if (bw.end > 0) bw.buf[..bw.end] (=) bytes[w..bw.end] fin,
+            fin
 
-            label ret return bytes.len
-        end
+            label ret; return bytes.len
+        fin
 
         void!Error $Flush(bw *this)
-            if (bw.end > 0) bw.Inner.Write(bw.buf[0..bw.end])! bw.end = 0 end
+            if (bw.end > 0) bw.Inner.Write(bw.buf[0..bw.end])!; bw.end = 0 fin
             bw.Inner.Flush()!
-        end
+        fin
     }
-end
+fin
 
-u8 $Main() return 0 end
+u8 $Main() return 0 fin
