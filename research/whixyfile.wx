@@ -4,8 +4,8 @@
 # @p7r0x7 <mattrbonnette@pm.me>
 
 io := {
-    # Mixins (without overriding) share all its member defaults with any superset of its fields that also implements
-    # its unimplemented methods.
+    # A mixin type describes and extends with its methods (w/o overriding) any superset of its fields that also
+    # implements its unimplemented methods.
 
     Reader := mixin {
         Error := error (.EOF)
@@ -15,14 +15,14 @@ io := {
         u32!error $ReadSome(rd *this, buf []mut u8) fin
 
         ## Completely fill `buf` from its beginning to its end consuming the next bytes of some stream.
-        void!error $Read(rd *this, buf []mut u8) rd.ReadAtLeast(buf, buf.len)! fin
+        void!error $Read(rd *this, buf []mut u8) rd:ReadAtLeast(buf, buf.len)! fin
 
         ## Consume the next bytes of some stream to fill the beginning of `buf` with at least `len` bytes; `len`
         ## exceeding `buf.len` is UB.
         void!error $ReadAtLeast(rd *this, buf []mut u8, len u32)
             if (buf.len < len) unreachable fin
             r mut = 0; while (r < bytes.len)
-                r += rd.ReadSome(bytes[r..]) catch |err| if (err != error.EOF || r < len) return err fin fin
+                r += rd:ReadSome(bytes[r..]) catch |err| if (err != error.EOF || r < len) return err fin fin
             fin
         fin
     }
@@ -33,7 +33,7 @@ io := {
 
         ## Fully consume `bytes` from its beginning to its end copying to somewhere.
         void!error $Write(wr *this, bytes []u8)
-            w mut = 0; while (w < bytes.len) w += wr.WriteSome(bytes[w..])! fin
+            w mut = 0; while (w < bytes.len) w += wr:WriteSome(bytes[w..])! fin
         fin
 
         ## Fully write out previously consumed bytes. Use this after every complete group of writing calls.
@@ -42,7 +42,7 @@ io := {
 }
 
 ## BufferedReader wraps another Reader and buffers it with an array of length `len`.
-compt type BufferedReader(wrapped io.Reader, len u32)
+macro type BufferedReader(wrapped io.Reader, len u32)
     return {
         highSt, highLn, lowSt, lowLn u32,
         buf [len]u8, Inner io.Reader = wrapped,
@@ -67,7 +67,7 @@ compt type BufferedReader(wrapped io.Reader, len u32)
 fin
 
 ## BufferedWriter wraps another Writer and buffers it with an array of length `len`.
-compt type BufferedWriter(wrapped io.Writer, len u32)
+macro type BufferedWriter(wrapped io.Writer, len u32)
     return {
         end = 0, buf [len]u8, Inner io.Writer = wrapped, Error := wrapped.Error
 
@@ -75,18 +75,21 @@ compt type BufferedWriter(wrapped io.Writer, len u32)
             if (bytes.len == 0) return 0 fin; w := len - bw.end
 
             if (bytes.len < w)
-                bw.buf[bw.end..bw.end+bytes.len] (=) bytes; bw.end += bytes.len; goto ret
+                bw.buf[bw.end..bw.end+bytes.len] (=) bytes
+                bw.end += bytes.len
+                goto ret
             fin
 
             if (bw.end > 0)
-                bw.buf[bw.end..bw.end+w] (=) bytes[..w]; bw.Inner.Write(bw.buf)!
+                bw.buf[bw.end..bw.end+w] (=) bytes[..w]
+                bw.Inner:Write(bw.buf)!
             fin
 
             rem, t := bytes.len-w, @mut(0); where (rem <=> len)
             0 =>
-                bw.end = 0; bw.Inner.Write(bytes[w..w+len])!,
+                bw.end = 0; bw.Inner:Write(bytes[w..w+len])!,
             1 =>
-                t = rem/len*len+w; bw.Inner.Write(bytes[w..t])!; fallthrough,
+                t = rem/len*len+w; bw.Inner:Write(bytes[w..t])!; fallthrough,
             -1 =>
                 bw.end = bytes.len-t; if (bw.end > 0) bw.buf[..bw.end] (=) bytes[w..bw.end] fin,
             fin
@@ -95,10 +98,12 @@ compt type BufferedWriter(wrapped io.Writer, len u32)
         fin
 
         void!Error $Flush(bw *this)
-            if (bw.end > 0) bw.Inner.Write(bw.buf[0..bw.end])!; bw.end = 0 fin
-            bw.Inner.Flush()!
+            if (bw.end > 0) bw.Inner:Write(bw.buf[0..bw.end])!; bw.end = 0 fin
+            bw.Inner:Flush()!
         fin
     }
 fin
 
 u8 $Main() return 0 fin
+
+macro |_| Main() fin

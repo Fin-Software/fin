@@ -23,7 +23,7 @@ test "passes" {
     ;
     const List = @import("std").ArrayList;
     const testing = @import("std").testing;
-    const passes = @import("transpiler/src_passes.zig");
+    const passes = @import("compiler/src_passes.zig");
 
     var ta = testing.allocator_instance;
     //defer ta.deinit();

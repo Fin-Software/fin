@@ -52,14 +52,14 @@ const WhixyCmd = cmd: {
 
 /// Comptime-assembled Cova command definition for Whixy
 const whixy_cmd: WhixyCmd = command("whixy",
-    \\Just-in-Time compile and execute one-file Whixy (build) scripts.
+    \\Just-in-Time compile and execute Whixy programs.
 , &.{
     command("cc",
-        \\Invoke the internal LLVM Clang C compiler.
+        \\Invoke the provided LLVM Clang C compiler.
     , null, null, null),
 
     command("cxx",
-        \\Invoke the internal LLVM Clang C++ compiler.
+        \\Invoke the provided LLVM Clang C++ compiler.
     , null, null, null),
 
     command("lsp",
@@ -69,7 +69,11 @@ const whixy_cmd: WhixyCmd = command("whixy",
     command("fmt",
         \\Format Whixy files.
     , null, null, null),
-}, null, &.{
+}, &.{
+    value("path", []const u8, null, parsing.parsePathOrURL,
+        \\Path to the
+    ),
+}, &.{
     option(false, "version", null, value("", bool, false, parsing.parseBool, ""),
         \\Print version information string and exit.
     ),
@@ -476,6 +480,10 @@ const parsing = struct {
                 return fmt.parseInt(T, arg, base);
             }
         }.parseInt;
+    }
+
+    fn parsePathOrURL(arg: []const u8, _: mem.Allocator) ![]const u8 {
+        return arg;
     }
 
     fn parseOptimize(arg: []const u8, _: mem.Allocator) ![]const u8 {

@@ -9,7 +9,7 @@
 # And for security reasons, only @p7r0x7 may sign and push commits changing vendor.sh and vendor/.
 
 curl() { command curl -sL "$@"; }
-set -eu; umask 0022; srcs=/tmp/srcs;
+set -eu; umask 0022; srcs=/tmp/srcs
 install() { command install -dm 0755 "$@"; }
 command -v 7z >/dev/null && dec() { 7z "$@"; }
 command -v 7zz >/dev/null && dec() { 7zz "$@"; }
@@ -19,7 +19,7 @@ clean() { [ $? = 0 ] || rm -rf "$pkg" "$srcs" & }
 
 start()
 {
-	trap clean INT HUP TERM EXIT; . ../scripts/vendor.sh # Borrows $@
+	trap clean INT HUP TERM EXIT; . "$0" # Borrows $@
 	name="$1"; pkg=/tmp/"$name"; rm -rf "$pkg"; install "$pkg"
 }
 get()

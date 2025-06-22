@@ -5,7 +5,7 @@
 # Contributors responsible for this file:
 # @p7r0x7 <mattrbonnette@pm.me>
 
-set_dep_paths()
+set_exe_paths()
 {
 	status=0
 	for arg; do
@@ -20,17 +20,12 @@ set_dep_paths()
 
 build_static_zstd()
 {
-	set_dep_paths cmake ninja zig
-}
-
-build_static_antlr_runtime()
-{
-	set_dep_paths cmake jar java ninja zig
+	set_exe_paths cmake ninja zig
 }
 
 build_static_cross_llvm_libs()
 {
-	set_dep_paths cmake ninja python3 zig
+	set_dep_paths cmake ninja zig
 
 	read -r options <<-EOF
 		-B=llvm/llvm/build -S=llvm/llvm -DCMAKE_BUILD_TYPE=Release -DCMAKE_SYSTEM_NAME=$cmake_target
@@ -47,9 +42,8 @@ build_static_cross_llvm_libs()
 		options="$options -DCMAKE_RC_COMPILER=$zig;rc;-fno-sanitize=all;-s;-target;$triple;-mcpu=$mcpu"
 	fi
 
-	if [ "$safety" = safe ]; then safe=ON; elif [ "$safety" = fast ]; then safe=OFF; else printf "" && exit 1; fi
-	readonly safe
-	options="$options -DLLVM_ENABLE_EH=$safe -DLLVM_ENABLE_RTTI=$safe -DLLVM_ENABLE_UNWIND_TABLES=$safe -DLLVM_ENABLE_PEDANTIC=$safe"
+	if [ "$safety" = safe ]; then safe=ON; elif [ "$safety" = fast ]; then safe=OFF; else printf "missing safety" && exit 1; fi
+	options="$options -DLLVM_ENABLE_EH=$safe -DLLVM_ENABLE_UNWIND_TABLES=$safe"
 
 	for arg in $llvm_projects; do
 		if [ "$arg" = llvm ] || [ "$arg" = third-party ]; then continue; fi
@@ -91,7 +85,7 @@ if [ ! -d llvm ]; then
 	set -ex
 	trap cleanup INT HUP TERM
 
-	readonly llvm_runtimes="compiler-rt libunwind" # to be used unquoted
+	readonly llvm_runtimes="compiler-rt" # to be used unquoted
 	readonly llvm_projects="clang lld llvm polly"  # to be used unquoted
 
 	readonly safety="$1"       # safe or fast
@@ -107,6 +101,5 @@ if [ ! -d llvm ]; then
 	esac && readonly cmake_target
 
 	build_static_zstd            # for linking
-	build_static_antlr_runtime   # for linking
 	build_static_cross_llvm_libs # for linking
 fi

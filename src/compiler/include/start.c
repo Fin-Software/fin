@@ -4,4 +4,3 @@
 // @p7r0x7 <mattrbonnette@pm.me>
 
 #include "whixy.h"
-

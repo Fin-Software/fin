@@ -1,0 +1,12 @@
+.{
+    .name = .test0,
+    .fingerprint = 0, // CODE REVIEW POISON
+    .version = "0.0.0",
+    .dependencies = .{
+        .builddef = .{
+            .url = "https://github.com/p7r0x7/builddef/archive/master.tar.gz",
+            .hash = "12208f29f369eeca5248464bec120a80cfa3b430b39bc2700e5a16c4bd24fd733291",
+        },
+    },
+    .paths = .{ "src", "build.zig", "build.zig.zon" },
+}
