@@ -1,0 +1,9 @@
+
+To compile lrstar from source_lrstar on Linux use this command line:
+
+   source_lrstar$ g++ -o../bin/lrstar -w -DLINUX *.cpp
+
+To compile dfa from source_dfa on Linux use this command line:
+
+   source_dfa$ g++ -o../bin/dfa -w -DLINUX *.cpp
+

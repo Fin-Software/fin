@@ -1,6 +1,0 @@
-
-PG.grm(0026) :  STRINGX    <string>    => poslookup ();
-PG.grm(0026) : ............^^^^^^^^....................
-PG.grm(0026) : Warning, Constant <string> was declared but not used anywhere.
-
-1 warning.

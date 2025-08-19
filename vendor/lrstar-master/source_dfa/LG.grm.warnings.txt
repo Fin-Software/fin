@@ -1,6 +1,0 @@
-
-LG.grm(0009) :  T_IGNORE     <ignore>       => first ({ignore});
-LG.grm(0009) : ..............^^^^^^^^...........................
-LG.grm(0009) : Warning, Constant <ignore> was declared but not used anywhere.
-
-1 warning.
