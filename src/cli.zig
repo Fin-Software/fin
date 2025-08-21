@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Copyright © 2024 The Whixy Authors. All rights reserved.
+// Copyright © 2025 The Fin Authors. All rights reserved.
 // Contributors responsible for this file:
 // @p7r0x7 <mattrbonnette@pm.me>
 
@@ -15,7 +15,7 @@ const builtin = @import("builtin");
 const utf8 = @import("std").unicode;
 
 /// Cova configuration type identity
-const WhixyCmd = cmd: {
+const FinCmd = cmd: {
     var cmd_config = cova.Command.Config.optimized(.{ .no_formats = true, .remove_features = true });
 
     cmd_config.opt_config.global_usage_fn = printing.optionUsage;
@@ -50,9 +50,9 @@ const WhixyCmd = cmd: {
     break :cmd cova.Command.Custom(cmd_config);
 };
 
-/// Comptime-assembled Cova command definition for Whixy
-const whixy_cmd: WhixyCmd = command("whixy",
-    \\Just-in-Time compile and execute Whixy programs.
+/// Comptime-assembled Cova command definition for Fin
+const fin_cmd: FinCmd = command("fin",
+    \\Just-in-Time compile and execute Fin programs.
 , &.{
     command("cc",
         \\Invoke the provided LLVM Clang C compiler.
@@ -63,11 +63,11 @@ const whixy_cmd: WhixyCmd = command("whixy",
     , null, null, null),
 
     command("lsp",
-        \\Start the Whixy language server daemon.
+        \\Ping the language server or toggle its daemon.
     , null, null, null),
 
     command("fmt",
-        \\Format Whixy files.
+        \\Format Fin files.
     , null, null, null),
 }, &.{
     value("path", []const u8, null, parsing.parsePathOrURL,
@@ -93,25 +93,28 @@ const whixy_cmd: WhixyCmd = command("whixy",
 });
 
 // Comptime-only structure assemblers
-fn command(cmd: []const u8, desc: []const u8, cmds: ?[]const WhixyCmd, vals: ?[]const WhixyCmd.ValueT, opts: ?[]const WhixyCmd.OptionT) WhixyCmd {
-    return .{ .name = cmd, .vals = vals, .sub_cmds = cmds, .description = replaceNewlines(desc), .hidden = desc.len == 0, .opts = opts, .allow_inheritable_opts = true };
-}
-fn option(inherit: bool, opt: []const u8, aliases: ?[]const []const u8, val: WhixyCmd.ValueT, desc: []const u8) WhixyCmd.OptionT {
-    return .{ .val = val, .name = opt, .long_name = opt, .description = replaceNewlines(desc), .hidden = desc.len == 0, .alias_long_names = aliases, .inheritable = inherit };
-}
-fn value(val: []const u8, comptime ValT: type, default: ?ValT, parse: ?*const fn ([]const u8, mem.Allocator) anyerror!ValT, desc: []const u8) WhixyCmd.ValueT {
-    return WhixyCmd.ValueT.ofType(ValT, .{ .name = val, .parse_fn = parse, .default_val = default, .description = replaceNewlines(desc) });
-}
 
-/// For readability, some literal strings in this file require comptime transformation before being manipulated at runtime.
-inline fn replaceNewlines(comptime str: []const u8) []const u8 {
-    comptime {
-        @setEvalBranchQuota(3 << 10);
-        var buf = str[0..].*;
-        mem.replaceScalar(u8, &buf, nb, spaces[0]);
-        const out = buf;
-        return &out;
+// zig-format off
+fn command(cmd: []const u8, desc: []const u8, cmds: ?[]const FinCmd, vals: ?[]const FinCmd.ValueT, opts: ?[]const FinCmd.OptionT) FinCmd {
+    return .{ .name = cmd, .vals = vals, .sub_cmds = cmds, .description = normalizeWS(desc), .hidden = desc.len == 0, .opts = opts, .allow_inheritable_opts = true };
+}
+fn option(inherit: bool, opt: []const u8, aliases: ?[]const []const u8, val: FinCmd.ValueT, desc: []const u8) FinCmd.OptionT {
+    return .{ .val = val, .name = opt, .long_name = opt, .description = normalizeWS(desc), .hidden = desc.len == 0, .alias_long_names = aliases, .inheritable = inherit };
+}
+fn value(val: []const u8, comptime ValT: type, default: ?ValT, parse: ?*const fn ([]const u8, mem.Allocator) anyerror!ValT, desc: []const u8) FinCmd.ValueT {
+    return FinCmd.ValueT.ofType(ValT, .{ .name = val, .parse_fn = parse, .default_val = default, .description = normalizeWS(desc) });
+}
+// zig-format on
+fn normalizeWS(comptime str: []const u8) []const u8 {
+    @setEvalBranchQuota(3 << 10); // It brings me joy I have proven this is stupid if you trust your developers.
+    var buf = str[0..].*;
+    var i: u32 = 0;
+    while (mem.indexOfAnyPos(u8, &buf, i, "\t\n\r")) |pos| {
+        i += pos;
+        buf[i] = spaces[0];
     }
+    const out = buf;
+    return &out;
 }
 
 pub inline fn print(wr: anytype, strs: anytype) !void {
@@ -124,8 +127,6 @@ pub inline fn print(wr: anytype, strs: anytype) !void {
         }
     }
 }
-
-/// Printing callback functions for Cova commands and options
 const printing = struct {
     const schemes = [_]ColorScheme{
         ColorScheme{ .one = "\x1b[48;5;232;38;5;230;1m", .two = "\x1b[38;5;111m" }, // discord: buttercream, blurple
@@ -408,7 +409,7 @@ const printing = struct {
                 while (it.next()) |arg| {
                     if (arg.len < 5) continue;
                     if (ascii.eqlIgnoreCase("-ansi", arg[0..5])) {
-                        const seps = WhixyCmd.OptionT.opt_val_seps;
+                        const seps = FinCmd.OptionT.opt_val_seps;
                         const val = switch (arg[5]) {
                             seps[0], seps[1], spaces[0] => arg[6..],
                             else => arg[5..],
@@ -421,21 +422,21 @@ const printing = struct {
         } else return false;
     }
 };
-const margin = columns - (WhixyCmd.indent_fmt.len * 2);
+const margin = columns - (FinCmd.indent_fmt.len * 2);
 const spaces = [_]u8{' '} ** 4; // Adjust as necessary.
 const zero = "\x1b[0m";
 const columns = 100;
 const ns = "\n";
 const nb = '\n';
 
-/// runWhixy() is the entry point for the CLI.
-pub fn runWhixy(pipe: fs.File, ally: mem.Allocator) !void {
+/// runFin() is the entry point for the CLI.
+pub fn runFin(pipe: fs.File, ally: mem.Allocator) !void {
     var bfwr = io.bufferedWriter(pipe.writer());
     defer bfwr.flush() catch db.panic("{s}", .{"Failed to flush buffered writer to pipe."});
     try print(bfwr.writer(), .{nb});
     defer print(pipe.writer(), .{nb}) catch db.panic("{s}", .{"Couldn't print final newline."});
 
-    const whixy_cli = try whixy_cmd.init(ally, .{
+    const fin_cli = try fin_cmd.init(ally, .{
         .help_config = .{
             .add_cmd_help_group = .DoNotAdd,
             .add_opt_help_group = .DoNotAdd,
@@ -443,13 +444,13 @@ pub fn runWhixy(pipe: fs.File, ally: mem.Allocator) !void {
             .add_help_opts = false,
         },
     });
-    defer whixy_cli.deinit();
-    defer if (builtin.mode == .Debug) cova.utils.displayCmdInfo(WhixyCmd, whixy_cli, ally, bfwr.writer(), false) catch
+    defer fin_cli.deinit();
+    defer if (builtin.mode == .Debug) cova.utils.displayCmdInfo(FinCmd, fin_cli, ally, bfwr.writer(), false) catch
         db.panic("{s}", .{"Failed to display Cova debug info."});
     {
         var arg_it = try cova.ArgIteratorGeneric.init(ally);
         printing.active_scheme = if (try printing.isCSISupported(pipe, &arg_it, ally)) printing.schemes[0] else null;
-        try cova.parseArgs(&arg_it, WhixyCmd, whixy_cli, bfwr.writer(), .{
+        try cova.parseArgs(&arg_it, FinCmd, fin_cli, bfwr.writer(), .{
             .set_opt_termination_symbol = "--", // This is the most common terminator, even if long flags start with '-'.
             .auto_handle_usage_help = false,
             .enable_opt_termination = true,
@@ -458,8 +459,8 @@ pub fn runWhixy(pipe: fs.File, ally: mem.Allocator) !void {
         (&arg_it).deinit();
     }
     {
-        const cmd = whixy_cli.sub_cmd orelse {
-            try whixy_cli.help(bfwr.writer());
+        const cmd = fin_cli.sub_cmd orelse {
+            try fin_cli.help(bfwr.writer());
             try bfwr.flush();
             return;
         };

@@ -1,47 +1,308 @@
-# Language Specification Design Goals
+# Fin, A Friendly Systems Language
 
-* Name: Whixy, pronounced "WIK-see" or /wɪk.siː/; Source file extension: .wx; Governing implementation license: Apache-2.0
+> Extension: .fn. Governing implementation license: Apache-2.0.
 
-###### Features Conducive to Systems Programming
+---
 
-* Pure and impure codepaths are explicitly delineated in the syntax.
+## Language Features
+
+###### Primitive Types
+
 * Conditions for automatic laziness in an otherwise eager syntax.
-* Value Dlarations are immutable by default, and passed routine parameters are always immutable.
-
-###### Features Conducive to Scripting
-
 * Type specification is only necessary when unambigious type inference doesn't provide the wanted result
 * Zig-like manual memory management, comptime, error handling, namespacing, and deferred-statement scoping
 * Parametric polymorphism in the form of generics; ad hoc polymorphism in some form
-* Routines are first class objects and will be designed to be anonymous by default (instead of two routine syntaxes, named and unnamed, there will just be the unnamed syntax that is to be assigned an identifier for reuse... just like everything else)
 * LET THERE BE POSITS via integer-based software emulation or native hardware instruction generation when available in LLVM
+
+###### Keywords
+
+`alias`       may alias pointer type modifer
+`align`       suggest alignment, followed by a power-of-two between 2 and 4096 in a tuple
+`and`         short-circuiting logical AND operator
+`continue`    continue
+`defer`       schedule an action at scope exit
+`div`         function‑only modifier: this function may diverge (not return)
+`else`        adds a fallback branch to an `if`
+`emit`        inject lexemes at the call site
+`elseif`      adds another branch to an `if`
+`fall`        goto FALLTHROUGH, to the next `where` case
+`for`         begins a for loop
+`fin`         ends each block (function/closure, if, while, for, where, rescue, defer (rescue))
+`goto`        jumps to a label statement
+`if`          starts a conditional branch (expression/statement)
+`inline`      suggest inlining (declaration or call)
+`linkable`    function‑only modifier: symbol visible to linker
+`linked`      function‑only modifier: external linkage
+`mut`         this or these are mutable
+`naked`       function‑only modifier: no prologue/epilogue
+`namespace`   group declarations under a name
+`noreturn`    statement: no further code in this path returns
+`or`          short-circuiting logical OR operator
+`orelse`      unwrap an optional or run fallback
+`rescue`      inline error‑handling operator
+`return`      exits a function with a value
+`requires`
+`static`      lives forever, don't it?
+`struct`      define a data record (declaration or expression)
+`syntax`      marks a syntax‑emitting macro result
+`this`        refers to the current enclosing type (for method syntax)
+`trait`       define an interface by required shape
+`module`      tags file as belonging to a particular module
+`unroll`      suggest loop unrolling
+`unreachable`
+`while`       begins a while loop
+`where`       multi‑way branch (enhanced switch)
+
+
+`and`         logical conjunction (boolean “and”)
+`continue`    skip to next iteration of a loop
+`defer`       schedule an expression to run when the surrounding scope exits
+`demands`     specify required capabilities on a trait
+`do`          begin a do‑block
+`else`        alternative branch of an if or rescue
+`emit`        emit an event (for backends or codegen)
+`elseif`      “else if” branch of an if
+`fall`        fall‑through in a switch‑like construct
+`for`         begin a for‑loop
+`fin`         end a block or function (Fin’s “end” marker)
+`goto`        unconditional jump to a label
+`if`          begin a conditional branch
+`inline`      hint that a function should be inlined
+`or`          logical disjunction (boolean “or”)
+`orelse`      short‑circuit boolean “or else”
+`rescue`      handle an error (Fin’s try/catch)
+`return`      return from a function
+`syntax`      begin a syntax extension or special form
+`this`        implicit receiver in methods/traits
+`trait`       begin a trait/interface definition
+`unreachable` mark code as unreachable (compiler hint)
+`unroll`      hint that a loop should be unrolled
+`where`       constrain a generic or trait
+`while`       begin a while‑loop
+
+`alias`       alias‑type modifier
+`align`       alignment modifier for storage
+`dyn`         dynamic trait object modifier
+`mut`         mutable binding modifier
+`static`      static‑storage binding modifier
+
+###### Operators
+
+Infix unless otherwise specified.
+
+`...`   postfix: variadic element ending a tuple type signature
+`..`    exclusive range as used in slices, cases, and for expressions
+`.type` postfix: access compile time type
+`.len`  postfix: access length
+`>>=`   right shift assign
+`>>`    right shift
+`>=`    greater-than or equal to comparison
+`>`     greater-than comparison
+`<<=`   left shift assign
+`<<`    left shift
+`<=`    less-than or equal to comparison
+`<`     less-than comparison
+`*%=`   wrapping multiply assign
+`*%`    wrapping multiply
+`*=`    multply assign
+`*`     prefix: dereference, infix: multiply
+`+%=`   wrapping add assign
+`+%`    wrapping add
+`+=`    add assign
+`+`     add
+`-%=`   wrapping subtract assign
+`-%`    wrapping subtract
+`-=`    subtract assign
+`-`     prefix: negate, infix: subtract
+`&=`    bitwise AND assign
+`&`     prefix: access address of, infix: bitwise AND
+`%=`    modulo assign
+`%`     modulo
+`^=`    bitwise XOR assign
+`^`     bitwise XOR, prefix: bitwise NOT
+`/=`    divide assign
+`/`     divide
+`|=`    bitwise OR assign
+`|`     bitwise OR
+`!=`    inequality comparison
+`!`     prefix: logical NOT, postfix: sugar for `rescue |err| return err fin`
+`==`    equality comparison
+`:=`    declare value
+`=`     assign or declare value or declare default
+`?`     postfix: sugar for `orelse unreachable`
+`#`     prefix: invoke call or declare function as macro
+`$`     prefix: expand `[]lexeme` to syntax
+
+
+###### Immutable By Default
+
+
+
+###### Extended Operators and Builtins
+
+
+
+
+    + all operators for macro construction or arbitrary bullshit
+
+    @panic()
+    # idk
+
+    # CT things
+    @ctError()
+    @alignOf()
+    @sizeOf()
+
+    # Common platform-agnostic intrinsics
+    @clz()
+    @ctz()
+    @fma()
+    @popcnt()
+    @reverseBytes()
+    @reverseBits()
+
+
+
+    @addrSpaceCast x
+    @addWithOverflow
+    @alignCast
+    @as
+    @atomicLoad
+    @atomicRmw
+    @atomicStore
+    @bitCast
+    @bitOffsetOf
+    @bitSizeOf
+    @branchHint
+    @breakpoint
+
+    @offsetOf
+    @call
+    @cDefine
+    @cImport
+    @cInclude
+    @cmpxchgStrong
+    @cmpxchgWeak
+    @compileError
+    @compileLog
+    @constCast
+    @cUndef
+    @cVaArg
+    @cVaCopy
+    @cVaEnd
+    @cVaStart
+    @divExact
+    @divFloor
+    @divTrunc
+    @embedFile
+    @enumFromInt
+    @errorFromInt
+    @errorName
+    @errorReturnTrace
+    @errorCast
+    @export
+    @extern
+    @field
+    @fieldParentPtr
+    @FieldType
+    @floatCast
+    @floatFromInt
+    @frameAddress
+    @hasDecl
+    @hasField
+    @import
+    @inComptime
+    @intCast
+    @intFromBool
+    @intFromEnum
+    @intFromError
+    @intFromFloat
+    @intFromPtr
+    @max
+    @memcpy
+    @memset
+    @min
+    @wasmMemorySize
+    @wasmMemoryGrow
+    @mod
+    @mulWithOverflow
+    @panic
+    @popCount
+    @prefetch
+    @ptrCast
+    @ptrFromInt
+    @rem
+    @returnAddress
+    @select
+    @setEvalBranchQuota
+    @setFloatMode
+    @setRuntimeSafety
+    @shlExact
+    @shlWithOverflow
+    @shrExact
+    @shuffle
+    @sizeOf
+    @splat
+    @reduce
+    @src
+    @sqrt
+    @sin
+    @cos
+    @tan
+    @exp
+    @exp2
+    @log
+    @log2
+    @log10
+    @abs
+    @floor
+    @ceil
+    @trunc
+    @round
+    @subWithOverflow
+    @tagName
+    @This
+    @trap
+    @truncate
+    @Type
+    @typeInfo
+    @typeName
+    @TypeOf
+    @unionInit
+    @Vector
+    @volatileCast
+    @workGroupId
+    @workGroupSize
+    @workItemId
+
 
 ###### Implementation Consistency Guarantees
 
 * Compilers must halt; interpreters are... permitted.
 * Primitive integer operations must be constant-time.
-* Type inference must follow the specified, halting algorithm.
-* Comptime code execution including constant folding cannot be delayed until runtime.
-* The syntax specifies which expressions the compiler is to treat as unsequenced and handle lazily.
+* Type inference must follow the (currently un)specified, halting algorithm.
+* Macro expansion (syntax) and folding (syntax and procedural) cannot be delayed until runtime.
 
-# Governing Implementation Design Goals
+## Governing Implementation Design Goals
 
 ##### Support Targets (unless I'm paid to work on this)
 
 OSes: MacOS, Windows, Linux, and FreeBSD
 ISAs: x86 (32 and 64), arm (16, 32, and 64), riscv (32 and 64)
 
-### Compiler
+---
 
-|   Mode  |                              Tentative Implementation                              |
-| :------ | :--------------------------------------------------------------------------------- |
-| `jit`   | `$reqd -O1 $safety`                                                                |
-| `debug` | `$reqd -O0 -g $safety`                                                             |
-| `safe`  | `$reqd -O3 -mllvm -polly -mllvm -polly-vectorizer=stripmine -fopenmp-simd $safety` |
-| `fast`  | `$reqd -O3 -mllvm -polly -mllvm -polly-vectorizer=stripmine -fopenmp-simd`         |
-| `tiny`  | `$reqd -Oz`                                                                        |
-|         | `safety = -DSAFETY -Wall -Wextra -Wno-cast-function-type-mismatch`                 |
-|         | `reqd = -fwrapv -nostdlib -nostartfiles`                                           |
+## Compiler
+
+|   Mode  |                               Potential Implementation                               |
+| :------ | :----------------------------------------------------------------------------------- |
+| `jit`   | `$reqd -O1 -DLAZY -DSAFETY`                                                          |
+| `debug` | `$reqd -O0 $errors -DLAZY -DSAFETY -g`                                               |
+| `safe`  | `$reqd -O3 $errors -mllvm -polly -mllvm -polly-vectorizer=stripmine -DLAZY -DSAFETY` |
+| `fast`  | `$reqd -O3 $errors -mllvm -polly -mllvm -polly-vectorizer=stripmine -DLAZY`          |
+| `tiny`  | `$reqd -Oz $errors`                                                                  |
+|         | `errors = -Wall -Wextra -Wno-cast-function-type-mismatch`                            |
+|         | `reqd = -fwrapv -nostdlib -nostartfiles`                                             |
 
 * LLVM-based code generation
 * JiT'd comptime code generation and execution followed by JiT'd or AoT'd runtime code generation (and possible execution)
@@ -51,7 +312,9 @@ ISAs: x86 (32 and 64), arm (16, 32, and 64), riscv (32 and 64)
 * per-comptime backwards jump limit default, possibly 2^16
 * per-file node limit default, possibly 2^32
 
-### Standard Library Structs
+---
+
+## Standard Library
 
 | source file sans extension |                          contents and priority =>                           |   |
 | :------------------------- | :-------------------------------------------------------------------------- | - |
@@ -111,25 +374,34 @@ ISAs: x86 (32 and 64), arm (16, 32, and 64), riscv (32 and 64)
 | `os/posix`                 | low-level POSIX interaction                                                 | 1 |
 | `os/syscall`               | low-level kernel interaction                                                | 0 |
 | `regex/regex`              | custom regex engine                                                         | 4 |
-| `runt/runt`                | whixy's minimal runtime                                                     | 0 |
+| `runt/runt`                | fin's minimal runtime                                                       | 0 |
 | `runt/tracy`               | execution tracing                                                           |   |
 | `sync/atomic`              | low-level atomic primitives                                                 | 1 |
 | `sync/sched`               | scheduler mixin and default schedulers                                      | 3 |
 | `sync/chan`                | channel mixin and default channels                                          | 1 |
 | `sync/coroutine`           | userspace threads                                                           | 3 |
 | `sync/future`              | future mixin                                                                | 1 |
-| `sync/mutex`               | mutex mixin and (rw)mutexes                                                 | 1 |
+| `sync/mutex`               | (rw)mutexes and their mixins                                                | 1 |
 | `sync/thread`              | thread mixin and posix threads                                              | 1 |
 | `sync/waitgroup`           | waitgroups                                                                  | 1 |
 | `time/time`                |                                                                             | 2 |
 | `time/tz`                  |                                                                             | 2 |
 | `unicode`                  | current unicode tables                                                      | 2 |
 
-+ others I don't yet know the importance of in my limited experience as a programmer
++ others I don't know or haven't written down
+
+
 
 ## Notes
 
 - goto is limited to intra-routine jumps
 - type-punning via aliasing pointer casting is limited to types of the same size in memory
 - slicewise operators are vectorized where possible and must occur between identically-shaped integer or float slices
-- overflow checks are opt-out at the operation level and are inlined; some safety checks always occur at runtime, while others 
+- overflow checks are opt-out at the operation level and are inlined; some compilation modes omit them
+- lazy eval may occur on any runtime function that exhibits referential transparency
+
+Runtime functions exhibit referential transparency if their lowered and monomorphized and constant folded code do not:
+    - dereference any addresses passed via parameters directly or indirectly
+    - directly reference any non-local values (CT constants are universally local)
+    - call any functions that directly reference non-local values
+    - have the potential to not return

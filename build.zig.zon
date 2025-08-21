@@ -1,6 +1,6 @@
 .{
-    .name = .whixy,
-    .fingerprint = 0xfa7bdee7cf399c3b, // CODE REVIEW POISON
+    .name = .fin,
+    .fingerprint = 0xad2ef231a4e6cd53, // CODE REVIEW POISON
     .version = "0.0.0",
     .dependencies = .{
         .builddef = .{
@@ -8,8 +8,12 @@
             .hash = "12208f29f369eeca5248464bec120a80cfa3b430b39bc2700e5a16c4bd24fd733291",
         },
         .cova = .{
-            .url = "https://github.com/00JCIV00/cova/archive/zig-v0.14.tar.gz",
-            .hash = "12201386743e7862d71bdb723ec0517a16b0f324acf2710fc0c5329e31ae029d0dd4",
+            .url = "https://github.com/00JCIV00/cova/archive/main.tar.gz",
+            .hash = "1220e287bbb5e0a67703d7f4ecc242aa0f1c055d204e7645160b5dc74d2daf7b5ccd",
+        },
+        .channels = .{
+            .url = "https://github.com/zukaChachava/ZigChannels/archive/main.tar.gz",
+            .hash = "1220e287bbb5e0a67703d7f4ecc242aa0f1c055d204e7645160b5dc74d2daf7b5ccd",
         },
     },
     .paths = .{ "scripts", "src", "std", "vendor", "build.zig", "build.zig.zon", "hash.zig" },

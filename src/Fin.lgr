@@ -1,0 +1,47 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright © 2025 The Fin Authors. All rights reserved.
+// Contributors responsible for this file:
+// @p7r0x7 <mattrbonnette@pm.me>
+
+{doccomment}        -> ';' ';' ';' neol*
+
+{comment}           -> ';' ';' neol*
+
+<backSlashString>   -> (whitespace* '\\' '\\' neol*)+
+
+<doubleQuoteString> -> '"' (any - '\\' - '"' | '\\' '"' | escapes)* '"'
+
+<float>
+
+<integer>           -> deci+ ('\'' deci+)*
+                    | '0' 'x' hexa+ ('\'' hexa+)*
+                    | '0' 'b' bin+ ('\'' bin+)*
+                    | '0' 'o' octa+ ('\'' octa+)*
+                    | '\'' (any - '\\' - '\'' | '\\' '\'' | escapes)* '\''
+
+{whitespace}        -> (' ' | \t | \n | \r | ';')+
+
+<identifier>        -> (lower | upper | '_') (alnum | '_')*
+
+<enum>              -> '.' upper alnum*
+
+<label>             -> (upper | '_') (upper | '_' | deci)* ':'
+
+{ignored}           -> (0..8 | 11..12 | 14..25 | 27..31 | 127 | 176..177 | 245..255)+
+
+<eof>               -> \z
+
+
+escapes             = '\\' '\\' | '\\' 'n' | '\\' 't' | '\\' hexa hexa | '\\' 'r'
+
+upper = 'A'..'Z'
+lower = 'a'..'z'
+deci  = '0'..'9'
+alnum = upper | lower | deci
+bin   = '0'..'1'
+octa  = '0'..'7'
+hexa  = deci | 'a'..'f' | 'A'..'F'
+neol  = any - \n - \r
+any   = 0..255 - ignored - \z
+
+\t = 9; \n = 10; \r = 13; \z = 26

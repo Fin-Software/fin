@@ -1,8 +1,7 @@
-**/.DS_Store
-**/.localized
-.build/
-src/lrstar/*.txt
+.DS_Store
+.localized
 .zig-cache/
-zig-cache/
 zig-out/
 
+/.build/
+/src/lrstar/*.txt

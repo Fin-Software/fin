@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Copyright © 2024 The Whixy Authors. All rights reserved.
+// Copyright © 2025 The Fin Authors. All rights reserved.
 // Contributors responsible for this file:
 // @p7r0x7 <mattrbonnette@pm.me>
 
@@ -15,8 +15,9 @@ pub fn build(b: *Build) void {
     var def = Builddef.init(b);
     const target, const optimize = def.stdOptions(.{}, .{});
 
-    const whixy = def.executable("whixy", "src/main.zig", target, optimize);
-    b.installArtifact(whixy);
+    // Static executable
+    const fin = def.executable("fin", "src/main.zig", target, optimize);
+    b.installArtifact(fin);
 
     // Compile external libraries for statically linking to.
     const hash_vendor = def.executable("hash-vendor", "hash.zig", target, .ReleaseFast); // Fast
@@ -25,7 +26,7 @@ pub fn build(b: *Build) void {
         "e44f77f7d357ae6b8f1bfa6e77ab0aeaa2625b5d9f7737ab726ed2883cd070f1", // CODE REVIEW POISON
     });
     b.step("hash-vendor", "").dependOn(&run_hash_vendor.step); // Enable `zig build hash-vendor`
-    run_hash_vendor.step.dependOn(&whixy.step);
+    run_hash_vendor.step.dependOn(&fin.step);
 
     const libs_step = libs_step: {
         var buf: [11 + 1 + 12 + 1 + 12]u8 = undefined; // Adjust as necessary.
@@ -46,10 +47,13 @@ pub fn build(b: *Build) void {
 
     // Dependencies
     const cova = b.dependency("cova", .{ .target = target, .optimize = optimize });
-    whixy.root_module.addImport("cova", cova.module("cova"));
+    fin.root_module.addImport("cova", cova.module("cova"));
+
+    const channels = b.dependency("channels", .{ .target = target, .optimize = optimize });
+    fin.root_module.addImport("channels", channels.module("channels"));
 
     // Enable `zig build run`
-    const run_cmd = def.runArtifact(whixy, b.args);
+    const run_cmd = def.runArtifact(fin, b.args);
     b.step("run", "").dependOn(&run_cmd.step);
 
     // Enable `zig build test`

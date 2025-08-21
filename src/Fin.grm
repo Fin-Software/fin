@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Copyright © 2024 The Whixy Authors. All rights reserved.
+// Copyright © 2025 The Fin Authors. All rights reserved.
 // Contributors responsible for this file:
 // @p7r0x7 <mattrbonnette@pm.me>
 
@@ -9,6 +9,7 @@ INTEGER           <integer>           => lookup();
 IDENTIFIER        <identifier>        => lookup();
 BACKSLASHSTRING   <backSlashString>   => lookup();
 DOUBLEQUOTESTRING <doubleQuoteString> => lookup();
+ENUM              <enum>              => lookup();
 
 // lower precedence
 { OR                                                                                } <<
@@ -23,7 +24,6 @@ srcFile: (routineDecl | valueDecl)+ <eof>;
 
 stmt
     : call
-    | methodCall
     | assignStmt
     | valueDecl
     | routineDecl

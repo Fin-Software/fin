@@ -1,18 +1,18 @@
 #!/bin/sh
 
 # SPDX-License-Identifier: Apache-2.0
-# Copyright © 2025 The Whixy Authors. All rights reserved.
+# Copyright © 2025 The Fin Authors. All rights reserved.
 # Contributors responsible for this file:
 # @p7r0x7 <mattrbonnette@pm.me>
 
 set -eu; umask 0022; rm -rf src/lrstar; install -dm 0755 src/lrstar .build
 
-#opt="-O3 -mllvm -polly -mllvm -polly-vectorizer=stripmine -fopenmp -fopenmp-simd -mllvm -polly-parallel"
-[ -f .build/lrstar ] || zig c++ -O3 -w -lc++ -o .build/lrstar vendor/lrstar-master/source_lrstar/*.cpp &
-[ -f .build/dfa ] || zig c++ -O3 -w -lc++ -o .build/dfa vendor/lrstar-master/source_dfa/*.cpp & wait
+opt="-O3 -mllvm -polly -mllvm -polly-vectorizer=stripmine"
+[ -f .build/lrstar ] || clang $opt -w -lc++ -o .build/lrstar vendor/lrstar-master/source_lrstar/*.cpp &
+[ -f .build/dfa ] || clang $opt -w -lc++ -o .build/dfa vendor/lrstar-master/source_dfa/*.cpp & wait
 
-cd src/lrstar; ln ../Whixy.grm Whixy.grm; ln ../Whixy.lgr Whixy.lgr
-{ ../../.build/lrstar Whixy.grm /crr /csr /ast /o; echo; ../../.build/dfa Whixy.lgr /crr /csr /sto; } || true
+cd src/lrstar; ln ../Fin.grm Fin.grm; ln ../Fin.lgr Fin.lgr
+{ ../../.build/lrstar Fin.grm /crr /csr /o; echo; ../../.build/dfa Fin.lgr /crr /csr /sto; } || true
 rm -f -- *.grm *.lex *.lgr *grammar.txt *states.txt make.bat memory.txt
 cd ../..
 

@@ -1,2 +1,2 @@
 vendor/** linguist-vendored
-*.wx linguist-language=Nim
+*.fn linguist-language=Nim

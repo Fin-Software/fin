@@ -1,0 +1,199 @@
+;; SPDX-License-Identifier: Apache-2.0
+;; Copyright © 2025 The Fin Authors. All rights reserved.
+;; Contributors responsible for this file:
+;; @p7r0x7 <mattrbonnette@pm.me>
+
+module builtins {
+    syntax!errs #interpolate(body []lexeme, exprs ([]lexeme...))
+    errs error = (.TooManyExprsForBody, .TooFewExprsForBody)
+
+        ;; ...
+    fin
+
+    syntax #repeat(expr []lexeme, times u32) for (..times) emit expr fin fin
+}
+
+;; A trait type describes a view with provided methods over a super extends with its methods (w/o overriding) any superset of its fields that also
+;; implements its unimplemented methods.
+
+;; closed nominal traits
+
+trait Fundamental  void|Scalar|type|error|enum
+trait Scalar       bool|Integer|Float
+trait UnsignedInt  u8|u16|u32|u64|u128|uptr
+trait SignedInt    i8|i16|i32|i64|i128|iptr
+trait Integer      UnsignedInt|SignedInt
+trait UnsignedMath UnsignedInt
+ trait SignedMath   Float|SignedInt
+trait Float        f16|bf16|f32|f64
+
+module mem {
+    ;; open structural trait
+    trait Allocator {
+
+    }
+    ;; closed and open trait
+    trait Copyable Integer|Float|{
+
+    }
+
+    []alias u8 sliceToBytesZC(slice []alias Copyable) inline
+        if (slice.len == 0) return () fin
+        return ((*alias u8)&slice[0])[..slice[0].sizeof*slice.len]
+    fin
+
+    []alias u8 toBytesZC(memory *alias Copyable) inline
+        size := (*memory).sizeof; if (size == 0) return () fin
+        return ((*alias u8)memory)[..size]
+    fin
+
+    []alias mut u8 mutSliceToBytesZC(slice []alias mut Copyable) inline
+        if (slice.len == 0) return () fin
+        return ((*alias mut u8)&slice[0])[..slice[0].sizeof*slice.len]
+    fin
+
+    []alias mut u8 mutToBytesZC(memory *alias mut Copyable) inline
+        size := (*memory).sizeof; if (size == 0) return () fin
+        return ((*alias mut u8)memory)[..size]
+    fin
+}
+
+module io {
+    ;; open structural traits
+
+    trait Reader {
+        Error error
+
+        ;;; Consume the next bytes of some stream to fill the beginning of `buf`; the count read is returned. An error
+        ;;; should be returned if .EndOfFile hasn't been reached and fewer bytes than `buf.len` have been read.
+        demands u32!Error ReadSome(rd *this, buf []mut u8)
+
+        ;;; Completely fill `buf` from its beginning to its end consuming the next bytes of some stream.
+        void!Error Read(rd *this, buf []mut u8) rd.ReadAtLeast(buf, buf.len)! fin
+
+        ;;; Consume the next bytes of some stream to fill the beginning of `buf` with at least `len` bytes; `len`
+        ;;; exceeding `buf.len` is UB.
+        void!Error ReadAtLeast(rd *this, buf []mut u8, len u32)
+            if (buf.len < len) unreachable fin
+            r mut = 0; while (r < bytes.len)
+                r += rd.ReadSome(bytes[r..]) rescue |err| if (err != .EndOfFile or r < len) return err fin fin
+            fin
+        fin
+    }
+
+
+    trait Writer {
+        ;;; Copy from the beginning of `bytes` to somewhere; return the count of bytes consumed.
+        demands u32!error WriteSome(wr *this, bytes []u8)
+
+        ;;; Fully consume `bytes` from its beginning to its end copying to somewhere.
+        void!error Write(wr *this, bytes []u8)
+            w mut u32 = 0; while (w < bytes.len) w += wr.WriteSome(bytes[w..])! fin
+        fin
+
+        ;;; Fully write out previously consumed bytes. Use this after every complete group of writing calls.
+        void!error Flush(_ *this) return fin
+    }
+}
+
+;;; BufferedReader wraps another Reader and buffers it with an array of length `len`.
+type #BufferedReader(wrapped io.Reader, len u32)
+    uT type = if (len <= 1<<16) u16 else u32 fin
+    return {
+        highSt, highLn, lowSt, lowLn uT, buf [len]u8, Inner io.Reader = wrapped,
+        Error := wrapped.Error ++ io.Reader.Error
+
+        u32!Error ReadSome(br *this, buf []mut u8) fin
+
+        ;;; Peek reads at least `buf.len` bytes into `buf` without moving `br.end`; `buf.len` exceeding `br.buf.len` is
+        ;;; UB.
+        void!Error Peek(br *this, buf []mut u8)
+            if (len < buf.len) unreachable fin; copy := *br
+            if (copy.lowLn+copy.highLn >= buf.len)
+                if (copy.lowLn >= buf.len) @copy(buf, br.buf[br.lowSt..br.lowSt+buf.len]) return fin
+                ;; copy low then high and return
+            else
+                tmp mut = [len]u8
+                ;; when peek has to get more new bytes than it has, get br.buf.len - unconsumed remaining in buffer
+            fin
+        fin
+    }
+fin
+
+;;; BufferedWriter wraps another Writer and buffers it with an array of length `len`.
+type #BufferedWriter(wrapped io.Writer, len u32)
+    uT type = if (len <= 1<<16) u16 else u32 fin
+    return (dyn io.Writer){
+        end uT = 0, buf [len]u8, Inner io.Writer = wrapped,
+        Error := wrapped.Error
+
+        u32!Error WriteSome(bw *this, bytes []u8)
+            if (bytes.len == 0) return 0 fin
+            end := (u32)bw.end; cap := len - end
+
+            if (bytes.len >= cap)
+                if (end > 0)
+                    @copy(bw.buf[end..len], bytes[..cap])
+                    bw.Inner.Write(bw.buf)!
+                fin
+                full := bytes.len - (bytes.len - cap) % len
+                if (full > 0) bw.Inner.Write(bytes[cap..cap+full])! fin
+
+                tail := bytes.len - cap - full
+                if (tail > 0) @copy(bw.buf[..tail], bytes[bytes.len-tail..]) fin
+                bw.end = (uT)tail
+            else
+                @copy(bw.buf[end..end+bytes.len], bytes)
+                bw.end = (uT)(end + bytes.len)
+            fin
+            return (u32)bytes.len
+        fin
+
+        void!Error Flush(bw *this)
+            if (bw.end > 0) bw.Inner.Write(bw.buf[0..bw.end])! bw.end = 0 fin
+            bw.Inner.Flush()!
+        fin
+    }
+fin
+
+buffered type = io.BufferedWriter(validWriter, 4096)
+
+;;
+;;   Other
+;;
+
+u8 Main() return 0 fin
+
+void
+
+bin  u8  = 0b1111'1111
+octa u16 = 0o777'777
+deci u32 = 4294967295
+hexa u64 = 0xffffffffffffffff
+
+utf8 u128 = '1234567890abcdef'
+hex  u128 = '\{1234567890abcdef}'
+
+a u64   = 'deadbeef'
+b [7]u8 = x"ff ff ff ff ff ff ff"
+c [2]u8 = b"1111 1111 1111 1111"
+d [5]u8 = o"777 777 777 777 777"
+
+intescapes := '\\ \' \t \n \r \{NUL} \{SOH} \{STX} \{ETX} \{EOT} \{ENQ}
+\{ACK} \{BEL} \{BS} \{HT} \{LF} \{VT} \{FF} \{CR} \{SO} \{SI}
+\{DLE} \{DC1} \{DC2} \{DC3} \{DC4} \{NAK} \{SYN} \{ETB} \{CAN}
+\{EM} \{SUB} \{ESC} \{FS} \{GS} \{RS} \{US} \{DEL}'  ;; CT error as value exceeds u128
+
+strescapes [_]u8 = "\\ \" \t \n \r \"
+
+
+string := "hi"
+int mut uptr = 10
+ptr mut *mut uptr = &val
+*((*alias mut *mut uptr)ptr) = 238497623  ;; magic meaning the pointer to h in string
+*ptr = 12                                 ;; could segfault
+print(string)                             ;; prints two 0 bytes
+
+
+
+;; This file is currently a mess.

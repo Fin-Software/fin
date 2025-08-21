@@ -7,23 +7,17 @@
 
 typedef enum { ADD, SUB, MUL, DIV } OperationType;
 
-LLVMValueRef buildArithmeticOperation(LLVMBuilderRef builder, LLVMValueRef lhs, LLVMValueRef rhs,
-                                      OperationType opType) {
+LLVMValueRef buildArithmeticOperation(LLVMBuilderRef builder, LLVMValueRef lhs, LLVMValueRef rhs, OperationType opType) {
     switch (opType) {
-    case ADD:
-        return LLVMBuildAdd(builder, lhs, rhs, "addtmp");
-    case SUB:
-        return LLVMBuildSub(builder, lhs, rhs, "subtmp");
-    case MUL:
-        return LLVMBuildMul(builder, lhs, rhs, "multmp");
-    case DIV:
-        return LLVMBuildSDiv(builder, lhs, rhs, "divtmp");
-    default:
-        return NULL;
+    case ADD: return LLVMBuildAdd(builder, lhs, rhs, "addtmp");
+    case SUB: return LLVMBuildSub(builder, lhs, rhs, "subtmp");
+    case MUL: return LLVMBuildMul(builder, lhs, rhs, "multmp");
+    case DIV: return LLVMBuildSDiv(builder, lhs, rhs, "divtmp");
+    default: return NULL;
     }
 }
 
-void generateArithmeticFunction(LLVMModuleRef module, LLVMBuilderRef builder, const char *name, OperationType opType) {
+void generateArithmeticFunction(LLVMModuleRef module, LLVMBuilderRef builder, const char* name, OperationType opType) {
     LLVMTypeRef returnType = LLVMInt32Type();
     LLVMTypeRef paramTypes[] = {LLVMInt32Type(), LLVMInt32Type()};
     LLVMTypeRef funcType = LLVMFunctionType(returnType, paramTypes, 2, 0);
@@ -51,7 +45,7 @@ int main() {
     generateArithmeticFunction(module, builder, "mul", MUL);
     generateArithmeticFunction(module, builder, "div", DIV);
 
-    char *error = NULL;
+    char* error = NULL;
     LLVMExecutionEngineRef engine;
     if (LLVMCreateExecutionEngineForModule(&engine, module, &error)) {
         fprintf(stderr, "Error creating execution engine: %s\n", error);
