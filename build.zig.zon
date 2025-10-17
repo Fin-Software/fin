@@ -3,17 +3,17 @@
     .fingerprint = 0xad2ef231a4e6cd53, // CODE REVIEW POISON
     .version = "0.0.0",
     .dependencies = .{
-        .builddef = .{
-            .url = "https://github.com/p7r0x7/builddef/archive/master.tar.gz",
-            .hash = "12208f29f369eeca5248464bec120a80cfa3b430b39bc2700e5a16c4bd24fd733291",
+        .build_bandaid = .{
+            .url = "https://github.com/p7r0x7/build-bandaid/archive/master.tar.gz",
+            .hash = "1220e75bd864102628f80349fbcb520b9643cb0b96632384f710b0e8c97a7d877efd",
         },
         .cova = .{
             .url = "https://github.com/00JCIV00/cova/archive/main.tar.gz",
-            .hash = "1220e287bbb5e0a67703d7f4ecc242aa0f1c055d204e7645160b5dc74d2daf7b5ccd",
+            .hash = "12207dce3d5d3e15312ca9daafcf4be67a2e126618e90d52db78d4b7d01326e90ad6",
         },
         .channels = .{
             .url = "https://github.com/zukaChachava/ZigChannels/archive/main.tar.gz",
-            .hash = "1220e287bbb5e0a67703d7f4ecc242aa0f1c055d204e7645160b5dc74d2daf7b5ccd",
+            .hash = "12206a2963d91d591bc2e6c87bc6b3293b1b48c4e63bfe7b6b71476cd931e6883fd1",
         },
     },
     .paths = .{ "scripts", "src", "std", "vendor", "build.zig", "build.zig.zon", "hash.zig" },

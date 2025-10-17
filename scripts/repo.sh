@@ -16,11 +16,11 @@ cd src/lrstar; ln ../Fin.grm Fin.grm; ln ../Fin.lgr Fin.lgr
 rm -f -- *.grm *.lex *.lgr *grammar.txt *states.txt make.bat memory.txt
 cd ../..
 
-find . \( -path ./vendor -o -name '.[!.]*' \) -prune -o \
-    \( ! -type d \( \
-        -name '*.zig' -exec zig fmt {} + -o \
-        \( -name '*.c' -o -name '*.cpp' -o -name '*.h' -o -name '*.hpp' \) \
-            -exec clang-format -i --style file:.clang-format {} + \
-    \) \)
+#find . \( -path ./vendor -o -name '.[!.]*' \) -prune -o \
+#    \( ! -type d \( \
+#        -name '*.zig' -exec zig fmt {} + -o \
+#        \( -name '*.c' -o -name '*.cpp' -o -name '*.h' -o -name '*.hpp' \) \
+#            -exec clang-format -i --style file:.clang-format {} + \
+#    \) \)
 
 git add .; git diff --stat HEAD; git reset

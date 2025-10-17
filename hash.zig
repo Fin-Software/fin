@@ -10,8 +10,8 @@ const db = @import("std").debug;
 const heap = @import("std").heap;
 const proc = @import("std").process;
 const mode = @import("builtin").mode;
-const List = @import("std").ArrayList;
 const B3 = @import("std").crypto.hash.Blake3;
+const List = @import("std").array_list.Managed;
 
 pub const DirEntry = struct { base: ?[]const u8, name: []const u8, kind: fs.Dir.Entry.Kind };
 
@@ -19,8 +19,8 @@ pub const DirFrame = struct { base: ?[]const u8, entries: List(fs.Dir.Entry) = u
 
 pub const DirEntries = struct {
     root: fs.Dir,
-    stack: List(DirFrame),
     alloc: mem.Allocator,
+    stack: List(DirFrame),
     comptime less_than: ?fn (_: void, a: fs.Dir.Entry, b: fs.Dir.Entry) bool = struct {
         fn lexicalLT(_: void, a: fs.Dir.Entry, b: fs.Dir.Entry) bool {
             return mem.lessThan(u8, a.name, b.name);
@@ -28,8 +28,7 @@ pub const DirEntries = struct {
     }.lexicalLT,
 
     pub fn init(root: fs.Dir, path: []const u8, ally: mem.Allocator) !DirEntries {
-        var de =
-            DirEntries{ .root = root, .alloc = ally, .stack = List(DirFrame).init(ally) };
+        var de = DirEntries{ .root = root, .alloc = ally, .stack = List(DirFrame).init(ally) };
         if (path.len == 0) try de.traverse(de.root, DirFrame{ .base = null }) else try de.pushDir(path);
         return de;
     }

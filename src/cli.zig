@@ -1,8 +1,3 @@
-// SPDX-License-Identifier: Apache-2.0
-// Copyright © 2025 The Fin Authors. All rights reserved.
-// Contributors responsible for this file:
-// @p7r0x7 <mattrbonnette@pm.me>
-
 const cova = @import("cova");
 const io = @import("std").io;
 const os = @import("std").os;
@@ -14,8 +9,18 @@ const ascii = @import("std").ascii;
 const builtin = @import("builtin");
 const utf8 = @import("std").unicode;
 
+pub const margin = columns - (CmdT.indent_fmt.len * 2);
+pub const spaces = [_]u8{' '} ** 4; // Adjust as necessary.
+pub const zero = "\x1b[0m";
+pub const columns = 100;
+pub const ns = "\n";
+pub const nb = '\n';
+
+pub const ColorScheme = struct { one: []const u8, two: []const u8 };
+pub var active_scheme: ?ColorScheme = null; // Global variable.
+
 /// Cova configuration type identity
-const FinCmd = cmd: {
+pub const CmdT = cmd: {
     var cmd_config = cova.Command.Config.optimized(.{ .no_formats = true, .remove_features = true });
 
     cmd_config.opt_config.global_usage_fn = printing.optionUsage;
@@ -46,96 +51,13 @@ const FinCmd = cmd: {
     cmd_config.global_vals_mandatory = false;
     cmd_config.indent_fmt = spaces[0..4];
     cmd_config.global_help_prefix = "";
+    cmd_config.auto_flush = false;
 
     break :cmd cova.Command.Custom(cmd_config);
 };
 
-/// Comptime-assembled Cova command definition for Fin
-const fin_cmd: FinCmd = command("fin",
-    \\Just-in-Time compile and execute Fin programs.
-, &.{
-    command("cc",
-        \\Invoke the provided LLVM Clang C compiler.
-    , null, null, null),
-
-    command("cxx",
-        \\Invoke the provided LLVM Clang C++ compiler.
-    , null, null, null),
-
-    command("lsp",
-        \\Ping the language server or toggle its daemon.
-    , null, null, null),
-
-    command("fmt",
-        \\Format Fin files.
-    , null, null, null),
-}, &.{
-    value("path", []const u8, null, parsing.parsePathOrURL,
-        \\Path to the
-    ),
-}, &.{
-    option(false, "version", null, value("", bool, false, parsing.parseBool, ""),
-        \\Print version information string and exit.
-    ),
-
-    option(true, "help", &.{ "-help", "h" }, value("", bool, false, parsing.parseBool, ""),
-        \\Print command help message and exit.
-    ),
-    option(true, "verbose", &.{"v"}, value("", bool, false, parsing.parseBool, ""),
-        \\Increment command output verbosity.
-    ),
-    option(true, "quiet", &.{"q"}, value("", bool, false, parsing.parseBool, ""),
-        \\Decrement command output verbosity.
-    ),
-    option(true, "ansi", null, value("", bool, true, parsing.parseBool, ""),
-        \\Emit ANSI escape sequences with terminal output when available.
-    ),
-});
-
-// Comptime-only structure assemblers
-
-// zig-format off
-fn command(cmd: []const u8, desc: []const u8, cmds: ?[]const FinCmd, vals: ?[]const FinCmd.ValueT, opts: ?[]const FinCmd.OptionT) FinCmd {
-    return .{ .name = cmd, .vals = vals, .sub_cmds = cmds, .description = normalizeWS(desc), .hidden = desc.len == 0, .opts = opts, .allow_inheritable_opts = true };
-}
-fn option(inherit: bool, opt: []const u8, aliases: ?[]const []const u8, val: FinCmd.ValueT, desc: []const u8) FinCmd.OptionT {
-    return .{ .val = val, .name = opt, .long_name = opt, .description = normalizeWS(desc), .hidden = desc.len == 0, .alias_long_names = aliases, .inheritable = inherit };
-}
-fn value(val: []const u8, comptime ValT: type, default: ?ValT, parse: ?*const fn ([]const u8, mem.Allocator) anyerror!ValT, desc: []const u8) FinCmd.ValueT {
-    return FinCmd.ValueT.ofType(ValT, .{ .name = val, .parse_fn = parse, .default_val = default, .description = normalizeWS(desc) });
-}
-// zig-format on
-fn normalizeWS(comptime str: []const u8) []const u8 {
-    @setEvalBranchQuota(3 << 10); // It brings me joy I have proven this is stupid if you trust your developers.
-    var buf = str[0..].*;
-    var i: u32 = 0;
-    while (mem.indexOfAnyPos(u8, &buf, i, "\t\n\r")) |pos| {
-        i += pos;
-        buf[i] = spaces[0];
-    }
-    const out = buf;
-    return &out;
-}
-
-pub inline fn print(wr: anytype, strs: anytype) !void {
-    inline for (strs) |str| {
-        switch (@typeInfo(@TypeOf(str))) {
-            .array => try wr.writeAll(&str),
-            .pointer => try wr.writeAll(str),
-            .int, .comptime_int => try wr.writeByte(str),
-            else => @compileError("Expected byte or string, got " ++ @typeName(@TypeOf(str))),
-        }
-    }
-}
-const printing = struct {
-    const schemes = [_]ColorScheme{
-        ColorScheme{ .one = "\x1b[48;5;232;38;5;230;1m", .two = "\x1b[38;5;111m" }, // discord: buttercream, blurple
-        //ColorScheme{ .one = "\x1b[48;5;232;38;5;220;1m", .two = "\x1b[38;5;36m" }, // transit: schoolbus yellow, highway sign green
-    };
-    const ColorScheme = struct { one: []const u8, two: []const u8 };
-    var active_scheme: ?ColorScheme = null; // Global runtime variable.
-
-    fn NonCSIRuneCountingWriter(comptime Wrapped: type) type {
+pub const printing = struct {
+    pub fn NonCSIRuneCountingWriter(comptime Wrapped: type) type {
         return struct {
             inner: Wrapped,
             rune_count: usize = 0,
@@ -176,18 +98,18 @@ const printing = struct {
             }
         };
     }
-    inline fn nonCSIRuneCountingWriter(writer: anytype) NonCSIRuneCountingWriter(@TypeOf(writer)) {
+    pub inline fn nonCSIRuneCountingWriter(writer: anytype) NonCSIRuneCountingWriter(@TypeOf(writer)) {
         return .{ .inner = writer };
     }
 
-    fn SplitPattern(comptime T: type) type {
+    pub fn SplitPattern(comptime T: type) type {
         return struct { cut_offset: isize, pattern: T };
     }
-    const CharacterGroupIterator = CustomSplitIterator(u8, &[_]SplitPattern(u8){
+    pub const CharacterGroupIterator = CustomSplitIterator(u8, &[_]SplitPattern(u8){
         .{ .cut_offset = 1, .pattern = '-' },
         .{ .cut_offset = 0, .pattern = spaces[0] },
     });
-    fn CustomSplitIterator(comptime T: type, comptime patterns: []const SplitPattern(T)) type {
+    pub fn CustomSplitIterator(comptime T: type, comptime patterns: []const SplitPattern(T)) type {
         const items, const offsets = splitPattern: {
             var items_arr: [patterns.len]T, var offsets_arr: [patterns.len]isize = .{ undefined, undefined };
             for (&items_arr, &offsets_arr, patterns) |*i, *o, v| {
@@ -199,28 +121,28 @@ const printing = struct {
         };
         return struct {
             buf: []const T,
-            dex: usize = 0,
+            i: usize = 0,
 
             pub inline fn first(csit: *@This()) []const T {
-                db.assert(csit.dex == 0);
+                db.assert(csit.i == 0);
                 return csit.next().?;
             }
             pub fn next(csit: *@This()) ?[]const T {
-                if (csit.dex == csit.buf.len) return null;
-                if (mem.indexOfAnyPos(T, csit.buf, csit.dex + 1, items)) |pos| {
+                if (csit.i == csit.buf.len) return null;
+                if (mem.indexOfAnyPos(T, csit.buf, csit.i + 1, items)) |pos| {
                     const offset = offsets[mem.indexOfScalar(T, items, csit.buf[pos]).?];
                     const end: usize = @intCast(@as(isize, @intCast(pos)) + offset);
-                    defer csit.dex += end - csit.dex;
-                    return csit.buf[csit.dex..end];
+                    defer csit.i += end - csit.i;
+                    return csit.buf[csit.i..end];
                 } else {
-                    defer csit.dex = csit.buf.len;
-                    return csit.buf[csit.dex..];
+                    defer csit.i = csit.buf.len;
+                    return csit.buf[csit.i..];
                 }
             }
         };
     }
 
-    fn commandUsage(root: anytype, wr: anytype, _: ?mem.Allocator) !void {
+    pub fn commandUsage(root: anytype, wr: anytype, _: ?mem.Allocator) !void {
         try print(wr, .{ "USAGE   ", root.name, spaces[0] });
         if (root.sub_cmds != null) try print(wr, " [command]");
         if (root.vals) |vals| for (vals) |val| try print(wr, .{ " <", val.name(), '>' });
@@ -248,7 +170,7 @@ const printing = struct {
         try print(wr, .{ns ++ ns});
     }
 
-    fn commandHelp(root: anytype, wr: anytype, _: ?mem.Allocator) !void {
+    pub fn commandHelp(root: anytype, wr: anytype, _: ?mem.Allocator) !void {
         try root.usage(wr);
         if (root.sub_cmds) |cmds| {
             const indent = @TypeOf(root.*).indent_fmt;
@@ -312,7 +234,7 @@ const printing = struct {
         }
     }
 
-    fn valueUsage(val: anytype, wr: anytype, _: ?mem.Allocator) !void {
+    pub fn valueUsage(val: anytype, wr: anytype, _: ?mem.Allocator) !void {
         if (active_scheme) |v| try print(wr, .{v.one});
         try print(wr, .{'"'});
         const val_name = val.name();
@@ -337,11 +259,11 @@ const printing = struct {
         } else if (mem.eql(u8, child_type, "u8")) {
             var buf: [3]u8 = undefined;
             str = try fmt.bufPrint(buf[0..], "{d}", .{val.generic.u8.default_val orelse return});
-        } else db.panic("{s}", .{"Unimplemented type."});
+        } else error.UnimplementedType;
         try print(wr, .{ "  default: ", str });
     }
 
-    fn valueHelp(val: anytype, wr: anytype, _: ?mem.Allocator) !void {
+    pub fn valueHelp(val: anytype, wr: anytype, _: ?mem.Allocator) !void {
         const indent = @TypeOf(val.*).indent_fmt;
         try print(wr, indent);
         var rcw = nonCSIRuneCountingWriter(wr);
@@ -365,7 +287,7 @@ const printing = struct {
         try print(wr, .{ns});
     }
 
-    fn optionUsage(opt: anytype, wr: anytype, _: ?mem.Allocator) !void {
+    pub fn optionUsage(opt: anytype, wr: anytype, _: ?mem.Allocator) !void {
         try print(wr, .{ @TypeOf(opt.*).long_prefix.?, opt.long_name.? });
         if (opt.alias_long_names) |alias_long_names| {
             for (alias_long_names) |alias_long_name| {
@@ -376,7 +298,7 @@ const printing = struct {
         try opt.val.usage(wr);
     }
 
-    fn optionHelp(opt: anytype, wr: anytype, _: ?mem.Allocator) !void {
+    pub fn optionHelp(opt: anytype, wr: anytype, _: ?mem.Allocator) !void {
         try print(wr, .{@TypeOf(opt.*).indent_fmt.?});
         var rcw = nonCSIRuneCountingWriter(wr);
         try opt.usage(rcw.writer());
@@ -400,7 +322,7 @@ const printing = struct {
         try print(wr, .{ns});
     }
 
-    fn isCSISupported(pipe: fs.File, it: *cova.ArgIteratorGeneric, ally: mem.Allocator) !bool {
+    pub fn isCSISupported(pipe: fs.File, it: *cova.ArgIteratorGeneric, ally: mem.Allocator) !bool {
         const available = io.tty.detectConfig(pipe) == .escape_codes;
         if (available) {
             return flag: {
@@ -409,7 +331,7 @@ const printing = struct {
                 while (it.next()) |arg| {
                     if (arg.len < 5) continue;
                     if (ascii.eqlIgnoreCase("-ansi", arg[0..5])) {
-                        const seps = FinCmd.OptionT.opt_val_seps;
+                        const seps = CmdT.OptionT.opt_val_seps;
                         const val = switch (arg[5]) {
                             seps[0], seps[1], spaces[0] => arg[6..],
                             else => arg[5..],
@@ -422,78 +344,20 @@ const printing = struct {
         } else return false;
     }
 };
-const margin = columns - (FinCmd.indent_fmt.len * 2);
-const spaces = [_]u8{' '} ** 4; // Adjust as necessary.
-const zero = "\x1b[0m";
-const columns = 100;
-const ns = "\n";
-const nb = '\n';
-
-/// runFin() is the entry point for the CLI.
-pub fn runFin(pipe: fs.File, ally: mem.Allocator) !void {
-    var bfwr = io.bufferedWriter(pipe.writer());
-    defer bfwr.flush() catch db.panic("{s}", .{"Failed to flush buffered writer to pipe."});
-    try print(bfwr.writer(), .{nb});
-    defer print(pipe.writer(), .{nb}) catch db.panic("{s}", .{"Couldn't print final newline."});
-
-    const fin_cli = try fin_cmd.init(ally, .{
-        .help_config = .{
-            .add_cmd_help_group = .DoNotAdd,
-            .add_opt_help_group = .DoNotAdd,
-            .add_help_cmds = false,
-            .add_help_opts = false,
-        },
-    });
-    defer fin_cli.deinit();
-    defer if (builtin.mode == .Debug) cova.utils.displayCmdInfo(FinCmd, fin_cli, ally, bfwr.writer(), false) catch
-        db.panic("{s}", .{"Failed to display Cova debug info."});
-    {
-        var arg_it = try cova.ArgIteratorGeneric.init(ally);
-        printing.active_scheme = if (try printing.isCSISupported(pipe, &arg_it, ally)) printing.schemes[0] else null;
-        try cova.parseArgs(&arg_it, FinCmd, fin_cli, bfwr.writer(), .{
-            .set_opt_termination_symbol = "--", // This is the most common terminator, even if long flags start with '-'.
-            .auto_handle_usage_help = false,
-            .enable_opt_termination = true,
-            .err_reaction = .Help,
-        });
-        (&arg_it).deinit();
-    }
-    {
-        const cmd = fin_cli.sub_cmd orelse {
-            try fin_cli.help(bfwr.writer());
-            try bfwr.flush();
-            return;
-        };
-        var values = try cmd.getVals(.{});
-        const input = values.get("input_path");
-        if (cmd.checkOpts(&.{"help"}, .{}) or input == null) {
-            try cmd.help(bfwr.writer());
-            try bfwr.flush();
-        }
-    }
-}
 
 /// Parsing callback functions for possible CLI inputs
-const parsing = struct {
-    fn parseInt(comptime T: type, base: u8) fn ([]const u8, mem.Allocator) anyerror!T {
+pub const parsing = struct {
+    pub fn passThrough(arg: []const u8, _: mem.Allocator) ![]const u8 {
+        return arg;
+    }
+    pub fn parseInt(comptime T: type, base: u8) fn ([]const u8, mem.Allocator) anyerror!T {
         return struct {
             fn parseInt(arg: []const u8, _: mem.Allocator) !T {
                 return fmt.parseInt(T, arg, base);
             }
         }.parseInt;
     }
-
-    fn parsePathOrURL(arg: []const u8, _: mem.Allocator) ![]const u8 {
-        return arg;
-    }
-
-    fn parseOptimize(arg: []const u8, _: mem.Allocator) ![]const u8 {
-        const deadlines = [_][]const u8{ "fast", "good", "best" };
-        for (deadlines) |str| if (ascii.eqlIgnoreCase(str, arg)) return str;
-        return error.OptimizeValueUnsupported;
-    }
-
-    fn parseBool(arg: []const u8, _: mem.Allocator) !bool {
+    pub fn parseBool(arg: []const u8, _: mem.Allocator) !bool {
         const T = [_][]const u8{ "1", "true", "t", "yes", "y" };
         const F = [_][]const u8{ "0", "false", "f", "no", "n" };
         for (T) |str| if (ascii.eqlIgnoreCase(str, arg)) return true;
@@ -501,3 +365,51 @@ const parsing = struct {
         return error.BooleanValueUnsupported;
     }
 };
+
+//
+//    Folded
+//
+
+// zig-fmt off
+pub fn command(cmd: []const u8, desc: []const u8, cmds: ?[]const CmdT, vals: ?[]const CmdT.ValueT, opts: ?[]const CmdT.OptionT) CmdT {
+    return .{ .name = cmd, .vals = vals, .sub_cmds = cmds, .description = normalizeWS(desc), .hidden = desc.len == 0, .opts = opts, .allow_inheritable_opts = true };
+}
+pub fn option(inherit: bool, opt: []const u8, aliases: ?[]const []const u8, val: CmdT.ValueT, desc: []const u8) CmdT.OptionT {
+    return .{ .val = val, .name = opt, .long_name = opt, .description = normalizeWS(desc), .hidden = desc.len == 0, .alias_long_names = aliases, .inheritable = inherit };
+}
+pub fn value(val: []const u8, comptime ValT: type, default: ?ValT, parse: ?*const fn ([]const u8, mem.Allocator) anyerror!ValT, desc: []const u8) CmdT.ValueT {
+    return CmdT.ValueT.ofType(ValT, .{ .name = val, .parse_fn = parse, .default_val = default, .description = normalizeWS(desc) });
+}
+// zig-fmt on
+
+pub fn normalizeWS(comptime str: []const u8) []const u8 {
+    var out: [str.len]u8 = undefined;
+    var len: u16 = 0;
+    var i: u16 = 0;
+
+    @setEvalBranchQuota(64 << 10);
+    while (i < str.len) {
+        const start = mem.indexOfNonePos(u8, str, i, " \t\n\r") orelse break;
+        const end = mem.indexOfAnyPos(u8, str, start, " \t\n\r") orelse str.len;
+
+        if (len > 0) {
+            out[len] = ' ';
+            len += 1;
+        }
+        mem.copyForwards(u8, out[len..], str[start..end]);
+        len += end - start;
+        i = end;
+    }
+    return out[0..len];
+}
+
+pub inline fn print(wr: *io.Writer, strs: anytype) !void {
+    inline for (strs) |str| {
+        switch (@typeInfo(@TypeOf(str))) {
+            .array => try wr.writeAll(&str),
+            .pointer => try wr.writeAll(str),
+            .int, .comptime_int => try wr.writeByte(str),
+            else => error.UnimplementedType,
+        }
+    }
+}

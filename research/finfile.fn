@@ -13,8 +13,11 @@ module builtins {
     syntax #repeat(expr []lexeme, times u32) for (..times) emit expr fin fin
 }
 
-;; A trait type describes a view with provided methods over a super extends with its methods (w/o overriding) any superset of its fields that also
-;; implements its unimplemented methods.
+
+
+trait Fruit<h> {
+
+}
 
 ;; closed nominal traits
 
@@ -24,7 +27,7 @@ trait UnsignedInt  u8|u16|u32|u64|u128|uptr
 trait SignedInt    i8|i16|i32|i64|i128|iptr
 trait Integer      UnsignedInt|SignedInt
 trait UnsignedMath UnsignedInt
- trait SignedMath   Float|SignedInt
+trait SignedMath   Float|SignedInt
 trait Float        f16|bf16|f32|f64
 
 module mem {

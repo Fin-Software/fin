@@ -1,8 +1,10 @@
-# Fin, A Friendly Systems Language
+# Fin, an Ergonomic Systems General-Purpose Programming Language for the Joy of Programming
 
 > Extension: .fn. Governing implementation license: Apache-2.0.
 
 ---
+
+#### (This file is currently hot garbage I haven't wanted to deal with.)
 
 ## Language Features
 
@@ -12,10 +14,10 @@
 * Type specification is only necessary when unambigious type inference doesn't provide the wanted result
 * Zig-like manual memory management, comptime, error handling, namespacing, and deferred-statement scoping
 * Parametric polymorphism in the form of generics; ad hoc polymorphism in some form
-* LET THERE BE POSITS via integer-based software emulation or native hardware instruction generation when available in LLVM
 
 ###### Keywords
 
+#### These I did indeed write, but they're the previous previous iteration
 `alias`       may alias pointer type modifer
 `align`       suggest alignment, followed by a power-of-two between 2 and 4096 in a tuple
 `and`         short-circuiting logical AND operator
@@ -54,6 +56,7 @@
 `where`       multi‑way branch (enhanced switch)
 
 
+#### (Correct list, pending next iteration; descriptions are temporary AI guesses for reference only)
 `and`         logical conjunction (boolean “and”)
 `continue`    skip to next iteration of a loop
 `defer`       schedule an expression to run when the surrounding scope exits
@@ -302,7 +305,7 @@ ISAs: x86 (32 and 64), arm (16, 32, and 64), riscv (32 and 64)
 | `fast`  | `$reqd -O3 $errors -mllvm -polly -mllvm -polly-vectorizer=stripmine -DLAZY`          |
 | `tiny`  | `$reqd -Oz $errors`                                                                  |
 |         | `errors = -Wall -Wextra -Wno-cast-function-type-mismatch`                            |
-|         | `reqd = -fwrapv -nostdlib -nostartfiles`                                             |
+|         | `reqd = -fwrapv -nostdlib -nostartfiles -Werror=uninitialized -Werror=strict-aliasing -Werror=int-to-pointer-cast` |
 
 * LLVM-based code generation
 * JiT'd comptime code generation and execution followed by JiT'd or AoT'd runtime code generation (and possible execution)

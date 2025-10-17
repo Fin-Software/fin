@@ -1,0 +1,6 @@
+if(EXISTS  "${CMAKE_CURRENT_SOURCE_DIR}/OpenACC")
+  add_subdirectory(OpenACC)
+endif()
+if(EXISTS  "${CMAKE_CURRENT_SOURCE_DIR}/OpenMP")
+  add_subdirectory(OpenMP)
+endif()
