@@ -1,10 +1,10 @@
 #!/bin/sh
-set -eu; umask 0022; install='install -dm 0755'
-
-buildzstd=.build/.build-zstd
-srcszstd=vendor/zstd-*/build/cmake
+set -eu; umask 0022; tabs -4; install='install -dm 0755'; $install .build
 polly="-mllvm -polly -mllvm -polly-vectorizer=stripmine"
 flags="-pipe -flto=thin"
+
+buildzstd=.build/.build-zstd
+prefixzstd=.build/.install-zstd
 
 set -- -Wno-dev -G Ninja \
     -DCMAKE_BUILD_TYPE=Release \
@@ -23,19 +23,20 @@ set -- -Wno-dev -G Ninja \
     -DCMAKE_RANLIB=false \
     -DCMAKE_NM=false
 
-$install $buildzstd; cmake -S $srcszstd -B $buildzstd "$@" \
+$install $buildzstd; cmake -S vendor/zstd-*/build/cmake -B $buildzstd "$@" \
     -DZSTD_MULTITHREAD_SUPPORT=ON \
     -DZSTD_LEGACY_SUPPORT=OFF \
-    -DZSTD_BUILD_PROGRAMS=OFF
+    -DZSTD_BUILD_PROGRAMS=OFF \
+    -DZSTD_BUILD_SHARED=OFF \
+    -DCMAKE_INSTALL_PREFIX=$prefixzstd; echo
 
-ninja -C $buildzstd libzstd.a
-mv $buildzstd/lib/libzstd.a .build
+rm -rf $prefixzstd; ninja -C $buildzstd libzstd.a
+ninja -C $buildzstd install >/dev/null; echo
 
 buildllvm=.build/.build-llvm
 prefixllvm=.build/.install-llvm
-srcsllvm=vendor/llvm-*/llvm
 
-$install $buildllvm; cmake -S $srcsllvm -B $buildllvm "$@" \
+$install $buildllvm; cmake -S vendor/llvm-*/llvm -B $buildllvm "$@" \
     -DLLVM_OPTIMIZED_TABLEGEN=ON \
     -DLLVM_UNREACHABLE_OPTIMIZE=ON \
     -DLLVM_ENABLE_ASSERTIONS=OFF \
@@ -57,7 +58,6 @@ $install $buildllvm; cmake -S $srcsllvm -B $buildllvm "$@" \
     -DLLVM_ENABLE_Z3_SOLVER=OFF \
     -DLLVM_ENABLE_ZLIB=OFF \
     -DLLVM_ENABLE_ZSTD=ON \
-    -DLLVM_USE_STATIC_ZSTD=ON \
     -DLLVM_INCLUDE_DOCS=OFF \
     -DLLVM_INCLUDE_TESTS=OFF \
     -DLLVM_INCLUDE_EXAMPLES=OFF \
@@ -68,28 +68,36 @@ $install $buildllvm; cmake -S $srcsllvm -B $buildllvm "$@" \
     -DCOMPILER_RT_BUILD_SANITIZERS=ON \
     -DLLVM_ENABLE_PROJECTS="clang;lld;polly" \
     -DLLVM_ENABLE_RUNTIMES="compiler-rt;openmp" \
-    -DLLVM_TARGETS_TO_BUILD="X86;AArch64;RISCV;WebAssembly;LoongArch" \
-    -DCMAKE_INSTALL_PREFIX=$prefixllvm
+    -DLLVM_TARGETS_TO_BUILD="X86;AArch64;ARM;RISCV;WebAssembly;LoongArch" \
+    -DCMAKE_PREFIX_PATH=$prefixzstd \
+    -DCMAKE_INSTALL_PREFIX=$prefixllvm; echo
 
 rm -rf $prefixllvm; ninja -C $buildllvm \
-    install-clangDriver install-lld-libraries install-LLVMOrcJIT install-Polly install-LLVMFrontendOpenMP
+    install-clangDriver \
+    install-lldCOFF \
+    install-lldCommon \
+    install-lldELF \
+    install-lldMachO \
+    install-lldWasm \
+    install-LLVMFrontendOpenMP \
+    install-LLVMOrcJIT \
+    install-Polly
+ninja -C $buildllvm install-llvm-headers install-clang-headers install-lld-headers >/dev/null; echo
 
-ninja -C $buildllvm install-llvm-headers install-clang-headers install-lld-headers >/dev/null
-
-cd $prefixllvm/include/lld; $install COFF ELF MachO wasm; cd ../../../..
-ln $buildllvm/tools/lld/include/lld/Common/Version.inc $prefixllvm/include/lld/Common
-ln $buildllvm/tools/lld/COFF/Options.inc $prefixllvm/include/lld/COFF
-ln $buildllvm/tools/lld/ELF/Options.inc $prefixllvm/include/lld/ELF
-ln $buildllvm/tools/lld/MachO/Options.inc $prefixllvm/include/lld/MachO
-ln $buildllvm/tools/lld/wasm/Options.inc $prefixllvm/include/lld/wasm
-cd $prefixllvm/lib
-for lib in *.a; do { dir="${lib%%.a}"; $install $dir; cd $dir; llvm-ar -x ../$lib; cd ..; rm $lib; } & done
+{
+    cd $prefixllvm/include/lld; $install COFF ELF MachO wasm; cd ../../../..
+    for dir in COFF ELF MachO wasm; do ln $buildllvm/tools/lld/$dir/Options.inc $prefixllvm/include/lld/$dir; done
+    ln $buildllvm/tools/lld/include/lld/Common/Version.inc $prefixllvm/include/lld/Common
+    rm -rf .build/include .build/libzstd.a; mv $prefixllvm/include .build/include; mv $prefixzstd/include .build/include/zstd
+    mv $prefixzstd/lib/libzstd.a .build; rm -rf $prefixzstd &
+} &
+{
+    cd $prefixllvm/lib
+    for lib in *.a; do { dir=${lib%%.a}; $install $dir; cd $dir; llvm-ar -x ../$lib; } & done; wait; rm -- *.a
+    for dir in $(echo * | LC_ALL=C sort); do { du -csh $(echo $dir/* | LC_ALL=C sort); echo; } done
+    set -- $(echo */* | LC_ALL=C sort); [ -e ../../libLLVM.a ] && rm ../../libLLVM.a
+    llvm-ar rcs ../../libLLVM.a "$@"; rm -rf ../../.install-llvm &
+    printf -- '--------------------------------------------------------\n %s    objects archived   %s    total bytes\n' \
+        "$#" "$(wc -c < ../../libLLVM.a)"
+} &
 wait
-set -- */*.o
-du -csh "$@"
-printf -- '--------------------------------------------------------\n %s\tobjects archived\n' "$#"
-rm -rf ../../include ../../libLLVM.a
-llvm-ar rcs ../../libLLVM.a "$@"
-mv ../include ../../
-cd ../../..
-rm -rf $prefixllvm

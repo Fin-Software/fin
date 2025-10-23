@@ -3,8 +3,10 @@
 // Contributors responsible for this file:
 // @p7r0x7 <mattrbonnette@pm.me>
 
+const std = @import("std");
 const fs = @import("std").fs;
 const fmt = @import("std").fmt;
+const mem = @import("std").mem;
 const db = @import("std").debug;
 const Build = @import("std").Build;
 const builtin = @import("std").builtin;
@@ -12,10 +14,104 @@ const Bandaid = @import("build_bandaid").Bandaid;
 
 // Build methods are generally declarative and unsequenced.
 
-pub fn build(b: *Build) void {
-    b.exe_dir = ".build";
+fn options(b: *Build) !?struct { Build.ResolvedTarget, builtin.OptimizeMode } {
+    const optimize = b.standardOptimizeOption(.{});
+    const target_str = b.option([]const u8, "target",
+        \\Target in OS/arch format (required)
+        \\                                 Supported Values:
+        \\                                   android/arm64
+        \\                                   darwin/arm64
+        \\                                   freestanding/arm64
+        \\                                   freestanding/loong64
+        \\                                   freestanding/riscv64
+        \\                                   freestanding/x64
+        \\                                   freestanding/wasm
+        \\                                   freestanding/wasm64
+        \\                                   freebsd/arm64
+        \\                                   freebsd/riscv64
+        \\                                   freebsd/x64
+        \\                                   linux/arm64
+        \\                                   linux/loong64
+        \\                                   linux/riscv64
+        \\                                   linux/x64
+        \\                                   windows/arm64
+        \\                                   windows/x64
+    );
+    const cpu_features_str = b.option([]const u8, "cpu", "CPU features to add or subtract");
+    const target = resolved: {
+        if (target_str) |str| {
+            break :resolved try parseTarget(b, str, cpu_features_str);
+        } else {
+            const stdout = fs.File.stdout();
+            const result = try std.process.Child.run(.{
+                .argv = &[_][]const u8{ "zig", "build", "-h", "-Dtarget=linux/x64" },
+                .allocator = b.allocator,
+                .expand_arg0 = .expand,
+            });
+            try stdout.writeAll("error: Missing required option -Dtarget.\n");
+            try stdout.writeAll(result.stdout);
+            return null;
+        }
+    };
+    return .{ target, optimize };
+}
+
+fn parseTarget(b: *Build, target: []const u8, cpu: ?[]const u8) !Build.ResolvedTarget {
+    var parts = mem.splitScalar(u8, target, '/');
+    const os_name = parts.first();
+    const arch_name = parts.next() orelse return error.TargetFormatTooShort;
+    if (parts.next()) |_| return error.TargetFormatTooLong;
+
+    // zig fmt: off
+    const os_tag: std.Target.Os.Tag = if (mem.eql(u8, os_name, "linux")) .linux
+        else if (mem.eql(u8, os_name, "freestanding")) .freestanding
+        else if (mem.eql(u8, os_name, "windows")) .windows
+        else if (mem.eql(u8, os_name, "android")) .linux
+        else if (mem.eql(u8, os_name, "freebsd")) .freebsd
+        else if (mem.eql(u8, os_name, "darwin")) .macos
+        else return error.UnsupportedOS;
+
+    const cpu_arch: std.Target.Cpu.Arch = if (mem.eql(u8, arch_name, "x64")) .x86_64
+        else if (mem.eql(u8, arch_name, "loong64")) .loongarch64
+        else if (mem.eql(u8, arch_name, "riscv64")) .riscv64
+        else if (mem.eql(u8, arch_name, "arm64")) .aarch64
+        else if (mem.eql(u8, arch_name, "wasm64")) .wasm64
+        else if (mem.eql(u8, arch_name, "wasm")) .wasm32
+        else return error.UnsupportedArch;
+    // zig fmt: on
+
+    var buf: [32]u8 = undefined;
+    const arch_os_abi = str: {
+        const arch = switch (cpu_arch) {
+            .x86_64 => "x86_64",
+            .wasm32 => "wasm32",
+            .wasm64 => "wasm64",
+            .aarch64 => "aarch64",
+            .riscv64 => "riscv64",
+            .loongarch64 => "loongarch64",
+            else => unreachable,
+        };
+        const os_abi = switch (os_tag) {
+            .macos => "macos",
+            .freebsd => "freebsd",
+            .windows => "windows-msvc",
+            .freestanding => "freestanding",
+            .linux => if (mem.eql(u8, os_name, "android")) "linux-android" else "linux-gnu",
+            else => unreachable,
+        };
+        break :str fmt.bufPrint(&buf, "{s}-{s}", .{ arch, os_abi }) catch unreachable;
+    };
+
+    return b.resolveTargetQuery(try Build.parseTargetQuery(std.Target.Query.ParseOptions{
+        .arch_os_abi = arch_os_abi,
+        .cpu_features = if (cpu) |feat| feat else if (cpu_arch == .x86_64) "x86_64_v3" else "generic",
+    }));
+}
+
+pub fn build(b: *Build) !void {
+    const target, const optimize = try options(b) orelse return;
     const aid = Bandaid{ .b = b };
-    const target, const optimize = aid.stdOptions(.{}, .{});
+    aid.universalSettings(target);
 
     const fin = aid.executable("fin", "src/main.zig", target, optimize, .{});
     const cova = b.dependency("cova", .{ .target = target, .optimize = optimize });
@@ -45,7 +141,7 @@ pub fn build(b: *Build) void {
         };
     };
     libs.step.dependOn(&run_hash_vendor.step);
-    fin.step.dependOn(&libs.step);
+    //fin.step.dependOn(&libs.step);
 
     const lld_macho = aid.library("lldMachO", null, target, optimize, .{});
     aid.addCSources(lld_macho, Bandaid.CSources{

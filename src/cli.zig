@@ -370,7 +370,7 @@ pub const parsing = struct {
 //    Folded
 //
 
-// zig-fmt off
+// zig fmt: off
 pub fn command(cmd: []const u8, desc: []const u8, cmds: ?[]const CmdT, vals: ?[]const CmdT.ValueT, opts: ?[]const CmdT.OptionT) CmdT {
     return .{ .name = cmd, .vals = vals, .sub_cmds = cmds, .description = normalizeWS(desc), .hidden = desc.len == 0, .opts = opts, .allow_inheritable_opts = true };
 }
@@ -380,7 +380,7 @@ pub fn option(inherit: bool, opt: []const u8, aliases: ?[]const []const u8, val:
 pub fn value(val: []const u8, comptime ValT: type, default: ?ValT, parse: ?*const fn ([]const u8, mem.Allocator) anyerror!ValT, desc: []const u8) CmdT.ValueT {
     return CmdT.ValueT.ofType(ValT, .{ .name = val, .parse_fn = parse, .default_val = default, .description = normalizeWS(desc) });
 }
-// zig-fmt on
+// zig fmt: on
 
 pub fn normalizeWS(comptime str: []const u8) []const u8 {
     var out: [str.len]u8 = undefined;
