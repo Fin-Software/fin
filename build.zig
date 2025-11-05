@@ -155,7 +155,7 @@ pub fn build(b: *Build) !void {
     const hash_vendor = aid.executable("hash-vendor", "hash.zig", target, .ReleaseFast, .{}); // Fast
     const run_hash_vendor = aid.runArtifact(hash_vendor, &.{
         "vendor",
-        "f6f4f3801cc3b6547b8496c8278ef0e20a5e330070ed6936727560eea5976d38", // CODE REVIEW POISON
+        "6aef58e1b4ba796848e7dc0f95bebc837e320e644fb87f9e34b6129d0da4a06d", // CODE REVIEW POISON
     });
     hash_vendor.root_module.addImport("channels", channels.module("channels"));
     b.step("hash-vendor", "").dependOn(&run_hash_vendor.step);

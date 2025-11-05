@@ -29,14 +29,14 @@ finish() { $find $pkg -type d -empty -delete; for dir in $pkg/*; do $rm ${dir##*
 #    Separate collections of parallelly-acquiesced dependencies.
 #
 llvm() {
-    start llvm; semv=21.1.3 base=llvm-project-$semv.src.tar.xz
+    start llvm; semv=21.1.5 base=llvm-project-$semv.src.tar.xz
     deps='clang cmake compiler-rt lld llvm openmp polly runtimes third-party'
     url=https://github.com/llvm/llvm-project/releases/download/llvmorg-$semv/$base
     (
-        get c8acf135871fde7ca8c77a7132ba8d9dfaa79b53515d7e83d7121c835ed2f8ad
-        set -f; szip e -so $srcs/$base | szip x -o$pkg -si -ttar $(printf -- '-x!*/%s ' */bindings */docs   \
-            */examples */test */unittests */www llvm/benchmarks polly/lib/External/isl/test_inputs)         \
-            $(printf -- '-xr!%s ' .* Maintainers.* CREDITS.*) $(printf '*/%s ' $deps) >/dev/null; set +f
+        get 419fa6cd82f8914e13352cb8222f9126e3dec99091f24ced011c6ae14fcde9f2
+        set -f; szip e -so $srcs/$base | szip x -o$pkg -si -ttar $(printf -- '-x!*/%s ' */bindings */docs       \
+            */examples */test */unittests */www llvm/benchmarks polly/lib/External/isl/test_inputs) $(printf -- \
+            '-xr!%s ' .* Maintainers.* CREDITS.* *.png *.bmp) $(printf '*/%s ' $deps) >/dev/null; set +f
 
         cd $pkg; mv llvm-project-$semv.src llvm-$semv; sed -i '' '1000,1004d' llvm-$semv/llvm/CMakeLists.txt
         guard='s|^[[:space:]]*add_subdirectory[[:space:]]*\(([^)]+)\)|if(EXISTS  "${CMAKE_CURRENT_SOURCE_DIR}/\1")\n  add_subdirectory(\1)\nendif()|'

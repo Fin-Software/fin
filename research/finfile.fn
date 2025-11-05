@@ -140,8 +140,8 @@ trait Writer {
     fin
 }
 
-struct BufferedWriter[INNER Writer, LEN u32 = 4<<10] {
-    buf [LEN]u8, inner INNER, end u32 = 0,
+struct BufferedWriter[INNER Writer, LEN u32: 4<<10] {
+    buf [LEN]u8, inner INNER, end u32: 0,
 
     #construct(inner INNER) return BufferedWriter{inner: inner} fin
 
