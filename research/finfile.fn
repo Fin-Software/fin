@@ -22,38 +22,63 @@ impl UnsignedInt for (u8, char, u16, u32, rune, u64, u128, uptr)
 ;; fin
 ;; std/env
 
-Mode := enum { Debug, JIT, Safe, Fast, Tiny }
-Host := enum { Freestanding, Android, Windows, FreeBSD, Darwin, Linux }
-Arch := enum { X64, Loong64, RISCV64, Arm64, Wasm64, Wasm }
 SupportedTargets := [_](Host, Arch){
-    (.Android, .Arm64),
-    (.Darwin, .Arm64),
-    (.Freestanding, .Arm64),
-    (.Freestanding, .Loong64),
-    (.Freestanding, .RISCV64),
-    (.Freestanding, .X64),
-    (.Freestanding, .Wasm),
-    (.Freestanding, .Wasm64),
-    (.FreeBSD, .Arm64),
-    (.FreeBSD, .RISCV64),
-    (.FreeBSD, .X64),
-    (.Linux, .Arm64),
-    (.Linux, .Loong64),
-    (.Linux, .RISCV64),
-    (.Linux, .X64),
-    (.Windows, .Arm64),
-    (.Windows, .X64),
+    (.android,      .arm64),
+    (.darwin,       .arm64),
+    (.freestanding, .arm64),
+    (.freestanding, .loong64),
+    (.freestanding, .riscv64),
+    (.freestanding, .x64),
+    (.freestanding, .wasm),
+    (.freestanding, .wasm64),
+    (.freebsd,      .arm64),
+    (.freebsd,      .riscv64),
+    (.freebsd,      .x64),
+    (.linux,        .arm64),
+    (.linux,        .loong64),
+    (.linux,        .riscv64),
+    (.linux,        .x64),
+    (.windows,      .arm64),
+    (.windows,      .x64),
 }
+Host type = enum { freestanding, android, windows, freebsd, darwin, linux }
+Arch type = enum { x64, loong64, riscv64, arm64, wasm64, wasm }
+Mode type = enum { debug, jit, safe, fast, tiny }
 
 ;; fin
 ;; std/debug
 
 void Assert(ok bool) inline  ;; unreachable alone doesn't require a function be marked as divergent
     switch (env.Mode)
-        case .Debug, .JIT, .Safe: if (!ok) unreachable fin
-        case .Fast, .Tiny:
+        case .debug, .jit, .safe: if (!ok) unreachable fin
+        case .fast, .tiny:
     fin
 fin
+
+;; fin
+;; std/encoding/utf8
+
+runeLen := [256]u8{
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+    4, 4, 4, 4, 4, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+}
+
+
+
 
 ;; fin
 ;; std/mem
@@ -103,53 +128,58 @@ trait Writer {
     needs u32! WriteSome(*mut wr, bytes []u8)
 
     void! Write(*mut wr, bytes []u8)
-        w mut u32 = 0; while (w < bytes.len) w += wr.WriteSome(bytes[w..])! fin
+        w mut = 0; while (w < bytes.len) w += wr.WriteSome(bytes[w..])! fin
     fin
 
     void! Flush(*mut _) return fin
-}
 
-struct BufferedWriter<INNER Writer, LEN u32: 4096> {
-    buf [LEN]u8, inner INNER, end u32: 0,
+    void! WriteChar(*mut wr, c char) wr.WriteSome([1]char{c}[..])
 
-    this #this(inner Writer) return BufferedWriter{inner: inner} fin
-}
-impl Writer for (BufferedWriter)
-
-void! BufferedWriter.Write(*mut bw, bytes []u8) inline bw.WriteSome(bytes)! fin
-
-u32! BufferedWriter.WriteSome(*mut bw, bytes []u8)
-    if (bytes.len == 0) return 0 fin
-    end := bw.end; cap := bw.LEN - end
-
-    if (bytes.len >= cap)
-        if (end > 0)
-            @copy(bw.buf[end..bw.LEN], bytes[..cap])
-            bw.inner.Write(bw.buf)!
-        fin
-        full := (bytes.len - cap) / bw.LEN * bw.LEN
-        if (full > 0) bw.inner.Write(bytes[cap..cap+full])! fin
-
-        tail := bytes.len - cap - full
-        if (tail > 0) @copy(bw.buf[..tail], bytes[bytes.len-tail..]) fin
-        bw.end = tail
-    else
-        @copy(bw.buf[end..end+bytes.len], bytes)
-        bw.end = end + bytes.len
+    u32! WriteRune(*mut wr, r rune)
+        ;; empty
     fin
-    return bytes.len
-fin
+}
 
-void! BufferedWriter.Flush(*mut bw)
-    if (bw.end > 0) bw.inner.Write(bw.buf[0..bw.end])! bw.end = 0 fin
-    bw.inner.Flush()!
-fin
+struct BufferedWriter[INNER Writer, LEN u32 = 4<<10] {
+    buf [LEN]u8, inner INNER, end u32 = 0,
+
+    #construct(inner INNER) return BufferedWriter{inner: inner} fin
+
+impl Writer:
+    void! Write(*mut bw, bytes []u8) inline bw.WriteSome(bytes)! fin
+
+    u32! WriteSome(*mut bw, bytes []u8)
+        if (bytes.len == 0) return 0 fin; end := bw.end; cap := LEN - end
+
+        if (bytes.len >= cap)
+            if (end > 0)
+                @copy(bw.buf[end..LEN], bytes[..cap])
+                bw.inner.Write(bw.buf)!
+            fin
+            full := (bytes.len - cap) / LEN * LEN
+            if (full > 0) bw.inner.Write(bytes[cap..cap+full])! fin
+
+            tail := bytes.len - cap - full
+            if (tail > 0) @copy(bw.buf[..tail], bytes[bytes.len-tail..]) fin
+            bw.end = tail
+        else
+            @copy(bw.buf[end..end+bytes.len], bytes)
+            bw.end = end + bytes.len
+        fin
+        return bytes.len
+    fin
+
+    void! Flush(*mut bw)
+        if (bw.end > 0) bw.inner.Write(bw.buf[0..bw.end])! bw.end = 0 fin
+        bw.inner.Flush()!
+    fin
+
+    void! Reinit(*mut bw, inner INNER)
+        debug.Assert(bw.end == 0); bw.inner = inner
+    fin
+}
 
 ;; fin
-
-;;
-;;   Other
-;;
 
 u8 Main() return 0 fin
 
