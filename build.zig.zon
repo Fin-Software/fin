@@ -9,7 +9,7 @@
         },
         .cova = .{
             .url = "https://github.com/00JCIV00/cova/archive/main.tar.gz",
-            .hash = "12207dce3d5d3e15312ca9daafcf4be67a2e126618e90d52db78d4b7d01326e90ad6",
+            .hash = "1220e0b7167ed7c4985b7b5752229f429e9f76c84400f7e0fb28aa43919ae6e704db",
         },
         .channels = .{
             .url = "https://github.com/zukaChachava/ZigChannels/archive/main.tar.gz",

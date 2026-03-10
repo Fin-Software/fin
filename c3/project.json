@@ -1,0 +1,10 @@
+{
+    "langrev": "1",
+    "version": "0.1.0",
+    "output": ".build",
+    "build-dir": ".build",
+    "sources": [ "src/**" ],
+    "warnings": [ "no-unused" ],
+    "authors": [ "Maxine R Bonnette @p7r0x7" ],
+    "targets": { "fin": { "type": "object-files" } }
+}

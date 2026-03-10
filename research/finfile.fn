@@ -22,7 +22,7 @@ impl UnsignedInt for (u8, char, u16, u32, rune, u64, u128, uptr)
 ;; fin
 ;; std/env
 
-SupportedTargets := [_](Host, Arch){
+SupportedTargets (Host, Arch)[_] = {
     (.android,      .arm64),
     (.darwin,       .arm64),
     (.freestanding, .arm64),
@@ -41,9 +41,9 @@ SupportedTargets := [_](Host, Arch){
     (.windows,      .arm64),
     (.windows,      .x64),
 }
-Host type = enum { freestanding, android, windows, freebsd, darwin, linux }
-Arch type = enum { x64, loong64, riscv64, arm64, wasm64, wasm }
-Mode type = enum { debug, jit, safe, fast, tiny }
+enum Host { freestanding, android, windows, freebsd, darwin, linux }
+enum Arch { x64, loong64, riscv64, arm64, wasm64, wasm }
+enum Mode { debug, jit, safe, fast, tiny }
 
 ;; fin
 ;; std/debug
@@ -58,7 +58,7 @@ fin
 ;; fin
 ;; std/encoding/utf8
 
-runeLen := [256]u8{
+runeLen u8[256] = {
     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
@@ -89,66 +89,66 @@ trait Allocator {
 
 }
 
-[]alias u8 sliceToBytesZC(slice []alias Copyable) inline
-    if (slice.len == 0) return () fin
-    return ((*alias u8)&slice[0])[..slice[0].sizeof*slice.len]
+u8 alias[] sliceToBytesZC(slice Copyable alias[]) inline
+    if (slice.len == 0) return {} fin
+    return ((u8 alias*)&slice[0])[..slice[0].sizeof*slice.len]
 fin
 
-[]alias u8 toBytesZC(memory *alias Copyable) inline
-    size := (*memory).sizeof; if (size == 0) return () fin
-    return ((*alias u8)memory)[..size]
+u8 alias[] toBytesZC(memory Copyable alias*) inline
+    size := (*memory).sizeof; if (size == 0) return {} fin
+    return ((u8 alias*)memory)[..size]
 fin
 
-[]alias mut u8 mutSliceToBytesZC(slice []alias mut Copyable) inline
-    if (slice.len == 0) return () fin
-    return ((*alias mut u8)&slice[0])[..slice[0].sizeof*slice.len]
+u8 alias[] mutSliceToBytesZC(slice Copyable alias[]) inline
+    if (slice.len == 0) return {} fin
+    return ((u8 alias*)&slice[0])[..slice[0].sizeof*slice.len]
 fin
 
-[]alias mut u8 mutToBytesZC(memory *alias mut Copyable) inline
-    size := (*memory).sizeof; if (size == 0) return () fin
-    return ((*alias mut u8)memory)[..size]
+u8 alias[] mutToBytesZC(memory Copyable alias*) inline
+    size := (*memory).sizeof; if (size == 0) return {} fin
+    return ((u8 alias*)memory)[..size]
 fin
 
 ;; fin
 ;; std/io
 
 trait Reader {
-    needs u32! ReadSome(*mut rd, buf []mut u8)
+    needs u32! ReadSome(rd*, buf u8[])
 
-    void! Read(*mut rd, buf []mut u8) rd.ReadAtLeast(buf, buf.len)! fin
+    void! Read(rd*, buf u8[]) rd.ReadAtLeast(buf, buf.len)! fin
 
-    void! ReadAtLeast(*mut rd, buf []mut u8, len u32)
+    void! ReadAtLeast(rd*, buf u8[], len u32)
         debug.Assert(buf.len < len)
-        r mut = 0; while (r < bytes.len)
+        r := 0; while (r < bytes.len)
             r += rd.ReadSome(bytes[r..]) rescue |err| if (err != .EndOfFile or r < len) return err fin fin
         fin
     fin
 }
 trait Writer {
-    needs u32! WriteSome(*mut wr, bytes []u8)
+    needs u32! WriteSome(wr*, bytes u8[])
 
-    void! Write(*mut wr, bytes []u8)
-        w mut = 0; while (w < bytes.len) w += wr.WriteSome(bytes[w..])! fin
+    void! Write(wr*, bytes u8[])
+        w := 0; while (w < bytes.len) w += wr.WriteSome(bytes[w..])! fin
     fin
 
-    void! Flush(*mut _) return fin
+    void! Flush(_*) return fin
 
-    void! WriteChar(*mut wr, c char) wr.WriteSome([1]char{c}[..])
+    void! WriteChar(wr*, c char) wr.WriteSome(char[1]{c}[..])! fin
 
-    u32! WriteRune(*mut wr, r rune)
+    u32! WriteRune(wr*, r rune)
         ;; empty
     fin
 }
 
 struct BufferedWriter[INNER Writer, LEN u32: 4<<10] {
-    buf [LEN]u8, inner INNER, end u32: 0,
+    buf u8[LEN], inner INNER, end u32: 0,
 
     #construct(inner INNER) return BufferedWriter{inner: inner} fin
 
 impl Writer:
-    void! Write(*mut bw, bytes []u8) inline bw.WriteSome(bytes)! fin
+    void! Write(bw*, bytes u8[]) inline bw.WriteSome(bytes)! fin
 
-    u32! WriteSome(*mut bw, bytes []u8)
+    u32! WriteSome(bw*, bytes u8[])
         if (bytes.len == 0) return 0 fin; end := bw.end; cap := LEN - end
 
         if (bytes.len >= cap)
@@ -169,14 +169,19 @@ impl Writer:
         return bytes.len
     fin
 
-    void! Flush(*mut bw)
+    void! Flush(bw*)
         if (bw.end > 0) bw.inner.Write(bw.buf[0..bw.end])! bw.end = 0 fin
         bw.inner.Flush()!
     fin
 
-    void! Reinit(*mut bw, inner INNER)
+    void! Reinit(bw*, inner INNER)
         debug.Assert(bw.end == 0); bw.inner = inner
     fin
+}
+
+extend foreign.Type {
+impl Writer:
+
 }
 
 ;; fin
