@@ -22,7 +22,7 @@ fn void? DirEntries.init(&de, String path, bool include_hidden, Allocator ally) 
     de.alloc = ally;
     (void)de.stack.init(ally, 0);
     de.include_hidden = include_hidden;
-    de.push_dir(path.len ? path : ":")!;
+    de.push_dir(path.len ? path : ".")!;
 }
 fn DirEntry? DirEntries.next(&de) {
     @sfba(PATH_MAX, de.alloc; Allocator ally) {
@@ -42,9 +42,9 @@ fn DirEntry? DirEntries.next(&de) {
             }
         }
     };
-    NO_MORE_ELEMENT?!;
+    NO_MORE_ELEMENT~!;
 }
-fn void? DirEntries.push_dir(&de, String path) @private {
+fn void? DirEntries.push_dir(&de, String path) {
     DirFrame frame @noinit;
     frame.id = 0;
     frame.base = path.copy(de.alloc);
@@ -52,15 +52,21 @@ fn void? DirEntries.push_dir(&de, String path) @private {
     de.traverse(&frame)!;
     de.stack.push(frame);
 }
-fn void? DirEntries.traverse(&de, DirFrame* frame) @private {
-    PathList list = path::ls(de.alloc, { frame.base, path::DEFAULT_ENV, de.alloc })!;
-    foreach (&path : list) {
-        String str = path.str_view();
-        frame.entries.push({ .name = str.copy(de.alloc), .is_dir = file::is_dir(str) });
-    }
+fn void? DirEntries.traverse(&de, DirFrame* frame) {
+	@sfba(1024, de.alloc; Allocator ally) {
+		PathList list = path::ls(ally, { frame.base, path::DEFAULT_ENV, ally })!;
+        foreach (&path : list) {
+            String str = path.str_view();
+            if (!de.include_hidden && str[0] == '.') continue;
+            String full = join_a_path(ally, frame.base, str);
+            bool is_dir = file::is_dir(full);
+            allocator::free(ally, full);
+            frame.entries.push({ .name = str.copy(de.alloc), .is_dir = is_dir });
+        }
+    };
     if (frame.entries.len() > 1) sort::quicksort(&frame.entries, &entry_cmp);
 }
-fn void DirEntries.free_frame(&de, DirFrame* frame) @private {
+fn void DirEntries.free_frame(&de, DirFrame* frame) {
     foreach (entry : frame.entries) allocator::free(de.alloc, entry.name);
     allocator::free(de.alloc, frame.base);
 }
@@ -68,6 +74,8 @@ fn void DirEntries.deinit(&de) {
     foreach (&frame : de.stack) de.free_frame(frame);
     de.stack.free();
 }
+
+//    Helper
 
 macro void @sfba(usz $size, Allocator fb; @body(Allocator sfba)) {
     char[$size] buf;
@@ -82,7 +90,7 @@ fn String join_a_path(Allocator ally, String base, String name) {
     mem::copy(buf, base.ptr, base.len);
     buf[base.len] = path::PREFERRED_SEPARATOR;
     mem::copy(buf + base.len + 1, name.ptr, name.len);
-    return (String)buf[..len];
+    return (String)buf[:len];
 }
 fn isz String.compare_to(s, String b) {
     usz min_len = min(s.len, b.len);
@@ -94,6 +102,7 @@ fn isz String.compare_to(s, String b) {
 }
 fn isz entry_cmp(Entry* a, Entry* b) @private => a.name.compare_to(b.name);
 
+///////////////////////////////////////////////////////////////////////////////////////////////////
 
 module main;
 import direntries, std::io, std::thread, std::encoding;
@@ -108,19 +117,18 @@ extern fn void* sha3_Finalize(void* priv);
 
 fn int main(String[] args) {
     switch (args.len) {
-        case 1: MISSING_WORKING_DIR_ARG?!!;
+        case 1: MISSING_WORKING_DIR_ARG~!!;
         case 2: break;
-        default: TOO_MANY_ARGS?!!;
+        default: TOO_MANY_ARGS~!!;
     }
-    String wd = args[1];
+    String wd = path::normalize(args[1])!!;
 
     direntries::@sfba(BUFFER_SIZE, mem; Allocator ally) {
         DirEntries de @noinit;
-        de.init(wd, false, ally)!!;
+        de.init(wd, true, ally)!!;
         while (try entry = de.next()) {
-            String base = entry.base;
-            if (!wd.len) base = base.len > 1 ? base[2..] : "";
-            if (base.len) io::printf("%s%c", base, direntries::SEPARATOR)!!;
+            String base = entry.base[wd.len..];
+            if (base.len) io::printf("%s%c", base[1..], direntries::SEPARATOR)!!;
             io::printfn("%s", entry.name)!!;
         }
     };
@@ -196,21 +204,6 @@ fn int main() {
 
     chan.destroy()!!;
     return 0;
-}
-
-
-// -----------------------------------------------------------------------------
-// Helpers
-// -----------------------------------------------------------------------------
-
-fn String join_path_manual(String base, String name) {
-    usz len = base.len + 1 + name.len;
-    char* buf = mem::alloc(len + 1);
-    mem::copy(buf, base.ptr, base.len);
-    buf[base.len] = fs::PATH_SEPARATOR;
-    mem::copy(buf + base.len + 1, name.ptr, name.len);
-    buf[len] = '\0';
-    return String{.ptr = buf, .len = len};
 }
 
 // -----------------------------------------------------------------------------
