@@ -44,14 +44,6 @@ fn DirEntry? DirEntries.next(&de) {
     };
     NO_MORE_ELEMENT~!;
 }
-fn void? DirEntries.push_dir(&de, String path) {
-    DirFrame frame @noinit;
-    frame.id = 0;
-    frame.base = path.copy(de.alloc);
-    frame.entries.init(de.alloc, 0);
-    de.traverse(&frame)!;
-    de.stack.push(frame);
-}
 fn void? DirEntries.traverse(&de, DirFrame* frame) {
 	@sfba(1024, de.alloc; Allocator ally) {
 		PathList list = path::ls(ally, { frame.base, path::DEFAULT_ENV, ally })!;
@@ -66,6 +58,14 @@ fn void? DirEntries.traverse(&de, DirFrame* frame) {
     };
     if (frame.entries.len() > 1) sort::quicksort(&frame.entries, &entry_cmp);
 }
+fn void? DirEntries.push_dir(&de, String path) {
+    DirFrame frame @noinit;
+    frame.id = 0;
+    frame.base = path.copy(de.alloc);
+    frame.entries.init(de.alloc, 0);
+    de.traverse(&frame)!;
+    de.stack.push(frame);
+}
 fn void DirEntries.free_frame(&de, DirFrame* frame) {
     foreach (entry : frame.entries) allocator::free(de.alloc, entry.name);
     allocator::free(de.alloc, frame.base);
@@ -74,8 +74,6 @@ fn void DirEntries.deinit(&de) {
     foreach (&frame : de.stack) de.free_frame(frame);
     de.stack.free();
 }
-
-//    Helper
 
 macro void @sfba(usz $size, Allocator fb; @body(Allocator sfba)) {
     char[$size] buf;
@@ -108,12 +106,58 @@ module main;
 import direntries, std::io, std::thread, std::encoding;
 
 const BUFFER_SIZE = 16 << 10;
+alias BufChan = channel::BufferedChannel{char[]};
 
 faultdef MISSING_WORKING_DIR_ARG, TOO_MANY_ARGS;
-
 extern fn void sha3_Init(void* priv, uint bitSize);
 extern fn void sha3_Update(void* priv, void* bufIn, usz len);
-extern fn void* sha3_Finalize(void* priv);
+extern fn void* sha3_Final(void* priv) @cname("sha3_Finalize");
+
+/* incorrect:
+fn int stdinReader(void* arg, String wd) {
+    BufChan ch = (BufChan)arg;
+    Allocator a = allocator::heap();
+    char[4096] stack_buf;
+
+    while (true)
+    {
+        isz n = io::stdin.read(stack_buf[..])!;
+        if (n == 0) break;
+
+        // allocate exact-sized buffer
+        char* buf = allocator::alloc(a, char, n)!;
+        memcpy(buf, &stack_buf[0], n);
+
+        ch.push(Chunk{ buf, (usz)n })!;
+    }
+    ch.close();
+    return 0;
+}
+
+fn int sha3Hasher(void* arg) {
+    BufChan ch = (BufChan)arg;
+
+    HashCtx ctx;
+    hash_init(&ctx);
+
+    while (true)
+    {
+        //Chunk c = ch.pop() catch
+        //{
+        //    thread::CHANNEL_CLOSED => break,
+        //};
+
+        hash_update(&ctx, c.data, c.len);
+        allocator::free(allocator::heap(), c.data);
+    }
+
+    char digest[HASH_SIZE];
+    hash_final(&ctx, digest);
+
+    io::stdout.write(digest[..])!;
+    return 0;
+}
+*/
 
 fn int main(String[] args) {
     switch (args.len) {
@@ -122,6 +166,13 @@ fn int main(String[] args) {
         default: TOO_MANY_ARGS~!!;
     }
     String wd = path::normalize(args[1])!!;
+
+    BufChan chan;
+    Thread readert, hashert;
+
+    chan.init(&malloc, 8)!!;
+    readert.create(&stdinReader, (void*)chan)!!;
+    hashert.create(&sha3Hasher, (void*)chan)!!;
 
     direntries::@sfba(BUFFER_SIZE, mem; Allocator ally) {
         DirEntries de @noinit;
@@ -132,84 +183,14 @@ fn int main(String[] args) {
             io::printfn("%s", entry.name)!!;
         }
     };
-    return 0;
-}
-
-/*
-//struct CharSlice { char* ptr; usz len; }
-alias BufChan = channel::BufferedChannel{char[]};
-
-fn int stdinReader(void* arg) {
-    BufChan ch = (BufChan)arg;
-/*
-    Allocator a = allocator::heap();
-    char[4096] stack_buf;
-
-    while (true)
-    {
-        isz n = io::stdin.read(stack_buf[..])!;
-        if (n == 0)
-            break; // EOF
-
-        // allocate exact-sized buffer
-        char* buf = allocator::alloc(a, char, n)!;
-        memcpy(buf, &stack_buf[0], n);
-
-        ch.push(Chunk{ buf, (usz)n })!;
-    }
-    ch.close();
-*/
-    return 0;
-}
-
-
-fn int sha3Hasher(void* arg) {
-    BufChan ch = (BufChan)arg;
-/*
-    HashCtx ctx;
-    hash_init(&ctx);
-
-    while (true)
-    {
-        Chunk c = ch.pop() catch
-        {
-            thread::CHANNEL_CLOSED => break,
-        };
-
-        hash_update(&ctx, c.data, c.len);
-        allocator::free(allocator::heap(), c.data);
-    }
-
-    char digest[HASH_SIZE];
-    hash_final(&ctx, digest);
-
-    io::stdout.write(digest[..])!;
-*/
-    return 0;
-}
-
-fn int main() {
-    BufChan chan;
-    allocator::LibcAllocator malloc;
-    chan.init(&malloc, 8)!!;
-
-    Thread readert;
-    Thread hashert;
-
-    readert.create(&stdinReader, (void*)chan)!!;
-    hashert.create(&sha3Hasher, (void*)chan)!!;
 
     readert.join()!!;
     hashert.join()!!;
-
     chan.destroy()!!;
     return 0;
 }
 
-// -----------------------------------------------------------------------------
-// Hashing
-// -----------------------------------------------------------------------------
-
+/* incorrect:
 const uint HASH_BUF_LEN = 16 * 1024;
 
 fn void hash_entries(char[] out_hash, DirEntries* de) !{
@@ -267,5 +248,4 @@ fn void hash_entries(char[] out_hash, DirEntries* de) !{
 
     ctx.final(out_hash);
 }
-
 */
