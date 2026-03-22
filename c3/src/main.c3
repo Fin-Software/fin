@@ -103,20 +103,22 @@ fn isz entry_cmp(Entry* a, Entry* b) @private => a.name.compare_to(b.name);
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 module main;
-import direntries, std::io, std::thread, std::encoding;
+import direntries, std::io, std::thread, std::encoding::base64;
 
-const BUFFER_SIZE = 16 << 10;
-alias BufChan = channel::BufferedChannel{char[]};
+struct ReaderArgs { BufChan ch; String wd }
 
-faultdef MISSING_WORKING_DIR_ARG, TOO_MANY_ARGS;
-extern fn void sha3_Init(void* priv, uint bitSize);
-extern fn void sha3_Update(void* priv, void* bufIn, usz len);
-extern fn void* sha3_Final(void* priv) @cname("sha3_Finalize");
-
-/* incorrect:
-fn int stdinReader(void* arg, String wd) {
-    BufChan ch = (BufChan)arg;
-    Allocator a = allocator::heap();
+fn int stdinReader(void* arg) {
+	BufChan ch = (BufChan)((ReaderArgs*)arg).ch;
+	String wd = (String)((ReaderArgs*)arg).wd;
+	
+    DirEntries de @noinit;
+    de.init(wd, true, ally)!!;
+    while (try entry = de.next()) {
+        String base = entry.base[wd.len..];
+        if (base.len) io::printf("%s%c", base[1..], direntries::SEPARATOR)!!;
+        io::printfn("%s", entry.name)!!;
+    }
+	
     char[4096] stack_buf;
 
     while (true)
@@ -134,30 +136,33 @@ fn int stdinReader(void* arg, String wd) {
     return 0;
 }
 
+const HASH_LEN = 32;
+extern fn void sha3_Init(void* state, uint bitSize);
+extern fn void sha3_Update(void* state, void* bufIn, usz len);
+extern fn void* sha3_Final(void* state) @cname("sha3_Finalize");
+
 fn int sha3Hasher(void* arg) {
+    char[224] state;
+    sha3_Init(&state);
     BufChan ch = (BufChan)arg;
-
-    HashCtx ctx;
-    hash_init(&ctx);
-
     while (true)
     {
-        //Chunk c = ch.pop() catch
-        //{
-        //    thread::CHANNEL_CLOSED => break,
-        //};
-
-        hash_update(&ctx, c.data, c.len);
-        allocator::free(allocator::heap(), c.data);
+        char[]? buf = ch.pop();
+        if (catch excuse = buf) break;
+        sha3_Update(&state, buf.ptr, buf.len);
+        allocator::free(mem, buf);
     }
-
-    char digest[HASH_SIZE];
-    hash_final(&ctx, digest);
-
-    io::stdout.write(digest[..])!;
+    char[HASH_LEN] digest;
+    char[(HASH_LEN+2)/3*4] &hash;
+    hash_final(&state, &digest);
+    base64::encode_buffer(&digest, &hash);
+    io::stdout.write(hash[..])!!;
     return 0;
 }
-*/
+
+const BUFFER_SIZE = 16 << 10;
+alias BufChan = channel::BufferedChannel{char[]};
+faultdef MISSING_WORKING_DIR_ARG, TOO_MANY_ARGS;
 
 fn int main(String[] args) {
     switch (args.len) {
@@ -167,85 +172,16 @@ fn int main(String[] args) {
     }
     String wd = path::normalize(args[1])!!;
 
-    BufChan chan;
+    BufChan ch;
+    ch.init(mem, 8)!!;
+    ReaderArgs ra = {ch, wd};
+    
     Thread readert, hashert;
-
-    chan.init(&malloc, 8)!!;
-    readert.create(&stdinReader, (void*)chan)!!;
-    hashert.create(&sha3Hasher, (void*)chan)!!;
-
-    direntries::@sfba(BUFFER_SIZE, mem; Allocator ally) {
-        DirEntries de @noinit;
-        de.init(wd, true, ally)!!;
-        while (try entry = de.next()) {
-            String base = entry.base[wd.len..];
-            if (base.len) io::printf("%s%c", base[1..], direntries::SEPARATOR)!!;
-            io::printfn("%s", entry.name)!!;
-        }
-    };
+    readert.create(&stdinReader, (void*)&ra)!!;
+    hashert.create(&sha3Hasher, (void*)ch)!!;
 
     readert.join()!!;
     hashert.join()!!;
     chan.destroy()!!;
     return 0;
 }
-
-/* incorrect:
-const uint HASH_BUF_LEN = 16 * 1024;
-
-fn void hash_entries(char[] out_hash, DirEntries* de) !{
-    char[HASH_BUF_LEN] buf;
-    SHA256 ctx;
-    ctx.init();
-
-    while (let entry = try de.next()) {
-        String path_str;
-        bool free_path = false;
-
-        if (let base = entry.base) {
-            path_str = join_path_manual(base, entry.name);
-            free_path = true;
-
-            if (fs::PATH_SEPARATOR != '/') {
-                foreach(ref c : path_str) {
-                    if (c == fs::PATH_SEPARATOR) c = '/';
-                }
-            }
-        } else {
-            path_str = entry.name;
-        }
-
-        ctx.update(path_str);
-
-        if (entry.kind == fs::FileType.REGULAR) {
-            // We need the OS path again.
-            // If we normalized path_str above, we should ideally re-construct the OS path,
-            // but for simple cases, forward slash often works on Windows too in C APIs.
-            // To be safe, let's reconstruct if we have a base.
-            String os_path = path_str;
-            bool free_os_path = false;
-
-            if (entry.base) {
-                // Re-join with OS separator just for opening the file
-                os_path = join_path_manual(entry.base !!, entry.name);
-                free_os_path = true;
-            }
-
-            File file = try fs::File.open(os_path, "rb");
-            defer file.close();
-
-            while (true) {
-                usz n = try file.read(buf);
-                if (n == 0) break;
-                ctx.update(buf[0..n]);
-            }
-
-            if (free_os_path) mem::free(os_path.ptr);
-        }
-
-        if (free_path) mem::free(path_str.ptr);
-    }
-
-    ctx.final(out_hash);
-}
-*/
