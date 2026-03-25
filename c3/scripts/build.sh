@@ -3,12 +3,8 @@
 supported='
     android/arm64
     darwin/arm64
-    freestanding/arm64
-    freestanding/loong64
-    freestanding/riscv64
-    freestanding/x64
-    freestanding/wasm
-    freestanding/wasm64
+    wasi/wasm
+    wasi/wasm64
     freebsd/arm64
     freebsd/riscv64
     freebsd/x64
@@ -69,7 +65,7 @@ esac
 opts='-O3 -g0 -mllvm -polly -mllvm -polly-vectorizer=stripmine
     -fomit-frame-pointer -ffunction-sections -fdata-sections'
 
-{ cd .build; rm -rf *.o; clang $opts -c $(find ../src -type file -name '*.c'); } &
+#{ cd .build; rm -rf *.o; clang $opts -c $(find ../src -type file -name '*.c'); } &
 #clang $opts -c src/sha3iuf.c -o .build/c.o &
 
 c3c compile src --cc "$(command -v clang)" -O0 -g0 --single-module=yes \
@@ -77,4 +73,4 @@ c3c compile src --cc "$(command -v clang)" -O0 -g0 --single-module=yes \
 
 [ "$(uname -s)" = "Darwin" ] && gc=-dead_strip || gc=--gc-sections
 clang $opts -fuse-ld="$(command -v ld64.lld)" -flto=thin -Wl,$gc \
-    .build/llvm/*/direntries.ll .build/*.o -o .build/fin
+    .build/llvm/*/*.ll -o .build/fin

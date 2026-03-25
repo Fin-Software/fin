@@ -2,10 +2,7 @@
 // Copyright © 2025 The Fin Authors. All rights reserved.
 
 module direntries;
-import std::sort;
-import std::io::file;
-import std::io::path;
-import std::collections::list;
+import std::sort, std::io::file, std::io::path, std::collections::list;
 
 const PATH_MAX = 512;
 
@@ -24,34 +21,34 @@ fn void? DirEntries.init(&de, String path, bool include_hidden, Allocator ally) 
 	de.push_dir(path.len ? path : ".")!;
 }
 fn DirEntry? DirEntries.next(&de) {
-	@sfba(PATH_MAX, de.alloc; Allocator tmp) {
-		while (de.stack.len()) {
-			DirFrame* top = &de.stack.entries[de.stack.len() - 1];
-			if (top.id < top.entries.len()) {
-				Entry e = top.entries.entries[top.id];
-				top.id++;
+	while (de.stack.len()) {
+		DirFrame* top = &de.stack.entries[de.stack.len() - 1];
+		if (top.id < top.entries.len()) {
+			Entry e = top.entries.entries[top.id];
+			top.id++;
 
-				DirEntry ret = { .base = top.base, .name = e.name, .is_dir = e.is_dir };
-				if (e.is_dir) de.push_dir(join_a_path(tmp, top.base, e.name))!;
-				return ret;
-			} else {
-				de.free_frame(top);
-				de.stack.pop()!;
-				continue;
+			DirEntry ret = { .base = top.base, .name = e.name, .is_dir = e.is_dir };
+			if (e.is_dir) {
+				@sfba(PATH_MAX, de.alloc; Allocator tmp) {
+					de.push_dir(join_a_path(tmp, top.base, e.name))!;
+				};
 			}
+			return ret;
+		} else {
+			de.free_frame(top);
+			de.stack.pop()!;
+			continue;
 		}
-	};
+	}
 	NO_MORE_ELEMENT~!;
 }
 fn void? DirEntries.traverse(&de, DirFrame* frame) {
-	@sfba(PATH_MAX, de.alloc; Allocator tmp) {
+	@sfba(PATH_MAX*2, de.alloc; Allocator tmp) {
 		PathList list = path::ls(tmp, { frame.base, path::DEFAULT_ENV, tmp })!;
 		foreach (&path : list) {
 			String str = path.str_view();
 			if (!de.include_hidden && str[0] == '.') continue;
-			String full = join_a_path(tmp, frame.base, str);
-			bool is_dir = file::is_dir(full);
-			allocator::free(tmp, full);
+			bool is_dir = file::is_dir(join_a_path(tmp, frame.base, str));
 			frame.entries.push({ .name = str.copy(de.alloc), .is_dir = is_dir });
 		}
 	};
@@ -102,15 +99,20 @@ fn isz entry_cmp(Entry* a, Entry* b) @private => a.name.compare_to(b.name);
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 module main;
-import direntries, std::io, std::thread, std::encoding::base64;
+import direntries, std::io, std::thread, std::crypto::sha3, std::encoding::base64;
 
-fn int stdinReader(void* arg) {
-	@pool_init(mem, 8<<10) {
-		
+const HASH_LEN = 32;
+struct ReaderArgs { BufChan ch; String wd; }
+faultdef MISSING_WORKING_DIR_ARG, TOO_MANY_ARGS;
+alias BufChan = channel::BufferedChannel{char[]};
+
+fn int treeReader(void* arg) {
+	@pool_init(mem, 4<<10) {
+
 	BufChan ch = (BufChan)((ReaderArgs*)arg).ch;
 	String wd = (String)((ReaderArgs*)arg).wd;
 	usz wd_len = wd.len;
-	
+
 	DirEntries de @noinit;
 	de.init(wd, true, mem)!!;
 	while (try entry = de.next()) {
@@ -120,35 +122,35 @@ fn int stdinReader(void* arg) {
 		if (base.len) {
 			base = base[1..];
 			mem::copy(path[..base.len], base, base.len);
-			path[base.len] = path::PREFERRED_SEPARATOR;
+			path[base.len] = '/';
 		}
 		mem::copy(path[base.len..], entry.name, entry.name.len);
 		$if env::WIN32:
-			foreach (i, c : path) if (c == path::PREFERRED_SEPARATOR) path[i] = path::PREFERRED_SEPARATOR_POSIX;
+			foreach (i, c : path) if (c == '\\') path[i] = '/';
 		$endif
 		path[^1] = '\n';
 		ch.push(path)!!;
 		if (entry.is_dir) continue;
-		
+
+		File f;
 		direntries::@sfba(direntries::PATH_MAX, mem; Allocator tmp) {
-			String full = direntries::join_a_path(tmp, entry.base, entry.name);
-			File f = file::open(full, "r")!!;
-			usz size = f.size()!!;
-			defer (void)f.close();
-			
-			while (size) {
-				usz n = min(size, 64<<10);
-				char[] slice = allocator::malloc(mem, n)[:n];
-				size -= n;
-				usz wr = 0;
-				do {
-					usz r = f.read(slice[wr..])!!;
-					if (r == 0) io::UNEXPECTED_EOF~!!;
-					wr += r;
-				} while (wr < n);
-				ch.push(slice)!!;
-			}
+			f = file::open(direntries::join_a_path(tmp, entry.base, entry.name), "r")!!;
 		};
+		usz size = f.size()!!;
+		defer (void)f.close();
+
+		while (size) {
+			usz n = min(size, 64<<10);
+			char[] slice = allocator::malloc(mem, n)[:n];
+			size -= n;
+			usz wr = 0;
+			do {
+				usz r = f.read(slice[wr..])!!;
+				if (!r) io::UNEXPECTED_EOF~!!;
+				wr += r;
+			} while (wr < n);
+			ch.push(slice)!!;
+		}
 	}
 	ch.close();
 	return 0;
@@ -156,30 +158,22 @@ fn int stdinReader(void* arg) {
 	};
 }
 
-const HASH_LEN = 32;
-extern fn void sha3_Init(void* state, uint bitSize);
-extern fn void sha3_Update(void* state, void* bufIn, usz len);
-extern fn void* sha3_Final(void* state) @cname("sha3_Finalize");
-
 fn int sha3Hasher(void* arg) {
-	char[224] state @noinit;
-	sha3_Init(&state, HASH_LEN*8);
 	BufChan ch = (BufChan)arg;
+	Sha3{HASH_LEN*8} state;
+	state.init();
 	while (try buf = ch.pop()) {
-		sha3_Update(&state, buf.ptr, buf.len);
+		state.update(buf[..]);
 		allocator::free(mem, buf);
 	}
-	char[HASH_LEN]* digest = sha3_Final(&state);
+	char[HASH_LEN] digest @noinit;
 	char[(HASH_LEN+2)/3*4 + 1] hash @noinit;
-	base64::encode_buffer(digest, &hash);
+	state.final(digest[..]);
+	base64::encode_buffer(&digest, &hash);
 	hash[^1] = '\n';
 	io::stdout().write(hash[..])!!;
 	return 0;
 }
-
-struct ReaderArgs { BufChan ch; String wd; }
-alias BufChan = channel::BufferedChannel{char[]};
-faultdef MISSING_WORKING_DIR_ARG, TOO_MANY_ARGS;
 
 fn int main(String[] args) {
 	switch (args.len) {
@@ -190,11 +184,11 @@ fn int main(String[] args) {
 	String wd = path::normalize(args[1])!!;
 
 	BufChan ch;
-	ch.init(mem, 32)!!;
+	ch.init(mem, 16)!!;
 	ReaderArgs ra = {ch, wd};
 
 	Thread readert, hashert;
-	readert.create(&stdinReader, (void*)&ra)!!;
+	readert.create(&treeReader, (void*)&ra)!!;
 	hashert.create(&sha3Hasher, (void*)ch)!!;
 
 	readert.join()!!;
