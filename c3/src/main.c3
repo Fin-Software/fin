@@ -116,19 +116,17 @@ fn int treeReader(void* arg) {
 	DirEntries de @noinit;
 	de.init(wd, true, mem)!!;
 	while (try entry = de.next()) {
-		String base = entry.base[wd_len..];
-		usz path_len = entry.name.len + base.len + 1;
-		char[] path = allocator::malloc(mem, path_len)[:path_len];
+		String base = entry.base.len > wd_len ? entry.base[wd_len + 1..] : "";
+		usz off = base.len ? base.len + 1 : 0;
+		char[] path = allocator::malloc(mem, off+entry.name.len)[:off+entry.name.len];
 		if (base.len) {
-			base = base[1..];
-			mem::copy(path[..base.len], base, base.len);
+			mem::copy(path, base, base.len);
 			path[base.len] = '/';
 		}
-		mem::copy(path[base.len..], entry.name, entry.name.len);
+		mem::copy(path[off..], entry.name, entry.name.len);
 		$if env::WIN32:
 			foreach (i, c : path) if (c == '\\') path[i] = '/';
 		$endif
-		path[^1] = '\n';
 		ch.push(path)!!;
 		if (entry.is_dir) continue;
 
