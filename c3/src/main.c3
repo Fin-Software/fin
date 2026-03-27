@@ -23,22 +23,18 @@ fn void? DirEntries.init(&de, String path, bool include_hidden, Allocator ally) 
 fn DirEntry? DirEntries.next(&de) {
 	while (de.stack.len()) {
 		DirFrame* top = &de.stack.entries[de.stack.len() - 1];
-		if (top.id < top.entries.len()) {
-			Entry e = top.entries.entries[top.id];
-			top.id++;
-
-			DirEntry ret = { .base = top.base, .name = e.name, .is_dir = e.is_dir };
-			if (e.is_dir) {
-				@sfba(PATH_MAX, de.alloc; Allocator tmp) {
-					de.push_dir(join_a_path(tmp, top.base, e.name))!;
-				};
-			}
-			return ret;
-		} else {
+		if (top.id >= top.entries.len()) {
 			de.free_frame(top);
 			de.stack.pop()!;
 			continue;
 		}
+		Entry e = top.entries.entries[top.id++];
+		DirEntry ret = { .base = top.base, .name = e.name, .is_dir = e.is_dir };
+		if (e.is_dir) {
+			@sfba(PATH_MAX, de.alloc; Allocator tmp)
+				{ de.push_dir(join_a_path(tmp, top.base, e.name))!; };
+		}
+		return ret;
 	}
 	NO_MORE_ELEMENT~!;
 }
@@ -107,7 +103,7 @@ faultdef MISSING_WORKING_DIR_ARG, TOO_MANY_ARGS;
 alias BufChan = channel::BufferedChannel{char[]};
 
 fn int treeReader(void* arg) {
-	@pool_init(mem, 4<<10) {
+	@pool_init(mem, 1<<10) {
 
 	BufChan ch = (BufChan)((ReaderArgs*)arg).ch;
 	String wd = (String)((ReaderArgs*)arg).wd;
@@ -115,14 +111,14 @@ fn int treeReader(void* arg) {
 
 	DirEntries de @noinit;
 	de.init(wd, true, mem)!!;
+	defer de.deinit();
+	
 	while (try entry = de.next()) {
-		String base = entry.base.len > wd_len ? entry.base[wd_len + 1..] : "";
-		usz off = base.len ? base.len + 1 : 0;
+		String base = entry.base.len > wd_len ? entry.base[wd_len+1..] : "";
+		usz off = base.len + (base.len ? 1 : 0);
 		char[] path = allocator::malloc(mem, off+entry.name.len)[:off+entry.name.len];
-		if (base.len) {
-			mem::copy(path, base, base.len);
-			path[base.len] = '/';
-		}
+
+		if (base.len) { mem::copy(path, base, base.len); path[base.len] = '/'; }
 		mem::copy(path[off..], entry.name, entry.name.len);
 		$if env::WIN32:
 			foreach (i, c : path) if (c == '\\') path[i] = '/';
@@ -130,23 +126,15 @@ fn int treeReader(void* arg) {
 		ch.push(path)!!;
 		if (entry.is_dir) continue;
 
-		File f;
-		direntries::@sfba(direntries::PATH_MAX, mem; Allocator tmp) {
-			f = file::open(direntries::join_a_path(tmp, entry.base, entry.name), "r")!!;
-		};
-		usz size = f.size()!!;
-		defer (void)f.close();
+		File file;
+		direntries::@sfba(direntries::PATH_MAX, mem; Allocator tmp)
+			{ file = file::open(direntries::join_a_path(tmp, entry.base, entry.name), "r")!!; };
+		defer (void)file.close();
 
-		while (size) {
-			usz n = min(size, 64<<10);
+		for (usz size = file.size()!!, usz n @noinit; size; size -= n) {
+			n = min(size, 64<<10);
 			char[] slice = allocator::malloc(mem, n)[:n];
-			size -= n;
-			usz wr = 0;
-			do {
-				usz r = f.read(slice[wr..])!!;
-				if (!r) io::UNEXPECTED_EOF~!!;
-				wr += r;
-			} while (wr < n);
+			io::read_all(&file, slice)!!;
 			ch.push(slice)!!;
 		}
 	}
