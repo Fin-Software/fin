@@ -10,7 +10,7 @@ struct Entry @private { String name; bool is_dir; }
 
 struct DirEntry { String base; String name; bool is_dir; }
 
-struct DirFrame @private { List{Entry} entries; String base; uint id; }
+struct DirFrame @private { List{Entry} entries; String base; int id; }
 
 struct DirEntries { Allocator alloc; List{DirFrame} stack; bool include_hidden; }
 
@@ -75,7 +75,7 @@ macro void @sfba(usz $size, Allocator fb; @body(Allocator sfba)) {
 	@body(&ally);
 }
 fn String join_a_path(Allocator ally, String base, String name) {
-	usz len = base.len + 1 + name.len;
+	isz len = base.len + 1 + name.len;
 	char* buf = allocator::malloc(ally, len);
 	mem::copy(buf, base.ptr, base.len);
 	buf[base.len] = path::PREFERRED_SEPARATOR;
@@ -83,12 +83,9 @@ fn String join_a_path(Allocator ally, String base, String name) {
 	return (String)buf[:len];
 }
 fn isz String.compare_to(s, String b) {
-	usz min_len = min(s.len, b.len);
-	for (usz i; i < min_len; i++) {
-		int diff = s[i] - b[i];
-		if (diff != 0) return (isz)diff;
-	}
-	return (isz)s.len - (isz)b.len;
+    isz len = min(s.len, b.len);
+    for (isz i; i < len; i++) { int diff = s[i] - b[i]; if (diff != 0) return diff; }
+    return (isz)s.len - (isz)b.len;
 }
 fn isz entry_cmp(Entry* a, Entry* b) @private => a.name.compare_to(b.name);
 
@@ -107,15 +104,13 @@ fn int treeReader(void* arg) {
 
 	BufChan ch = (BufChan)((ReaderArgs*)arg).ch;
 	String wd = (String)((ReaderArgs*)arg).wd;
-	usz wd_len = wd.len;
-
 	DirEntries de @noinit;
 	de.init(wd, true, mem)!!;
 	defer de.deinit();
 	
 	while (try entry = de.next()) {
-		String base = entry.base.len > wd_len ? entry.base[wd_len+1..] : "";
-		usz off = base.len + (base.len ? 1 : 0);
+		String base = entry.base.len > wd.len ? entry.base[wd.len+1..] : "";
+		isz off = base.len + (base.len ? 1 : 0);
 		char[] path = allocator::malloc(mem, off+entry.name.len)[:off+entry.name.len];
 
 		if (base.len) { mem::copy(path, base, base.len); path[base.len] = '/'; }
@@ -131,8 +126,8 @@ fn int treeReader(void* arg) {
 			{ file = file::open(direntries::join_a_path(tmp, entry.base, entry.name), "r")!!; };
 		defer (void)file.close();
 
-		for (usz size = file.size()!!, usz n @noinit; size; size -= n) {
-			n = min(size, 64<<10);
+		for (long size = file.size()!!, int n @noinit; size; size -= n) {
+			n = (int)min(size, 64<<10);
 			char[] slice = allocator::malloc(mem, n)[:n];
 			io::read_all(&file, slice)!!;
 			ch.push(slice)!!;
