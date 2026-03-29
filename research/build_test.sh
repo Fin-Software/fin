@@ -1,1 +1,0 @@
-clang-20 -O3 research/test.c -o .build/test

@@ -189,3 +189,13 @@ impl Writer:
 u8 Main() return 0 fin
 
 ;; This file is currently a mess.
+
+u8 i8 char
+u16 i16
+uint int
+u64 i64
+u128 i128
+uptr iptr
+f16 bf16
+f32
+f64
