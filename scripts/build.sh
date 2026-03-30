@@ -5,11 +5,8 @@
 # Contributors responsible for this file:
 # @p7r0x7 <mattrbonnette@pm.me>
 
-set -eu
-opts='-O3 -g0 -mllvm -polly -mllvm -polly-vectorizer=stripmine
-    -fomit-frame-pointer -ffunction-sections -fdata-sections'
-
-#{ cd .build; rm -rf *.o; clang $opts -c $(find ../src -type file -name '*.c'); } &
+set -eu; opts='-O3 -g0 -mllvm -polly -mllvm -polly-vectorizer=stripmine'
+#{ cd .build; rm -rf *.o; clang $opts -c $(find src -type file -name '*.c'); } &
 #clang $opts -c src/sha3iuf.c -o .build/c.o &
 
 c3c compile hash.c3 --cc "$(command -v clang)" -O0 -g0 --single-module=yes \
@@ -20,90 +17,74 @@ clang $opts -fuse-ld="$(command -v ld64.lld)" -flto=thin -Wl,$gc \
     .build/llvm/*/direntries.ll -o .build/fin
 exit 0
 
-
-supported='
-    android/arm64
-    darwin/arm64
-    linux/arm64
-    linux/riscv64
-    linux/x64
-    windows/arm64
-    windows/x64'
-
+supported='android/arm64 darwin/arm64 linux/arm64 linux/riscv64 linux/x64 windows/arm64 windows/x64'
 # fin also supports wasi/wasm and wasi/wasm64, but cannot be hosted on them
 
 help() {
+	[ $# = 2 ] && printf 'error %s\n\n' "$2" >&2
     printf '%s\n' \
         'Usage: scripts/build.sh' \
         '       scripts/build.sh <debug|safe> <target>' \
-        ''
-    printf '       %s\n' $supported ''
+        '' >&2
+    printf '       %s\n' $supported '' >&2
     exit $1
-}
-build() {
-    set -eu; install='install -dm 0755'; $install .build
-    case "$target" in
-        android/arm64) target=android-aarch64 ;;
-        darwin/arm64)  target=macos-aarch64 ;;
-        linux/arm64)   target=linux-aarch64 ;;
-        linux/riscv64) target=linux-riscv64 ;;
-        linux/x64)     target=linux-x64 ;;
-        windows/arm64) target=windows-aarch64 ;;
-        windows/x64)   target=windows-x64 ;;
-        *) printf ''
-    esac
-
-    [ -n "${target-}" ] || target=
 }
 
 settings() {
-	case "$#" in
-    0) mode=safe target= ;;
-    2) mode="$1" target="$2" ;;
-    *) help 1 ;;
-esac
-	case "$mode" in
-		safe|debug) ;;
-		*) help 1 ;;
-	esac
-	case "$target" in
-		'') {
-
-os=$(uname -s 2>/dev/null | tr '[:upper:]' '[:lower:]')
-arch=$(uname -m 2>/dev/null | tr '[:upper:]' '[:lower:]')
-
-# Detect Android specifically
-if [ -f /system/build.prop ] || [ -f /vendor/build.prop ]; then
-    os=android
-fi
-
-# Normalize architecture names
-case "$arch" in
-    x86_64|amd64) arch=x64 ;;
-    aarch64|arm64) arch=arm64 ;;
-    riscv64)       arch=riscv64 ;;
-esac
-
-# Map to your target strings
-case "$os/$arch" in
-    android/arm64) target=android-aarch64 ;;
-    darwin/arm64)  target=macos-aarch64 ;;
-    linux/arm64)   target=linux-aarch64 ;;
-    linux/riscv64) target=linux-riscv64 ;;
-    linux/x64)     target=linux-x64 ;;
-    *)             target=unknown ;;
-esac
-
-		} ;;
-        android/arm64) target=android-aarch64 ;;
-        darwin/arm64)  target=macos-aarch64 ;;
-        linux/arm64)   target=linux-aarch64 ;;
-        linux/riscv64) target=linux-riscv64 ;;
-        linux/x64)     target=linux-x64 ;;
-        windows/arm64) target=windows-aarch64 ;;
-        windows/x64)   target=windows-x64 ;;
-        *) printf ''
+	set -eu; umask 0022; tabs -4
+	for arg in "$@"; do case "$arg" in -h|--help) help 0 ;; esac; done
+	case $# in
+    0) 
+    	os=$(uname -s 2>/dev/null | tr '[:upper:]' '[:lower:]')
+        arch=$(uname -m 2>/dev/null | tr '[:upper:]' '[:lower:]')
+        [ -f /system/build.prop ] || [ -f /vendor/build.prop ] && os=android
+        case "$arch" in x86_64|amd64) arch=x64 ;; aarch64) arch=arm64 ;; esac
+       	mode=safe target="$os/$arch" ;;
+    2)
+    	mode="$1" target="$2" 
+     	case "$mode" in safe|debug) ;; *) help 1 'mode must be either safe or debug' ;; esac ;;
+    *)
+    	help 1 'invalid argument count' ;;
     esac
+    case "$target" in
+        android/arm64) triple=aarch64-linux-android ;;
+        darwin/arm64)  triple=aarch64-apple-macosx ;;
+        linux/arm64)   triple=aarch64-linux-gnu ;;
+        linux/riscv64) triple=riscv64-linux-gnu ;;
+        linux/x64)     triple=x86_64-linux-gnu ;;
+        windows/arm64) triple=aarch64-windows-msvc ;;
+        windows/x64)   triple=x86_64-windows-msvc ;;
+        *) help 1 "$(printf 'target %s unsupported' "$target" )" ;;
+    esac
+    target=$(printf '%s' "$target" | tr '/' '-')
 }
 
-set -eu; settings "$@"; build
+c3build() {
+	
+}
+
+libs() {
+	flags='-pipe -flto=thin -fno-omit-frame-pointer -mllvm -polly -mllvm -polly-vectorizer=stripmine'
+    case ${target%%-*} in
+    	darwin) set -- -DCMAKE_OSX_SYSROOT="$(xcrun --show-sdk-path)" -DCMAKE_LINKER="$(command -v ld64.lld)" ;;
+    	android|linux) set -- -DCMAKE_LINKER="$(command -v ld.lld)" ;;
+    esac
+    set -- -Wno-dev -G Ninja "$@" \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_AR="$(command -v llvm-ar)" \
+        -DCMAKE_LINKER="$(command -v $lld)" \
+        -DCMAKE_C_COMPILER="$(command -v clang)" \
+        -DCMAKE_CXX_COMPILER="$(command -v clang++)" \
+        -DCMAKE_EXE_LINKER_FLAGS_RELEASE="-O3" \
+        -DCMAKE_CXX_FLAGS_RELEASE="-O3 $flags" \
+        -DCMAKE_C_FLAGS_RELEASE="-O3 $flags" \
+        -DCMAKE_OBJCOPY=false \
+        -DCMAKE_RANLIB=false \
+        -DCMAKE_NM=false
+}
+
+build() {
+    install='install -dm 0755'; $install .build
+}
+
+settings "$@"; libs; build
