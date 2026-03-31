@@ -3,9 +3,6 @@ set -eu; umask 0022; tabs -4; install='install -dm 0755'; $install .build
 polly="-mllvm -polly -mllvm -polly-vectorizer=stripmine"
 flags="-pipe -flto=thin"
 
-buildzstd=.build/.build-zstd
-prefixzstd=.build/.install-zstd
-
 set -- -Wno-dev -G Ninja \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_AR="$(command -v llvm-ar)" \
@@ -22,6 +19,9 @@ set -- -Wno-dev -G Ninja \
     -DCMAKE_OBJCOPY=false \
     -DCMAKE_RANLIB=false \
     -DCMAKE_NM=false
+
+buildzstd=.build/.build-zstd
+prefixzstd=.build/.install-zstd
 
 $install $buildzstd; cmake -S vendor/zstd-*/build/cmake -B $buildzstd "$@" \
     -DZSTD_MULTITHREAD_SUPPORT=ON \
