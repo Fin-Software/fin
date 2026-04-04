@@ -31,9 +31,10 @@ semv=22.1.2 base=llvm-project-$semv.src.tar.xz url=github.com/llvm/llvm-project/
         */test */unittests llvm/benchmarks polly/lib/External/isl/test_inputs) $($print '-xr!%s ' Maintainers.*  \
         CREDITS.* *.png *.bmp .*) $($print '*/%s ' $deps) >/dev/null
 
-    cd $vend; mv llvm-project-$semv.src llvm-$semv; sed -i '' '982,986d' llvm-$semv/llvm/CMakeLists.txt
+    cd $vend; mv llvm-project-$semv.src llvm-$semv
     _guard='s|^[[:space:]]*add_subdirectory[[:space:]]*\(([^)]+)\)|if(EXISTS  '
     _guard=$_guard'"${CMAKE_CURRENT_SOURCE_DIR}/\1")\n  add_subdirectory(\1)\nendif()|'
+    sed -i '' '/# Use libtool instead of ar/{N;N;N;N;d;}' llvm-$semv/llvm/CMakeLists.txt
     $find llvm-$semv -name CMakeLists.txt -exec sed -i '' -E "$_guard" {} +; set +f
 ) &
 
@@ -57,7 +58,7 @@ semv=1.3.2 base=zlib-$semv.tar.xz url=github.com/madler/zlib/releases/download/v
     get d60ffcfad05908d1efb932177340d2c80c9db123cf9eadff5657945f214a2214; set -f
         szip e -so $srcs/$base | szip x -o$vend -si -ttar >/dev/null  # 7zip refused to cooperate
         
-        $find $vend/zlib-$semv -maxdepth 1 -mindepth 1 ! \( -name *.c -o -name *.h -o -name *in -o -name \
+        $find $vend/zlib-$semv -maxdepth 1 ! \( -name *.c -o -name *.h -o -name *in -o -name \
         CMakeLists.txt \) -exec $rm {} +; set +f
 ) &
 
