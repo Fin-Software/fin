@@ -9,6 +9,8 @@
 # And for security reasons, only @p7r0x7 may sign and push commits changing vendor.sh and vendor/.
 # I refactor this mostly for the joy of programming, but now it's hyper optimized.
 
+command -v gsed >/dev/null && sed=gsed || sed=sed
+$sed -i '' '' /dev/null 2>/dev/null && sed="$sed -i ''" || sed="$sed -i"
 srcs=/tmp/fin/srcs vend=${srcs%/*}vend install='install -dm 0755' print='printf --' rm='rm -rf --'
 command -v 7zz >/dev/null && zip=7zz || zip=7z; command -v gfind >/dev/null && find=gfind || find=find
 
@@ -34,8 +36,8 @@ semv=22.1.2 base=llvm-project-$semv.src.tar.xz url=github.com/llvm/llvm-project/
     cd $vend; mv llvm-project-$semv.src llvm-$semv
     _guard='s|^[[:space:]]*add_subdirectory[[:space:]]*\(([^)]+)\)|if(EXISTS  '
     _guard=$_guard'"${CMAKE_CURRENT_SOURCE_DIR}/\1")\n  add_subdirectory(\1)\nendif()|'
-    sed -i '' '/# Use libtool instead of ar/{N;N;N;N;d;}' llvm-$semv/llvm/CMakeLists.txt
-    $find llvm-$semv -name CMakeLists.txt -exec sed -i '' -E "$_guard" {} +; set +f
+    $sed '/# Use libtool instead of ar/{N;N;N;N;d;}' llvm-$semv/llvm/CMakeLists.txt
+    $find llvm-$semv -name CMakeLists.txt -exec $sed -E "$_guard" {} +; set +f
 ) &
 
 semv=master base=LRSTAR-$semv.tar.gz url=github.com/p7r0x7/LRSTAR/archive/${base#*-}
@@ -57,8 +59,8 @@ semv=1.3.2 base=zlib-$semv.tar.xz url=github.com/madler/zlib/releases/download/v
 (
     get d60ffcfad05908d1efb932177340d2c80c9db123cf9eadff5657945f214a2214; set -f
         szip e -so $srcs/$base | szip x -o$vend -si -ttar >/dev/null  # 7zip refused to cooperate
-        
-        $find $vend/zlib-$semv -maxdepth 1 ! \( -name *.c -o -name *.h -o -name *in -o -name \
+
+        $find $vend/zlib-$semv -maxdepth 1 -mindepth 1 ! \( -name *.c -o -name *.h -o -name *in -o -name \
         CMakeLists.txt \) -exec $rm {} +; set +f
 ) &
 
