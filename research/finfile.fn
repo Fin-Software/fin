@@ -3,60 +3,46 @@
 ;; Contributors responsible for this file:
 ;; @p7r0x7 <mattrbonnette@pm.me>
 
-;; std/constraints
+module std\constraints
 
-trait SignedMath {}
-trait Fundamental {}
-trait UnsignedMath {}
-trait Integer: Scalar {}
-trait Scalar: Fundamental {}
-trait Float: Scalar, SignedMath {}
-trait SignedInt: Integer, SignedMath {}
-trait UnsignedInt: Integer, UnsignedMath {}
+interface Scalar {}
+interface Float: Scalar {}
+interface Integer: Scalar {}
+interface SignedInt: Integer {}
+interface UnsignedInt: Integer {}
 
-impl Scalar for (bool)
-impl Float for (f16, bf16, f32, f64)
-impl SignedInt for (i8, i16, i32, i64, i128, iptr)
-impl UnsignedInt for (u8, char, u16, u32, rune, u64, u128, uptr)
+extend bool                                       { impl Scalar: }
+extend f16, bf16, f32, f64                        { impl Float: }
+extend i8, i16, int, i64, i128, word              { impl SignedInt: }
+extend u8, char, u16, int, rune, u64, u128, uword { impl UnsignedInt: }
 
-;; fin
-;; std/env
+
+module std\env
 
 SupportedTargets (Host, Arch)[_] = {
-    (.android,      .arm64),
-    (.darwin,       .arm64),
-    (.freestanding, .arm64),
-    (.freestanding, .loong64),
-    (.freestanding, .riscv64),
-    (.freestanding, .x64),
-    (.freestanding, .wasm),
-    (.freestanding, .wasm64),
-    (.freebsd,      .arm64),
-    (.freebsd,      .riscv64),
-    (.freebsd,      .x64),
-    (.linux,        .arm64),
-    (.linux,        .loong64),
-    (.linux,        .riscv64),
-    (.linux,        .x64),
-    (.windows,      .arm64),
-    (.windows,      .x64),
+    (.android, .arm64),
+    (.darwin,  .arm64),
+    (.linux,   .arm64),
+    (.linux,   .riscv64),
+    (.linux,   .x64),
+    (.wasi,    .wasm),
+    (.wasi,    .wasm64),
+    (.windows, .arm64),
+    (.windows, .x64),
 }
-enum Host { freestanding, android, windows, freebsd, darwin, linux }
-enum Arch { x64, loong64, riscv64, arm64, wasm64, wasm }
+enum Arch { x64, riscv64, arm64, wasm64, wasm }
+enum Host { android, darwin, linux, windows }
 enum Mode { debug, jit, safe, fast, tiny }
 
-;; fin
-;; std/debug
+
+module std\debug
 
 void Assert(ok bool) inline  ;; unreachable alone doesn't require a function be marked as divergent
-    switch (env.Mode)
-        case .debug, .jit, .safe: if (!ok) unreachable fin
-        case .fast, .tiny:
-    fin
+    if (!ok) unreachable fin
 fin
 
-;; fin
-;; std/encoding/utf8
+
+module std\encoding\utf8
 
 runeLen u8[256] = {
     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
@@ -78,54 +64,74 @@ runeLen u8[256] = {
 }
 
 
+module std\mem
+
+u8 alias[] sliceToBytesZC[T any](slice T alias[]) inline
+    if (slice.len == 0) return {} fin
+    return ((u8 alias*)&slice[0])[..slice[0].sizeof*slice.len]
+fin
+
+u8 alias[] toBytesZC[T any](memory T alias*) inline
+    size := (*memory).sizeof; if (size == 0) return {} fin
+    return ((u8 alias*)memory)[..size]
+fin
 
 
-;; fin
-;; std/mem
+module std\mem\alloc
 
-trait Copyable {}
-
-trait Allocator {
+dyn interface Allocator {
 
 }
 
-u8 alias[] sliceToBytesZC(slice Copyable alias[]) inline
-    if (slice.len == 0) return {} fin
-    return ((u8 alias*)&slice[0])[..slice[0].sizeof*slice.len]
-fin
+;; Sourced
 
-u8 alias[] toBytesZC(memory Copyable alias*) inline
-    size := (*memory).sizeof; if (size == 0) return {} fin
-    return ((u8 alias*)memory)[..size]
-fin
+struct StandardAlloc {
 
-u8 alias[] mutSliceToBytesZC(slice Copyable alias[]) inline
-    if (slice.len == 0) return {} fin
-    return ((u8 alias*)&slice[0])[..slice[0].sizeof*slice.len]
-fin
+}
 
-u8 alias[] mutToBytesZC(memory Copyable alias*) inline
-    size := (*memory).sizeof; if (size == 0) return {} fin
-    return ((u8 alias*)memory)[..size]
-fin
+struct LibCAlloc {
 
-;; fin
-;; std/io
+}
 
-trait Reader {
-    needs u32! ReadSome(rd*, buf u8[])
+struct NullAlloc {
+
+}
+
+;; Higher-Order
+
+struct LIFOStackAlloc {
+
+}
+
+struct FragStackAlloc {
+
+}
+
+struct ReportingAlloc[SAFETY bool] {
+
+}
+
+struct ArenaAlloc {
+
+}
+
+
+module std\io
+
+interface Reader {
+    needs int! ReadSome(rd*, buf u8[])
 
     void! Read(rd*, buf u8[]) rd.ReadAtLeast(buf, buf.len)! fin
 
-    void! ReadAtLeast(rd*, buf u8[], len u32)
-        debug.Assert(buf.len < len)
-        r := 0; while (r < bytes.len)
+    void! ReadAtLeast(rd*, buf u8[], len int)
+        debug\Assert(buf.len < len)
+        r int = 0; while (r < bytes.len)
             r += rd.ReadSome(bytes[r..]) rescue |err| if (err != .EndOfFile or r < len) return err fin fin
         fin
     fin
 }
-trait Writer {
-    needs u32! WriteSome(wr*, bytes u8[])
+interface Writer {
+    needs int! WriteSome(wr*, bytes u8[])
 
     void! Write(wr*, bytes u8[])
         w := 0; while (w < bytes.len) w += wr.WriteSome(bytes[w..])! fin
@@ -133,22 +139,23 @@ trait Writer {
 
     void! Flush(_*) return fin
 
-    void! WriteChar(wr*, c char) wr.WriteSome(char[1]{c}[..])! fin
+    void! WriteChar(wr*, c char) wr.WriteSome({c}[..])! fin
 
-    u32! WriteRune(wr*, r rune)
-        ;; empty
+    int! WriteRune(wr*, r rune)
+        buf char[4] = noinit
+        n := utf8\EncodeRune(buf[..], r)!
+        wr.WriteSome(buf[..n])!
+        return n
     fin
 }
 
-struct BufferedWriter[INNER Writer, LEN u32: 4<<10] {
-    buf u8[LEN], inner INNER, end u32: 0,
-
-    #construct(inner INNER) return BufferedWriter{inner: inner} fin
+struct BufferedWriter[INNER Writer, LEN int: 4<<10] {
+    buf u8[LEN], inner Writer: INNER, end int: 0,
 
 impl Writer:
     void! Write(bw*, bytes u8[]) inline bw.WriteSome(bytes)! fin
 
-    u32! WriteSome(bw*, bytes u8[])
+    int! WriteSome(bw*, bytes u8[])
         if (bytes.len == 0) return 0 fin; end := bw.end; cap := LEN - end
 
         if (bytes.len >= cap)
@@ -174,28 +181,12 @@ impl Writer:
         bw.inner.Flush()!
     fin
 
-    void! Reinit(bw*, inner INNER)
-        debug.Assert(bw.end == 0); bw.inner = inner
+    void! Reinit(bw*, inner Writer)
+        debug\Assert(bw.end == 0); bw.inner = inner
     fin
 }
 
-extend foreign.Type {
-impl Writer:
 
-}
+module main
 
-;; fin
-
-u8 Main() return 0 fin
-
-;; This file is currently a mess.
-
-u8 i8 char
-u16 i16
-uint int
-u64 i64
-u128 i128
-uptr iptr
-f16 bf16
-f32
-f64
+u8 Main(args char[][]) return 0 fin
