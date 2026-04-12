@@ -75,19 +75,14 @@ macro void @sfba(usz $size, Allocator fb; @body(Allocator sfba)) {
 	@body(&ally);
 }
 fn String join_a_path(Allocator ally, String base, String name) {
-	isz len = base.len + 1 + name.len;
+	sz len = base.len + 1 + name.len;
 	char* buf = alloc::malloc(ally, len);
 	mem::copy(buf, base.ptr, base.len);
 	buf[base.len] = path::PREFERRED_SEPARATOR;
 	mem::copy(buf + base.len + 1, name.ptr, name.len);
 	return (String)buf[:len];
 }
-fn isz String.compare_to(s, String b) {
-    isz len = min(s.len, b.len);
-    for (isz i; i < len; i++) { int diff = s[i] - b[i]; if (diff != 0) return diff; }
-    return (isz)s.len - (isz)b.len;
-}
-fn isz entry_cmp(Entry* a, Entry* b) @private => a.name.compare_to(b.name);
+fn sz entry_cmp(Entry* a, Entry* b) @private => a.name.compare_to(b.name);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -110,7 +105,7 @@ fn int treeReader(void* arg) {
 
 	while (try entry = de.next()) {
 		String base = entry.base.len > wd.len ? entry.base[wd.len+1..] : "";
-		isz off = base.len + (base.len ? 1 : 0);
+		sz off = base.len + (base.len ? 1 : 0);
 		char[] path = alloc::malloc(mem, off+entry.name.len)[:off+entry.name.len];
 
 		if (base.len) { mem::copy(path, base, base.len); path[base.len] = '/'; }

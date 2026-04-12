@@ -26,18 +26,15 @@ get() {
 set -eu; umask 0022; $rm $vend; $install $srcs $vend vendor; cd vendor
 
 deps='clang cmake compiler-rt lld llvm openmp polly runtimes third-party'
-semv=22.1.2 base=llvm-project-$semv.src.tar.xz url=github.com/llvm/llvm-project/releases/download/llvmorg-$semv/$base
+semv=22.1.3 base=llvm-project-$semv.src.tar.xz url=github.com/llvm/llvm-project/releases/download/llvmorg-$semv/$base
 (
-    get e25036d460357ec4c542d5507feceb8a21d23f98f86234291a902392a8bcde07; set -f
+    get d548e9a3cf60faf343bec465ebce4d0b9875e9de8ffe46697e7c1bb22088b194; set -f
         szip e -so $srcs/$base | szip x -o$vend -si -ttar $($print '-x!*/%s ' */bindings */docs */www */examples \
         */test */unittests llvm/benchmarks polly/lib/External/isl/test_inputs) $($print '-xr!%s ' Maintainers.*  \
         CREDITS.* *.png *.bmp .*) $($print '*/%s ' $deps) >/dev/null
 
     cd $vend; mv llvm-project-$semv.src llvm-$semv
-    _guard='s|^[[:space:]]*add_subdirectory[[:space:]]*\(([^)]+)\)|if(EXISTS  '
-    _guard=$_guard'"${CMAKE_CURRENT_SOURCE_DIR}/\1")\n  add_subdirectory(\1)\nendif()|'
-    $sed '/# Use libtool instead of ar/{N;N;N;N;d;}' llvm-$semv/llvm/CMakeLists.txt
-    $find llvm-$semv -name CMakeLists.txt -exec $sed -E "$_guard" {} +; set +f
+    $sed '/# Use libtool instead of ar/{N;N;N;N;d;}' llvm-$semv/llvm/CMakeLists.txt; set +f
 ) &
 
 semv=master base=LRSTAR-$semv.tar.gz url=github.com/p7r0x7/LRSTAR/archive/${base#*-}
@@ -60,8 +57,12 @@ semv=1.3.2 base=zlib-$semv.tar.xz url=github.com/madler/zlib/releases/download/v
     get d60ffcfad05908d1efb932177340d2c80c9db123cf9eadff5657945f214a2214; set -f
         szip e -so $srcs/$base | szip x -o$vend -si -ttar >/dev/null  # 7zip refused to cooperate
 
-        $find $vend/zlib-$semv -maxdepth 1 -mindepth 1 ! \( -name *.c -o -name *.h -o -name *in -o -name \
-        CMakeLists.txt \) -exec $rm {} +; set +f
+        cd $vend/zlib-$semv; echo 'set(_ ${CMAKE_CXX_COMPILER} ${CMAKE_CXX_FLAGS_RELEASE})' >>CMakeLists.txt
+        $find . -maxdepth 1 -mindepth 1 ! \( -name *.c -o -name *.h -o -name *in -o -name \
+        CMakeLists.txt -o -name LICENSE -o -name README \) -exec $rm {} +; set +f
 ) &
 
-wait; $find $vend -type d -empty -delete; for _dir in $vend/*; do $rm ${_dir##*/}; done; mv $vend/* .; rmdir $vend
+wait; _guard='s|^[[:space:]]*add_subdirectory[[:space:]]*\(([^)]+)\)|if(EXISTS '
+_guard=$_guard'"${CMAKE_CURRENT_SOURCE_DIR}/\1")\n  add_subdirectory(\1)\nendif()|'
+$find $vend -depth \( -name CMakeLists.txt -exec $sed -E "$_guard" {} + \) -o \( -type d -empty -delete \)
+for _dir in $vend/*; do $rm ${_dir##*/}; done; mv $vend/* .; rmdir $vend

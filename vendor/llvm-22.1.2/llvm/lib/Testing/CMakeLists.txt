@@ -1,6 +1,0 @@
-if(EXISTS  "${CMAKE_CURRENT_SOURCE_DIR}/Annotations")
-  add_subdirectory(Annotations)
-endif()
-if(EXISTS  "${CMAKE_CURRENT_SOURCE_DIR}/Support")
-  add_subdirectory(Support)
-endif()

@@ -1,0 +1,6 @@
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/llvm-dlltool")
+  add_subdirectory(llvm-dlltool)
+endif()
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/llvm-lib")
+  add_subdirectory(llvm-lib)
+endif()

@@ -155,7 +155,9 @@ endif ()
 #-----------------------------------------------------------------------------
 # Add source directories
 #-----------------------------------------------------------------------------
-add_subdirectory(lib)
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/lib")
+  add_subdirectory(lib)
+endif()
 
 option(ZSTD_PROGRAMS_LINK_SHARED "PROGRAMS LINK SHARED" OFF)
 
@@ -166,7 +168,9 @@ if (ZSTD_BUILD_PROGRAMS)
         message(SEND_ERROR "You need to build shared library to build zstd CLI")
     endif ()
 
-    add_subdirectory(programs)
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/programs")
+  add_subdirectory(programs)
+endif()
 endif ()
 
 if (ZSTD_BUILD_TESTS)
@@ -175,11 +179,15 @@ if (ZSTD_BUILD_TESTS)
         message(SEND_ERROR "You need to build static library to build tests")
     endif ()
 
-    add_subdirectory(tests)
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/tests")
+  add_subdirectory(tests)
+endif()
 endif ()
 
 if (ZSTD_BUILD_CONTRIB)
-    add_subdirectory(contrib)
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/contrib")
+  add_subdirectory(contrib)
+endif()
 endif ()
 
 #-----------------------------------------------------------------------------

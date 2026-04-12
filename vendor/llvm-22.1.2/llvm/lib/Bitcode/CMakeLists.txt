@@ -1,6 +1,0 @@
-if(EXISTS  "${CMAKE_CURRENT_SOURCE_DIR}/Reader")
-  add_subdirectory(Reader)
-endif()
-if(EXISTS  "${CMAKE_CURRENT_SOURCE_DIR}/Writer")
-  add_subdirectory(Writer)
-endif()
