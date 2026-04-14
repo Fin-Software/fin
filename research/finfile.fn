@@ -14,10 +14,10 @@ interface UnsignedInt: Integer {}
 extend bool                                       { impl Scalar: }
 extend f16, bf16, f32, f64                        { impl Float: }
 extend i8, i16, int, i64, i128, word              { impl SignedInt: }
-extend u8, char, u16, int, rune, u64, u128, uword { impl UnsignedInt: }
+extend u8, char, u16, u32, rune, u64, u128, uword { impl UnsignedInt: }
 
-
-module std\env
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+module std/env
 
 SupportedTargets (Host, Arch)[_] = {
     (.android, .arm64),
@@ -35,57 +35,79 @@ enum Host { android, darwin, linux, windows }
 enum Mode { debug, jit, safe, fast, tiny }
 
 
-module std\debug
+module std/debug
 
 void Assert(ok bool) inline  ;; unreachable alone doesn't require a function be marked as divergent
     if (!ok) unreachable fin
 fin
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+module std/encoding/utf8
 
-module std\encoding\utf8
+runeLen u8[256] = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+                    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+                    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+                    4, 4, 4, 4, 4, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, }
 
-runeLen u8[256] = {
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-    4, 4, 4, 4, 4, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-}
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+module std/mem
 
-
-module std\mem
-
-u8 alias[] sliceToBytesZC[T any](slice T alias[]) inline
+u8 alias[] SliceToBytesZC[T any](slice T alias[]) inline
     if (slice.len == 0) return {} fin
     return ((u8 alias*)&slice[0])[..slice[0].sizeof*slice.len]
 fin
 
-u8 alias[] toBytesZC[T any](memory T alias*) inline
+u8 alias[] ToBytesZC[T any](memory T alias*) inline
     size := (*memory).sizeof; if (size == 0) return {} fin
     return ((u8 alias*)memory)[..size]
 fin
 
-
-module std\mem\alloc
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+module std/mem/alloc
 
 dyn interface Allocator {
 
 }
 
-;; Sourced
+;; Higher-Order
 
 struct StandardAlloc {
+
+}
+
+struct LIFOStackAlloc {
+
+}
+
+struct FragStackAlloc {
+
+}
+
+enum ReportMode { .metrics, .safety, .metricsAndSafety }
+
+struct ReportAlloc[MODE ReportMode] {
+
+}
+
+struct ArenaAlloc {
+
+}
+
+;; Sourced
+
+struct PageAlloc {
 
 }
 
@@ -97,34 +119,16 @@ struct NullAlloc {
 
 }
 
-;; Higher-Order
-
-struct LIFOStackAlloc {
-
-}
-
-struct FragStackAlloc {
-
-}
-
-struct ReportingAlloc[SAFETY bool] {
-
-}
-
-struct ArenaAlloc {
-
-}
-
-
-module std\io
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+module std/io
 
 interface Reader {
     needs int! ReadSome(rd*, buf u8[])
 
-    void! Read(rd*, buf u8[]) rd.ReadAtLeast(buf, buf.len)! fin
+    void! Read(rd*, buf u8[]) inline rd.ReadAtLeast(buf, buf.len)! fin
 
     void! ReadAtLeast(rd*, buf u8[], len int)
-        debug\Assert(buf.len < len)
+        debug:Assert(buf.len < len)
         r int = 0; while (r < bytes.len)
             r += rd.ReadSome(bytes[r..]) rescue |err| if (err != .EndOfFile or r < len) return err fin fin
         fin
@@ -139,38 +143,87 @@ interface Writer {
 
     void! Flush(_*) return fin
 
-    void! WriteChar(wr*, c char) wr.WriteSome({c}[..])! fin
+    void! WriteChar(wr*, c char) inline wr.WriteSome({c}[..])! fin
 
     int! WriteRune(wr*, r rune)
+        if (r < 128) wr.WriteChar(r)!; return 1 fin
         buf char[4] = noinit
-        n := utf8\EncodeRune(buf[..], r)!
-        wr.WriteSome(buf[..n])!
+        n := utf8:EncodeRune(buf[..], r)!
+        wr.Write(buf[..n])!
         return n
     fin
 }
 
-struct BufferedWriter[INNER Writer, LEN int: 4<<10] {
-    buf u8[LEN], inner Writer: INNER, end int: 0,
+struct BufferedReader[RDT Reader, LEN int: 4<<10] {
+    buf u8[LEN], inner RDT, start, end int: 0,
+
+impl Reader:
+    void! Read(br*, buf u8[]) inline br.ReadSome(buf)! fin
+
+    int! ReadSome(br*, buf u8[])
+        if (buf.len == 0) return 0 fin; avail := br.end - br.start
+        if (avail > 0)
+            n := min(buf.len, avail)
+            mem:Copy(buf[..n], br.buf[br.start..br.start+n])
+            br.start += n
+            if (br.start == br.end) br.start = 0; br.end = 0 fin
+            return n
+        fin
+        if (buf.len >= LEN)
+            return br.inner.ReadSome(buf)!
+        fin
+        br.start = 0
+        br.end = br.inner.ReadSome(br.buf[..])!
+        n := min(buf.len, br.end)
+        mem:Copy(buf[..n], br.buf[..n])
+        br.start = n
+        if (br.start == br.end) br.start = 0; br.end = 0 fin
+        return n
+    fin
+
+    u8[]! Peek(br*, want int)
+        avail int = br.end - br.start
+        if (avail >= want) return br.buf[br.start..br.end] fin
+        if (br.start > 0)
+            mem:Copy(br.buf[..avail], br.buf[br.start..br.end])
+            br.start = 0; br.end = avail
+        fin
+        if (want > LEN) return .BufferTooSmall? fin
+        while (br.end < want)
+            n int = br.inner.ReadSome(br.buf[br.end..])!
+            if (n == 0) return error(.EndOfFile) fin
+            br.end += n
+        fin
+        return br.buf[br.start..br.end]
+    fin
+
+    void! Init(br*, inner RDT)
+        debug:Assert(br.start == 0 and br.end == 0); br.inner = inner
+    fin
+}
+
+struct BufferedWriter[LEN int: 4<<10] {
+    buf u8[LEN], inner Writer, end int: 0,
 
 impl Writer:
     void! Write(bw*, bytes u8[]) inline bw.WriteSome(bytes)! fin
 
     int! WriteSome(bw*, bytes u8[])
-        if (bytes.len == 0) return 0 fin; end := bw.end; cap := LEN - end
+        if (bytes.len == 0) return 0 fin; end int = bw.end; cap int = LEN - end
 
         if (bytes.len >= cap)
             if (end > 0)
-                @copy(bw.buf[end..LEN], bytes[..cap])
+                mem:Copy(bw.buf[end..LEN], bytes[..cap])
                 bw.inner.Write(bw.buf)!
             fin
-            full := (bytes.len - cap) / LEN * LEN
+            full int = (bytes.len - cap) / LEN * LEN
             if (full > 0) bw.inner.Write(bytes[cap..cap+full])! fin
 
-            tail := bytes.len - cap - full
-            if (tail > 0) @copy(bw.buf[..tail], bytes[bytes.len-tail..]) fin
+            tail int = bytes.len - cap - full
+            if (tail > 0) mem:Copy(bw.buf[..tail], bytes[bytes.len-tail..]) fin
             bw.end = tail
         else
-            @copy(bw.buf[end..end+bytes.len], bytes)
+            mem:Copy(bw.buf[end..end+bytes.len], bytes)
             bw.end = end + bytes.len
         fin
         return bytes.len
@@ -181,12 +234,12 @@ impl Writer:
         bw.inner.Flush()!
     fin
 
-    void! Reinit(bw*, inner Writer)
-        debug\Assert(bw.end == 0); bw.inner = inner
+    void! Init(bw*, inner Writer)
+        debug:Assert(bw.end == 0); bw.inner = inner
     fin
 }
 
-
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 module main
 
 u8 Main(args char[][]) return 0 fin
