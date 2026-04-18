@@ -2,11 +2,12 @@ ColumnLimit: 120
 IndentWidth: 4
 InsertNewlineAtEOF: true
 SortIncludes: CaseInsensitive
+ReflowComments: Never
 UseTab: Never
 ---
 Language: Cpp
 AlignAfterOpenBracket: BlockIndent
-AlignArrayOfStructures: Left
+AlignArrayOfStructures: Right
 AlignConsecutiveAssignments: None
 AlignConsecutiveBitFields: None
 AlignConsecutiveDeclarations: None
@@ -29,17 +30,21 @@ AllowShortFunctionsOnASingleLine: All
 AllowShortIfStatementsOnASingleLine: WithoutElse
 AllowShortLambdasOnASingleLine: All
 AllowShortLoopsOnASingleLine: true
+BinPackArguments: true
+BinPackParameters: true
 BreakAfterReturnType: None
 BreakBeforeBraces: Attach
 BreakBeforeBinaryOperators: NonAssignment
 BreakInheritanceList: AfterColon
 BreakStringLiterals: true
 IndentPPDirectives: BeforeHash
+PenaltyExcessCharacter: 10
 PointerAlignment: Left
-ReflowComments: false
+ReferenceAlignment: Left
 SpaceAfterCStyleCast: false
 SpaceAfterLogicalNot: false
 SpaceAfterTemplateKeyword: false
+SpaceAfterOperatorKeyword: false
 SpaceBeforeAssignmentOperators: true
 SpaceBeforeCaseColon: false
 SpaceBeforeCpp11BracedList: false
@@ -49,6 +54,5 @@ SpaceBeforeParens: ControlStatementsExceptControlMacros
 SpaceBeforeRangeBasedForLoopColon: false
 SpaceBeforeSquareBrackets: false
 SpaceInEmptyBlock: false
+SpacesInContainerLiterals: false
 SpacesInParens: Never
-
-PenaltyExcessCharacter: 10

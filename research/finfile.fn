@@ -1,7 +1,7 @@
-;; SPDX-License-Identifier: Apache-2.0
-;; Copyright © 2025 The Fin Authors. All rights reserved.
-;; Contributors responsible for this file:
-;; @p7r0x7 <mattrbonnette@pm.me>
+## SPDX-License-Identifier: Apache-2.0
+## Copyright © 2025 The Fin Authors. All rights reserved.
+## Contributors responsible for this file:
+## @p7r0x7 <mattrbonnette@pm.me>
 
 module std\constraints
 
@@ -37,7 +37,7 @@ enum Mode { debug, jit, safe, fast, tiny }
 
 module std/debug
 
-void Assert(ok bool) inline  ;; unreachable alone doesn't require a function be marked as divergent
+void Assert(ok bool) inline  ## unreachable alone doesn't require a function be marked as divergent
     if (!ok) unreachable fin
 fin
 
@@ -95,9 +95,9 @@ struct FragStackAlloc {
 
 }
 
-enum ReportMode { .metrics, .safety, .metricsAndSafety }
+enum AuditMode { .metrics, .safety, .metricsAndSafety }
 
-struct ReportAlloc[MODE ReportMode] {
+struct AuditAlloc[MODE AuditMode] {
 
 }
 
@@ -127,11 +127,12 @@ interface Reader {
 
     void! Read(rd*, buf u8[]) inline rd.ReadAtLeast(buf, buf.len)! fin
 
-    void! ReadAtLeast(rd*, buf u8[], len int)
-        debug:Assert(buf.len < len)
-        r int = 0; while (r < bytes.len)
-            r += rd.ReadSome(bytes[r..]) rescue |err| if (err != .EndOfFile or r < len) return err fin fin
+    int! ReadAtLeast(rd*, buf u8[], len int)
+        debug:Assert(buf.len >= len)
+        while (r := 0; r < len; r += n)
+            n := rd.ReadSome(buf[r..])!; if (n == 0) return .UnexpectedEOF fin
         fin
+        return r
     fin
 }
 interface Writer {
@@ -141,17 +142,15 @@ interface Writer {
         w := 0; while (w < bytes.len) w += wr.WriteSome(bytes[w..])! fin
     fin
 
-    void! Flush(_*) return fin
-
     void! WriteChar(wr*, c char) inline wr.WriteSome({c}[..])! fin
 
     int! WriteRune(wr*, r rune)
         if (r < 128) wr.WriteChar(r)!; return 1 fin
-        buf char[4] = noinit
-        n := utf8:EncodeRune(buf[..], r)!
-        wr.Write(buf[..n])!
-        return n
+        buf char[4]; n := utf8:EncodeRune(buf[..], r)!
+        wr.Write(buf[..n])!; return n
     fin
+
+    void! Flush(_*) return fin
 }
 
 struct BufferedReader[RDT Reader, LEN int: 4<<10] {
@@ -234,12 +233,12 @@ impl Writer:
         bw.inner.Flush()!
     fin
 
-    void! Init(bw*, inner Writer)
-        debug:Assert(bw.end == 0); bw.inner = inner
-    fin
+    (* BufferedWriter wraps and is generic over inner's underlying type *)
+    (* assert bw.end == 0 *)
+    void! Init(bw*, inner Writer) bw.inner = inner fin
 }
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 module main
 
-u8 Main(args char[][]) return 0 fin
+u8 main(args char[][]) pub return 0 fin
