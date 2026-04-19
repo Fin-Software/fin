@@ -1,38 +1,38 @@
 
 /* Copyright 2018 Paul B Mann.  BSD License. */
 
-		#include "CM_Global.h"
-		#include "PG_BuildLR0.h"
+      #include "CM_Global.h"
+      #include "PG_BuildLR0.h"
 
-//		#define DEBUG
-  		#define PRINT prt_sta
+//    #define DEBUG
+      #define PRINT prt_sta
 
       int    PG_BuildLR0::N_states;
-		int*   PG_BuildLR0::ntt_item;
-		int*   PG_BuildLR0::accessor;
-		char** PG_BuildLR0::FIRST;
-		char** PG_BuildLR0::FOLLOW;
-		int*   PG_BuildLR0::f_kernel;
-		int*   PG_BuildLR0::f_final;
-		int*   PG_BuildLR0::final;
-		int*   PG_BuildLR0::kernel;
-		ITEM*  PG_BuildLR0::item;
-		int*   PG_BuildLR0::f_item;
-		int    PG_BuildLR0::n_ttran;
-		int    PG_BuildLR0::n_nttran;
-		int*   PG_BuildLR0::ntt_origin;
-		int    PG_BuildLR0::n_kernels;
-		int    PG_BuildLR0::n_finals;
-		int    PG_BuildLR0::org_states;
-		int    PG_BuildLR0::n_items;
-		int*   PG_BuildLR0::ntt_start;
-		int*   PG_BuildLR0::ntt_symb;
-		int*   PG_BuildLR0::ntt_action;
-		int*   PG_BuildLR0::tt_start;
-		int*   PG_BuildLR0::tt_action;
-		int*   PG_BuildLR0::tt_symb;
-		int*   PG_BuildLR0::f_camefrom;
-		int*   PG_BuildLR0::camefrom;
+      int*   PG_BuildLR0::ntt_item;
+      int*   PG_BuildLR0::accessor;
+      char** PG_BuildLR0::FIRST;
+      char** PG_BuildLR0::FOLLOW;
+      int*   PG_BuildLR0::f_kernel;
+      int*   PG_BuildLR0::f_final;
+      int*   PG_BuildLR0::final;
+      int*   PG_BuildLR0::kernel;
+      ITEM*  PG_BuildLR0::item;
+      int*   PG_BuildLR0::f_item;
+      int    PG_BuildLR0::n_ttran;
+      int    PG_BuildLR0::n_nttran;
+      int*   PG_BuildLR0::ntt_origin;
+      int    PG_BuildLR0::n_kernels;
+      int    PG_BuildLR0::n_finals;
+      int    PG_BuildLR0::org_states;
+      int    PG_BuildLR0::n_items;
+      int*   PG_BuildLR0::ntt_start;
+      int*   PG_BuildLR0::ntt_symb;
+      int*   PG_BuildLR0::ntt_action;
+      int*   PG_BuildLR0::tt_start;
+      int*   PG_BuildLR0::tt_action;
+      int*   PG_BuildLR0::tt_symb;
+      int*   PG_BuildLR0::f_camefrom;
+      int*   PG_BuildLR0::camefrom;
 
       static int       max_final;
       static int       max_kernel;
@@ -46,7 +46,7 @@
       static int*      already;
       static int*      added;
       static int       term_free;
-		static int		  r_states;
+      static int       r_states;
       static CLOSURE*  closure;
       static int       max_states;
       static int       n_clo;
@@ -60,12 +60,12 @@ int   PG_BuildLR0::BuildLR0 () /* Build LR0 States */
 {
       int p, state;
 
-		max_states  = optn[MAX_STA];
+      max_states  = optn[MAX_STA];
       max_final   = optn[MAX_FIN];
       max_kernel  = optn[MAX_KER];
       max_ttran   = optn[MAX_TT] ;
       max_nttran  = optn[MAX_NTT];
-		max_child   = optn[MAX_CH];
+      max_child   = optn[MAX_CH];
 
       max_hashes  = 2*max_states + 1;
       hash_div    = (uint)0xFFFFFFFF / max_hashes + 1;
@@ -100,7 +100,7 @@ int   PG_BuildLR0::BuildLR0 () /* Build LR0 States */
       f_kernel [0] = 0;
       accessor [0] = 0;
 
-		C_ITEMS ();
+      C_ITEMS ();
       C_FIRST (N_heads, N_terms, F_prod, F_tail, Tail, FIRST, nullable);
 
       for (p = F_prod [0]; p < F_prod [1]; p++)
@@ -122,8 +122,8 @@ int   PG_BuildLR0::BuildLR0 () /* Build LR0 States */
       }
       tt_start  [state] = n_ttran;
       ntt_start [state] = n_nttran;
-	// opt_states (optimum states) = N_states so far generated.
-	// Not to inlcude final state and all reduce-only states.
+   // opt_states (optimum states) = N_states so far generated.
+   // Not to inlcude final state and all reduce-only states.
       opt_states = N_states;
 
    // Create reduce-only states.
@@ -144,24 +144,24 @@ int   PG_BuildLR0::BuildLR0 () /* Build LR0 States */
       {
          MODIFY (state);
       }
-		org_states = N_states;
+      org_states = N_states;
 
       MTSL ();
-		C_CAMEFROM (N_states, tt_start, tt_action, ntt_start, ntt_action, f_camefrom, camefrom);
+      C_CAMEFROM (N_states, tt_start, tt_action, ntt_start, ntt_action, f_camefrom, camefrom);
 
-		char* Grammar = "States  ";
-		int ro_states = N_states - (opt_states+1); // +1 for final state (goal reduction).
+      char* Grammar = "States  ";
+      int ro_states = N_states - (opt_states+1); // +1 for final state (goal reduction).
 
-		if (optn[PG_VERBOSE])
+      if (optn[PG_VERBOSE])
            prt_log     ("%s %7d states in LALR(1) state machine.\n", Grammar, N_states);
-		else prt_logonly ("%s %7d states in LALR(1) state machine.\n", Grammar, N_states);
+      else prt_logonly ("%s %7d states in LALR(1) state machine.\n", Grammar, N_states);
 
-		if (optn[PG_SHIFTREDUCE])
-		{
-		   if (optn[PG_VERBOSE])
-		        prt_log     ("         %7d states when using shift-reduce actions.\n", N_states-ro_states);
-		   else prt_logonly ("         %7d states when using shift-reduce actions.\n", N_states-ro_states);
-		}
+      if (optn[PG_SHIFTREDUCE])
+      {
+         if (optn[PG_VERBOSE])
+              prt_log     ("         %7d states when using shift-reduce actions.\n", N_states-ro_states);
+         else prt_logonly ("         %7d states when using shift-reduce actions.\n", N_states-ro_states);
+      }
 
       FREE (already,  n_symbs+1);
       FREE (closure,  2*N_prods+1);
@@ -189,12 +189,12 @@ void  PG_BuildLR0::C_ITEMS ()
 {
       int h, i, p, d, t, np;
       i = 0;
-		np = 0;
+      np = 0;
       for (h = 0; h < N_heads; h++)
       {
          for (p = F_prod[h]; p < F_prod[h+1]; p++)
          {
-				np++;
+            np++;
             for (t = F_tail[p]; t < F_tail[p+1]; t++)
             {
                i++;
@@ -245,16 +245,16 @@ void  PG_BuildLR0::EXPAND (int state)
             ntt_action [n_nttran++] = w;
             if (n_nttran >= max_nttran) MemCrash ("Number of nonterminal transitions", max_nttran);
          }
-			for (i = N_heads; i < term_free; i++)
-			{
-				n = n_kernels;
-				MAKE_KERNEL (symlist[i].start);
-				// printf ("symbol = %d\n", symlist[i].symb);
-				w = TRANSIT (n, symlist[i].symb);
-				tt_action [n_ttran++] = w;
-				if (n_ttran >= max_ttran) MemCrash ("Number of terminal transitions", max_ttran);
-			}
-		}
+         for (i = N_heads; i < term_free; i++)
+         {
+            n = n_kernels;
+            MAKE_KERNEL (symlist[i].start);
+            // printf ("symbol = %d\n", symlist[i].symb);
+            w = TRANSIT (n, symlist[i].symb);
+            tt_action [n_ttran++] = w;
+            if (n_ttran >= max_ttran) MemCrash ("Number of terminal transitions", max_ttran);
+         }
+      }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -387,28 +387,28 @@ int   PG_BuildLR0::TRANSIT (int ki, int sym)
          SORT (kernel + ki, kernel + n_kernels);
       }
 
-		uint probe;
-		probe = hash_no % max_hashes;
-		while ((state = h_vector[probe]) != -1)
-		{
-			k1 = f_kernel[state];
-			if (f_kernel[state+1] - k1 == ni)
-			{
-				if (FASTCMP (kernel + k1, kernel + ki, ni))
-				{
-					n_kernels = ki;                     // Reset this.
-					return (state);
-				}
-			}
-			probe = (hash_no *= 65549) / hash_div;
-		}
-		h_vector [probe] = N_states;
+      uint probe;
+      probe = hash_no % max_hashes;
+      while ((state = h_vector[probe]) != -1)
+      {
+         k1 = f_kernel[state];
+         if (f_kernel[state+1] - k1 == ni)
+         {
+            if (FASTCMP (kernel + k1, kernel + ki, ni))
+            {
+               n_kernels = ki;                     // Reset this.
+               return (state);
+            }
+         }
+         probe = (hash_no *= 65549) / hash_div;
+      }
+      h_vector [probe] = N_states;
 
       accessor  [N_states] = sym;
       f_kernel  [N_states+1] = n_kernels;
       if (N_states >= max_states) MemCrash ("Number of states", max_states);
-	//	if (((N_states+1) %  100) == 0) printf ("%4d ", N_states+1);
-	// if (((N_states+1) % 1600) == 0) printf ("\n");
+   // if (((N_states+1) %  100) == 0) printf ("%4d ", N_states+1);
+   // if (((N_states+1) % 1600) == 0) printf ("\n");
       return (N_states++);
 }
 

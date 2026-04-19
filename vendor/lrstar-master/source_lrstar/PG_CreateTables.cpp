@@ -2,44 +2,44 @@
 /* Copyright 2018 Paul B Mann.  BSD License. */
 
       #include "CM_Global.h"
-		#include "PG_CreateTables.h"
+      #include "PG_CreateTables.h"
 
-		int*   	PGCreateTables::B_col;
-		int    	PGCreateTables::B_cols;
-	   int*	  	PGCreateTables::B_mask;
-		char*  	PGCreateTables::B_matrix;
-		int*   	PGCreateTables::B_row;
-		int    	PGCreateTables::B_rows;
-		int    	PGCreateTables::B_size;
+      int*     PGCreateTables::B_col;
+      int      PGCreateTables::B_cols;
+      int*     PGCreateTables::B_mask;
+      char*    PGCreateTables::B_matrix;
+      int*     PGCreateTables::B_row;
+      int      PGCreateTables::B_rows;
+      int      PGCreateTables::B_size;
 
-		int*   	PGCreateTables::N_col;
-		int		PGCreateTables::N_cols;
-		int*   	PGCreateTables::N_matrix;
-		int*   	PGCreateTables::N_row;
-		int		PGCreateTables::N_rows;
-		int    	PGCreateTables::N_size;
+      int*     PGCreateTables::N_col;
+      int      PGCreateTables::N_cols;
+      int*     PGCreateTables::N_matrix;
+      int*     PGCreateTables::N_row;
+      int      PGCreateTables::N_rows;
+      int      PGCreateTables::N_size;
 
-		int*   	PGCreateTables::T_col;
-		int    	PGCreateTables::T_cols;
-		int*   	PGCreateTables::T_matrix;
-		int*   	PGCreateTables::T_row;
-		int    	PGCreateTables::T_rows;
-		int    	PGCreateTables::T_size;
+      int*     PGCreateTables::T_col;
+      int      PGCreateTables::T_cols;
+      int*     PGCreateTables::T_matrix;
+      int*     PGCreateTables::T_row;
+      int      PGCreateTables::T_rows;
+      int      PGCreateTables::T_size;
 
-		int*   	PGCreateTables::R_col;
-		int		PGCreateTables::R_cols;
-	   int*   	PGCreateTables::R_matrix;
-		int*   	PGCreateTables::R_row;
-		int		PGCreateTables::R_rows;
-		int    	PGCreateTables::R_size;
+      int*     PGCreateTables::R_col;
+      int      PGCreateTables::R_cols;
+      int*     PGCreateTables::R_matrix;
+      int*     PGCreateTables::R_row;
+      int      PGCreateTables::R_rows;
+      int      PGCreateTables::R_size;
 
-      int		quiet;
-      int		T0, T1, T2;
-      int		total0, total1, total2;
-		int		T_total, N_total;
+      int      quiet;
+      int      T0, T1, T2;
+      int      total0, total1, total2;
+      int      T_total, N_total;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-//																																 //
+//                                                                                               //
 
 int   PGCreateTables::CreateTables ()
 {
@@ -49,64 +49,64 @@ int   PGCreateTables::CreateTables ()
       int   Ni = 0, Nj = 0;
       int   Ri = 0;
 
-//		if (!optn[PG_GENERATE]) return 0;
+//    if (!optn[PG_GENERATE]) return 0;
 
       m = " ";
       total0 = total1 = total2 = 0;
-		if (optn [PG_MINIMIZE])
-		{
+      if (optn [PG_MINIMIZE])
+      {
          if (optn[PG_VERBOSE] > 1)
-			{
-				prt_logonly ("\n");
-				prt_log     ("            rows   cols          matrix       list      vect     total\n");
-			}
+         {
+            prt_logonly ("\n");
+            prt_log     ("            rows   cols          matrix       list      vect     total\n");
+         }
          else
-			{
-				prt_logonly ("\n");
-				prt_logonly ("            rows   cols          matrix       list      vect     total\n");
-			}
-			MIN_B (&Bi);
-			MIN_T (&Ti, &Tj);
-			MIN_N (&Ni, &Nj);
-			MIN_R (&Ri);
-			m = "*";
-		}
+         {
+            prt_logonly ("\n");
+            prt_logonly ("            rows   cols          matrix       list      vect     total\n");
+         }
+         MIN_B (&Bi);
+         MIN_T (&Ti, &Tj);
+         MIN_N (&Ni, &Nj);
+         MIN_R (&Ri);
+         m = "*";
+      }
       if (optn[PG_VERBOSE] > 1)
-		{
-			prt_logonly ("\n");
-	      prt_log     ("            rows   cols          matrix       list      vect     total\n");
-		}
+      {
+         prt_logonly ("\n");
+         prt_log     ("            rows   cols          matrix       list      vect     total\n");
+      }
       else
-		{
-			prt_logonly ("\n");
-			prt_logonly ("            rows   cols          matrix       list      vect     total\n");
-		}
+      {
+         prt_logonly ("\n");
+         prt_logonly ("            rows   cols          matrix       list      vect     total\n");
+      }
 
-		BLD_B (Bi, m);
-		BLD_T (Ti, Tj, m);
-  		BLD_N (Ni, Nj, m);
-		BLD_R (Ri, m);
+      BLD_B (Bi, m);
+      BLD_T (Ti, Tj, m);
+      BLD_N (Ni, Nj, m);
+      BLD_R (Ri, m);
 
-		char n1[16] = "               ";
-		char n2[16] = "               ";
-		char n3[16] = "               ";
+      char n1[16] = "               ";
+      char n2[16] = "               ";
+      char n3[16] = "               ";
 
-		number (total1, n1);
-		number (total2, n2);
-		number (total1+total2, n3);
+      number (total1, n1);
+      number (total2, n2);
+      number (total1+total2, n3);
 
-		if (optn[PG_VERBOSE] > 1)
-		{
-			prt_log    ("Total                                    %9s +%8s =%8s\n", n1, n2, n3);
-			prt_logonly("\n");
-		}
-		else
-		{
-			prt_logonly("Total                                    %9s +%8s =%8s\n", n1, n2, n3);
-			prt_logonly("\n");
-		}
+      if (optn[PG_VERBOSE] > 1)
+      {
+         prt_log    ("Total                                    %9s +%8s =%8s\n", n1, n2, n3);
+         prt_logonly("\n");
+      }
+      else
+      {
+         prt_logonly("Total                                    %9s +%8s =%8s\n", n1, n2, n3);
+         prt_logonly("\n");
+      }
 
-		FREE (tt_symb,    n_ttran);
+      FREE (tt_symb,    n_ttran);
       FREE (tt_action,  n_ttran);
       FREE (tt_start,   N_states+1);
       FREE (ntt_start,  N_states+1);
@@ -116,13 +116,13 @@ int   PGCreateTables::CreateTables ()
       FREE (la_red,     max_lookah);
       FREE (la_symb,    max_lookah);
 
-	// Reduce production length by 1, so no "-1" adjustment is required in skl file.
-		for (int p = 0; p < N_prods; p++) prod_len[p]--;
-		return (1);
+   // Reduce production length by 1, so no "-1" adjustment is required in skl file.
+      for (int p = 0; p < N_prods; p++) prod_len[p]--;
+      return (1);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-//																																 //
+//                                                                                               //
 
 void  PGCreateTables::MIN_B (int *ti)
 {
@@ -137,7 +137,7 @@ void  PGCreateTables::MIN_B (int *ti)
       {
          m = BLD_B (i, "");
          FREE (B_matrix, B_size);
-			FREE (B_mask, N_terms);
+         FREE (B_mask, N_terms);
          FREE (B_col,  N_terms);
          FREE (B_row,  N_states);
          if (m < minimum)
@@ -152,7 +152,7 @@ void  PGCreateTables::MIN_B (int *ti)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-//																																 //
+//                                                                                               //
 
 void  PGCreateTables::MIN_T (int *ti, int *tj)
 {
@@ -185,7 +185,7 @@ void  PGCreateTables::MIN_T (int *ti, int *tj)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-//																																 //
+//                                                                                               //
 
 void  PGCreateTables::MIN_N (int *ni, int *nj)
 {
@@ -196,7 +196,7 @@ void  PGCreateTables::MIN_N (int *ni, int *nj)
       T1 = total1;
       T2 = total2;
 
-		int n = 0;
+      int n = 0;
       for (i = 1; i <= 2; i++)
       {
          for (j = 1; j <= 2; j++)
@@ -219,7 +219,7 @@ void  PGCreateTables::MIN_N (int *ni, int *nj)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-//																																 //
+//                                                                                               //
 
 void  PGCreateTables::MIN_R (int *ti)
 {
@@ -236,7 +236,7 @@ void  PGCreateTables::MIN_R (int *ti)
          FREE (R_matrix, R_size);
          FREE (R_col,  N_terms);
          FREE (R_row,  N_states);
-	      if (m < minimum)
+         if (m < minimum)
          {
             minimum = m;
             *ti = i;
@@ -248,7 +248,7 @@ void  PGCreateTables::MIN_R (int *ti)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-//																																 //
+//                                                                                               //
 
 int   PGCreateTables::MAKE_PACKED (char* x, int n)
 {
@@ -269,21 +269,21 @@ int   PGCreateTables::MAKE_PACKED (char* x, int n)
       }
       for (i = 0; i < m; i++)
       {
-			x[i] = z[i];
+         x[i] = z[i];
       }
       FREE (z, m);
       return (m);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-//																																 //
+//                                                                                               //
 
 int   PGCreateTables::BLD_B (int opt1, char *mark) // Build Boolean Matrix.
 {
       char** Matrix;
       int    r, org_size;
 
-		if (optn[PG_BOOLMATRIX] == 0) return 0;
+      if (optn[PG_BOOLMATRIX] == 0) return 0;
 
       if (optn[PG_VERBOSE] > 1) prt_log     ("B matrix");
       else                      prt_logonly ("B matrix");
@@ -301,34 +301,34 @@ int   PGCreateTables::BLD_B (int opt1, char *mark) // Build Boolean Matrix.
       B_size = B_rows * B_cols;
       total0 += B_size;
 
-		char num[12] = "           ";
-		number (B_size, num);  // Gives 9 digits.
+      char num[12] = "           ";
+      number (B_size, num);  // Gives 9 digits.
 
       if (optn[PG_VERBOSE] > 1) prt_log     ("x%5ld x 1 =%10s", B_cols, num);
       else                      prt_logonly ("x%5ld x 1 =%10s", B_cols, num);
 
-		org_size = (B_rows)*((B_cols+7)/8*8);
+      org_size = (B_rows)*((B_cols+7)/8*8);
       ALLOC (B_matrix, org_size);
       memset (B_matrix, 0, org_size);
       B_size = DISP_EQ1B (Matrix, B_matrix, B_row, B_rows, B_cols, opt1);
 
       for (r = 0; r < B_rows; r++) FREE (Matrix[r], N_terms);
       FREE (Matrix, N_states+1);
-		int vectors = 0;
-		if (optn[PG_BOOLMATRIX] > 1)
-		{
-			vectors += N_terms;
-			B_size = MAKE_PACKED (B_matrix, B_size);
-		}
-		REALLOC (B_matrix, org_size, B_size);
-		vectors += get_typesize (B_row, N_states) * N_states; // row vector
-		vectors += get_typesize (B_col, N_terms)  * N_terms;  // column vector
-		OUT_TOT (B_size, vectors, mark);
+      int vectors = 0;
+      if (optn[PG_BOOLMATRIX] > 1)
+      {
+         vectors += N_terms;
+         B_size = MAKE_PACKED (B_matrix, B_size);
+      }
+      REALLOC (B_matrix, org_size, B_size);
+      vectors += get_typesize (B_row, N_states) * N_states; // row vector
+      vectors += get_typesize (B_col, N_terms)  * N_terms;  // column vector
+      OUT_TOT (B_size, vectors, mark);
       return  (B_size + vectors);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-//																																 //
+//                                                                                               //
 
 int   PGCreateTables::BLD_T (int opt1, int opt2, char *mark) /* Build Terminal Matrix. */
 {
@@ -341,48 +341,48 @@ int   PGCreateTables::BLD_T (int opt1, int opt2, char *mark) /* Build Terminal M
       ALLOC (T_col,  N_terms);
       ALLOC (Matrix, tt_states);
 
-		if (optn[PG_BOOLMATRIX] == 0)
-			  T_rows = MRG_ROWE2T (Matrix, N_terms, T_row, tt_states, opt1);
-		else T_rows = MRG_ROWZ_T (Matrix, N_terms, T_row, tt_states, opt1);
+      if (optn[PG_BOOLMATRIX] == 0)
+           T_rows = MRG_ROWE2T (Matrix, N_terms, T_row, tt_states, opt1);
+      else T_rows = MRG_ROWZ_T (Matrix, N_terms, T_row, tt_states, opt1);
 
       if (optn[PG_VERBOSE] > 1) prt_log     ("  %6d ", T_rows);
       else                      prt_logonly ("  %6d ", T_rows);
 
-		if (optn[PG_BOOLMATRIX] == 0)
-	        T_cols = MRG_COLE2 (T_col, N_terms, T_rows, Matrix);
-		else T_cols = MRG_COLZ  (T_col, N_terms, T_rows, Matrix, opt2);
+      if (optn[PG_BOOLMATRIX] == 0)
+           T_cols = MRG_COLE2 (T_col, N_terms, T_rows, Matrix);
+      else T_cols = MRG_COLZ  (T_col, N_terms, T_rows, Matrix, opt2);
       org_size = T_rows * T_cols;
 
-		if (N_prods > 32767 || tt_states > 32767) multiplier = 4; // int
-		else if (N_prods >   127 || tt_states >   127) multiplier = 2; // short
-		else                                      multiplier = 1; // char
+      if (N_prods > 32767 || tt_states > 32767) multiplier = 4; // int
+      else if (N_prods >   127 || tt_states >   127) multiplier = 2; // short
+      else                                      multiplier = 1; // char
 
-		T_total = multiplier*org_size;
-		char num[12] = "           ";
-		number (T_total, num); // Gives 9 digits.
+      T_total = multiplier*org_size;
+      char num[12] = "           ";
+      number (T_total, num); // Gives 9 digits.
 
       if (optn[PG_VERBOSE] > 1) prt_log     ("x%5ld x %d =%10s", T_cols, multiplier, num);
       else                      prt_logonly ("x%5ld x %d =%10s", T_cols, multiplier, num);
 
-		total0 += T_total;
+      total0 += T_total;
       ALLOC (T_matrix, org_size);
       FASTINI (0, T_matrix, org_size);
-		if (optn[PG_BOOLMATRIX] == 0)
-			  T_size = DISP_EQ2 (Matrix, T_matrix, T_row, T_rows, T_cols, tt_states, opt1);
+      if (optn[PG_BOOLMATRIX] == 0)
+           T_size = DISP_EQ2 (Matrix, T_matrix, T_row, T_rows, T_cols, tt_states, opt1);
       else T_size = DISP_ZEQ (Matrix, T_matrix, T_row, T_rows, T_cols, tt_states);
       for (r = 0; r < T_rows; r++) FREE (Matrix [r], N_terms);
       FREE (Matrix, tt_states);
       REALLOC (T_matrix, org_size, T_size);
 
-		int vectors = 0;
-		vectors += get_typesize (T_row, tt_states) * tt_states; // row vector
-		vectors += get_typesize (T_col, N_terms)   * N_terms;   // column vector
+      int vectors = 0;
+      vectors += get_typesize (T_row, tt_states) * tt_states; // row vector
+      vectors += get_typesize (T_col, N_terms)   * N_terms;   // column vector
       OUT_TOT (multiplier*T_size, vectors, mark);
       return  (multiplier*T_size + vectors);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-//																																 //
+//                                                                                               //
 
 int   PGCreateTables::BLD_N (int opt1, int opt2, char *mark) /* Build Nonterminal Matrix. */
 {
@@ -403,18 +403,18 @@ int   PGCreateTables::BLD_N (int opt1, int opt2, char *mark) /* Build Nontermina
       N_cols = MRG_COLZ (n_col, N_heads, N_rows, Matrix, opt2);
       org_size = N_rows * N_cols;
 
-		if (N_prods > 32767 || ntt_states > 32767) multiplier = 4; // int
-		else if (N_prods >   127 || ntt_states >   127) multiplier = 2; // short
-		else                                       multiplier = 1; // char
+      if (N_prods > 32767 || ntt_states > 32767) multiplier = 4; // int
+      else if (N_prods >   127 || ntt_states >   127) multiplier = 2; // short
+      else                                       multiplier = 1; // char
 
-		N_total = multiplier*org_size;
-		char num[12] = "           ";
-		number (N_total, num); // Gives 9 digits.
+      N_total = multiplier*org_size;
+      char num[12] = "           ";
+      number (N_total, num); // Gives 9 digits.
 
       if (optn[PG_VERBOSE] > 1) prt_log     ("x%5ld x %d =%10s", N_cols, multiplier, num);
       else                      prt_logonly ("x%5ld x %d =%10s", N_cols, multiplier, num);
 
-		total0 += N_total;
+      total0 += N_total;
       ALLOC (N_matrix, org_size);
       FASTINI (0, N_matrix, org_size);
       N_size = DISP_ZEQ (Matrix, N_matrix, N_row, N_rows, N_cols, ntt_states);
@@ -427,17 +427,17 @@ int   PGCreateTables::BLD_N (int opt1, int opt2, char *mark) /* Build Nontermina
       {
          N_col[p] = n_col[head_sym[p]];
       }
-		FREE (n_col, N_heads);
+      FREE (n_col, N_heads);
 
-		int vectors = 0;
-		vectors += get_typesize (N_row, ntt_states) * ntt_states; // row vector
-		vectors += get_typesize (N_col, N_prods)    * N_prods;    // column vector
+      int vectors = 0;
+      vectors += get_typesize (N_row, ntt_states) * ntt_states; // row vector
+      vectors += get_typesize (N_col, N_prods)    * N_prods;    // column vector
       OUT_TOT (multiplier*N_size, vectors, mark);
       return  (multiplier*N_size + vectors);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-//																																 //
+//                                                                                               //
 
 int   PGCreateTables::BLD_R (int opt1, char *mark) /* Build Reduction Matrix. */
 {
@@ -465,36 +465,36 @@ int   PGCreateTables::BLD_R (int opt1, char *mark) /* Build Reduction Matrix. */
       FREE (Matrix, N_states+1);
       REALLOC (R_matrix, org_size, R_size);
 
-		if (optn[PG_DEFAULTRED])
-		{
-			for (s = 0; s < N_states; s++)
-			{
-				if (D_red[s] > 0) R_row[s] =  D_red[s];
-				else              R_row[s] = -R_row[s];
-			}
-		}
+      if (optn[PG_DEFAULTRED])
+      {
+         for (s = 0; s < N_states; s++)
+         {
+            if (D_red[s] > 0) R_row[s] =  D_red[s];
+            else              R_row[s] = -R_row[s];
+         }
+      }
 
-		multiplier = get_typesize (R_matrix, R_size);
-		char num[12] = "           ";
-		number (multiplier*R_size, num);
+      multiplier = get_typesize (R_matrix, R_size);
+      char num[12] = "           ";
+      number (multiplier*R_size, num);
 
       if (optn[PG_VERBOSE] > 1) prt_log     ("x%5ld x %d =%10s", R_cols, multiplier, num);
       else                      prt_logonly ("x%5ld x %d =%10s", R_cols, multiplier, num);
 
       total0 += multiplier*R_size;
-		int vectors = 0;
-		vectors += get_typesize (R_row, N_states) * N_states; // row vector
-		vectors += get_typesize (R_col, N_terms)  * N_terms;  // column vector
-		OUT_TOT (multiplier*R_size, vectors, mark);
+      int vectors = 0;
+      vectors += get_typesize (R_row, N_states) * N_states; // row vector
+      vectors += get_typesize (R_col, N_terms)  * N_terms;  // column vector
+      OUT_TOT (multiplier*R_size, vectors, mark);
       return  (multiplier*R_size + vectors);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-//																																 //
+//                                                                                               //
 
 int   PGCreateTables::MRG_ROWE1B (char **matrix, int n_terms, int *row, int N_states)
 {
-		char *buffer;
+      char *buffer;
       int  s, i, r, nr;
 
       nr = 1;
@@ -507,7 +507,7 @@ int   PGCreateTables::MRG_ROWE1B (char **matrix, int n_terms, int *row, int N_st
          memset (buffer, 0, n_terms);  // Initialize to zeros.
          for (i = tt_start[s]; i < tt_start[s+1]; i++)
          {
-				if (tt_action[i] != 0) buffer [tt_symb[i]] = 1;
+            if (tt_action[i] != 0) buffer [tt_symb[i]] = 1;
          }
          for (r = 0; r < nr; r++)
          {
@@ -524,7 +524,7 @@ Old:     row [s] = r;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-//																																 //
+//                                                                                               //
 
 int   PGCreateTables::MRG_ROWE2R (int **matrix, int n_terms, int *row, int N_states)
 {
@@ -534,23 +534,23 @@ int   PGCreateTables::MRG_ROWE2R (int **matrix, int n_terms, int *row, int N_sta
       ALLOC (buffer, n_terms);
       for (s = 0; s < N_states; s++) // For all states.
       {
-			if (D_red[s] > 0) // Default reduction for this state?
-			{
-				if (optn[PG_DEFAULTRED])
-				{
-					row[s] = 0;
-					goto Cont;
-				}
-				FASTINI (D_red[s], buffer, n_terms); // Fill in with the default.
-			}
-			else // Use the list of reductions and terminal symbols.
-			{
-			  	FASTINI (0, buffer, n_terms); // Initialize to 0 (error).
-				for (i = la_start[s]; i < la_start[s+1]; i++)
-				{
-	            buffer [la_symb[i]] = la_red[i]; // Place reduction in buffer.
-				}
-			}
+         if (D_red[s] > 0) // Default reduction for this state?
+         {
+            if (optn[PG_DEFAULTRED])
+            {
+               row[s] = 0;
+               goto Cont;
+            }
+            FASTINI (D_red[s], buffer, n_terms); // Fill in with the default.
+         }
+         else // Use the list of reductions and terminal symbols.
+         {
+            FASTINI (0, buffer, n_terms); // Initialize to 0 (error).
+            for (i = la_start[s]; i < la_start[s+1]; i++)
+            {
+               buffer [la_symb[i]] = la_red[i]; // Place reduction in buffer.
+            }
+         }
          for (r = 0; r < nr; r++)
          {
             if (FASTCMP (buffer, matrix[r], n_terms)) goto Old;
@@ -571,70 +571,70 @@ Cont:    continue;
 
 int   PGCreateTables::MRG_ROWE2T (int **matrix, int n_terms, int *row, int N_states, int opt)
 {
-		uint hash, n_cells, hash_divide;
+      uint hash, n_cells, hash_divide;
       int  nr, s, t, i, r, *buffer, *vector, cell, *count;
 
       nr = 0;
       ALLOC (buffer, n_terms);
       ALLOC (count,  N_states);
 
-		n_cells = 2*N_states;
-		ALLOC (vector, n_cells);
-		FASTINI (-1, vector, n_cells);
-		hash_divide = UINT_MAX / n_cells + 1;
+      n_cells = 2*N_states;
+      ALLOC (vector, n_cells);
+      FASTINI (-1, vector, n_cells);
+      hash_divide = UINT_MAX / n_cells + 1;
 
-	//	nc = 0; // number of collisions = 0.
+   // nc = 0; // number of collisions = 0.
       for (s = 0; s < N_states; s++) // For all states ...
       {
-			count[s] = 0;
-			hash = INT_MAX;
-			for (t = 0; t < n_terms; t++) buffer[t] = 0;
-			for (i = tt_start[s]; i < tt_start[s+1]; i++)
-			{
-				if (tt_action[i] != 0)
-				{
-					count[s]++;
-					t = tt_symb[i];
-					buffer[t] = tt_action[i];
-			  		hash += tt_action[i]*i;
-				}
-			}
-			cell = hash % n_cells; 			// Get first cell.
-			r = vector [cell];					// Get symbol index.
-			while (r >= 0)
-			{
-				if (count[s] != count[r]) goto Cont;
-  				for (i = tt_start[s]; i < tt_start[s+1]; i++) // Compare rows.
-				{
-					if (tt_action[i] != 0)
-					{
-						t = tt_symb[i];
-						if (buffer[t] != matrix[r][t]) goto Cont;
-					}
-				}
-				goto Old;
-Cont:			cell = (hash *= 65549) / hash_divide;	// Get new cell number.
-				r = vector[cell];		   					// Get row index.
-			//	nc++;	// number of collisions.
-			}
-			vector[cell] = nr;
+         count[s] = 0;
+         hash = INT_MAX;
+         for (t = 0; t < n_terms; t++) buffer[t] = 0;
+         for (i = tt_start[s]; i < tt_start[s+1]; i++)
+         {
+            if (tt_action[i] != 0)
+            {
+               count[s]++;
+               t = tt_symb[i];
+               buffer[t] = tt_action[i];
+               hash += tt_action[i]*i;
+            }
+         }
+         cell = hash % n_cells;        // Get first cell.
+         r = vector [cell];               // Get symbol index.
+         while (r >= 0)
+         {
+            if (count[s] != count[r]) goto Cont;
+            for (i = tt_start[s]; i < tt_start[s+1]; i++) // Compare rows.
+            {
+               if (tt_action[i] != 0)
+               {
+                  t = tt_symb[i];
+                  if (buffer[t] != matrix[r][t]) goto Cont;
+               }
+            }
+            goto Old;
+Cont:       cell = (hash *= 65549) / hash_divide;  // Get new cell number.
+            r = vector[cell];                      // Get row index.
+         // nc++; // number of collisions.
+         }
+         vector[cell] = nr;
          r = nr++;
-			ALLOC (matrix[r], n_terms); // Create a new row ...
-			for (t = 0; t < n_terms; t++)
-			{
-				matrix[r][t] = buffer[t];
-			}
+         ALLOC (matrix[r], n_terms); // Create a new row ...
+         for (t = 0; t < n_terms; t++)
+         {
+            matrix[r][t] = buffer[t];
+         }
 Old:     row[s] = r; // Define row pointer.
       }
 
       FREE (buffer, n_terms);
       FREE (count,  N_states);
-		FREE (vector, n_cells);
+      FREE (vector, n_cells);
       return (nr);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-//																																 //
+//                                                                                               //
 
 int   PGCreateTables::MRG_ROWZ_T (int **matrix, int n_terms, int *row, int N_states, int opt)
 {
@@ -643,9 +643,9 @@ int   PGCreateTables::MRG_ROWZ_T (int **matrix, int n_terms, int *row, int N_sta
 
       if (opt)
       {
-			ALLOC (indx, N_states);
+         ALLOC (indx, N_states);
          ALLOC (density, N_states);
-			for (s = 0; s < N_states; s++) indx [s] = s;
+         for (s = 0; s < N_states; s++) indx [s] = s;
          for (s = 0; s < N_states; s++)
          {
             t = tt_start[s+1] - tt_start[s];
@@ -663,7 +663,7 @@ int   PGCreateTables::MRG_ROWZ_T (int **matrix, int n_terms, int *row, int N_sta
          {
             for (i = tt_start[s]; i < tt_start[s+1]; i++)
             {
-					if (tt_action[i] != 0)
+               if (tt_action[i] != 0)
                {
                   v = *(matrix[r]  + tt_symb[i]);
                   if (v != 0 && v != tt_action[i]) goto Next;
@@ -678,7 +678,7 @@ Next:       continue;
 Old:     row [s] = r;
          for (i = tt_start[s]; i < tt_start[s+1]; i++)
          {
-				if (tt_action[i] != 0)
+            if (tt_action[i] != 0)
             {
                *(matrix[r] + tt_symb[i]) = tt_action[i];
             }
@@ -689,7 +689,7 @@ Old:     row [s] = r;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-//																																 //
+//                                                                                               //
 
 int   PGCreateTables::MRG_ROWZ_N (int **matrix, int n_heads, int *row, int N_states, int opt)
 {
@@ -698,9 +698,9 @@ int   PGCreateTables::MRG_ROWZ_N (int **matrix, int n_heads, int *row, int N_sta
 
       if (opt)
       {
-			ALLOC (indx, N_states);
+         ALLOC (indx, N_states);
          ALLOC (density, N_states);
-			for (s = 0; s < N_states; s++) indx [s] = s;
+         for (s = 0; s < N_states; s++) indx [s] = s;
          for (s = 0; s < N_states; s++)
          {
             t = ntt_start[s+1] - ntt_start[s];
@@ -718,7 +718,7 @@ int   PGCreateTables::MRG_ROWZ_N (int **matrix, int n_heads, int *row, int N_sta
          {
             for (i = ntt_start[s]; i < ntt_start[s+1]; i++)
             {
-					if (ntt_action[i] != 0)
+               if (ntt_action[i] != 0)
                {
                   v = *(matrix[r]  + ntt_symb[i]);
                   if (v != 0 && v != ntt_action[i]) goto Next;
@@ -733,7 +733,7 @@ Next:       continue;
 Old:     row [s] = r;
          for (i = ntt_start[s]; i < ntt_start[s+1]; i++)
          {
-				if (ntt_action[i] != 0)
+            if (ntt_action[i] != 0)
             {
                *(matrix[r] + ntt_symb[i]) = ntt_action[i];
             }
@@ -744,41 +744,41 @@ Old:     row [s] = r;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-//																																 //
+//                                                                                               //
 
 int   PGCreateTables::MRG_COLE1B (int *col, int n_terms, int n_rows, char **matrix)
 {
-		char** newmat = NULL;
+      char** newmat = NULL;
       int *ones = NULL, *newloc = NULL;
       int c, d, k, r, n_cols, i;
 
       n_cols = n_terms;
       ALLOC (ones, n_terms);
-		ALLOC (B_mask, n_terms);
+      ALLOC (B_mask, n_terms);
       for (c = 0; c < n_terms; c++)
-		{
-			col[c] = c;
-			ones[c] = 0;
-		}
+      {
+         col[c] = c;
+         ones[c] = 0;
+      }
       for (c = 0; c < n_terms; c++)
-		{
-			for (r = 0; r < n_rows; r++)
-			{
-				if (*(matrix[r]+c) == 1) ones[c]++;
-			}
-		}
+      {
+         for (r = 0; r < n_rows; r++)
+         {
+            if (*(matrix[r]+c) == 1) ones[c]++;
+         }
+      }
       for (c = 1; c < n_terms; c++)
       {
          for (d = 0; d < c; d++)
          {
             if (col[d] == d // Not equal to previous column?
-				&& ones[c] == ones[d]) // Same number of ones?
+            && ones[c] == ones[d]) // Same number of ones?
             {
                for (r = 0; r < n_rows; r++)
                {
                   if (*(matrix[r]+d) != *(matrix[r]+c)) goto nope;
                }
-					col[c] = d;
+               col[c] = d;
                n_cols--;
                goto cont;
             }
@@ -786,7 +786,7 @@ nope:       continue;
          }
 cont:    continue;
       }
-		FREE (ones, n_terms);
+      FREE (ones, n_terms);
       k = 0;
       ALLOC (newloc, n_terms);
       ALLOC (newmat, n_rows);
@@ -803,14 +803,14 @@ cont:    continue;
                *(newmat[r]+k) = *(matrix[r]+c);
             }
             newloc[c] = k++;
-			}
-		}
+         }
+      }
       for (c = 0; c < n_terms; c++)
-		{
-			col[c] = newloc[col[c]];
-			B_mask[c] = 1 << (col[c] % 8);
-			if (optn[PG_BOOLMATRIX] > 1) col[c] /= 8;
-		}
+      {
+         col[c] = newloc[col[c]];
+         B_mask[c] = 1 << (col[c] % 8);
+         if (optn[PG_BOOLMATRIX] > 1) col[c] /= 8;
+      }
       for (r = 0; r < n_rows; r++) memcpy (matrix[r], newmat[r], n_cols);
       for (i = 0; i < n_rows; i++) FREE (newmat[i], n_cols);
       FREE (newmat, n_rows);
@@ -819,7 +819,7 @@ cont:    continue;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-//																																 //
+//                                                                                               //
 
 int   PGCreateTables::MRG_COLE2 (int *col, int n_terms, int n_rows, int **matrix)
 {
@@ -837,7 +837,7 @@ int   PGCreateTables::MRG_COLE2 (int *col, int n_terms, int n_rows, int **matrix
                {
                   if (*(matrix [r] + d) != *(matrix [r] + c)) goto nope;
                }
-					col[c] = d;
+               col[c] = d;
                n_cols--;
                goto cont;
             }
@@ -878,7 +878,7 @@ cont:    continue;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-//																																 //
+//                                                                                               //
 
 int   PGCreateTables::MRG_COLZ (int *col, int n_cols, int n_rows, int **matrix, int opt)
 {
@@ -962,7 +962,7 @@ cont:    continue;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-//																																 //
+//                                                                                               //
 
 int   PGCreateTables::DISP_EQ1B (char** matrix, char* newmat, int* row, int nr, int nc, int opt1)
 {
@@ -974,43 +974,43 @@ int   PGCreateTables::DISP_EQ1B (char** matrix, char* newmat, int* row, int nr, 
       int   r, x, c, inc;
 
       ALLOC (base, nr);
-		if (opt1)
-		{
-			ALLOC (indx, nr);
-	      ALLOC (density, nr);
-			for (r = 0; r < nr; r++)
-			{
-				indx[r] = r;
-				p = matrix[r];
-				if (opt1 == 1) /* Decreasing order of density, slower. */
-				{
-					density[r] = 0;
-					for (c = 0; c < nc; c++)
-					{
-		 				if (*p++ != 0) density[r]--;
-					}
-				}
-				else if (opt1 == 2) /* Increasing order of density, faster. */
-				{
-					density[r] = 0;
-					for (c = 0; c < nc; c++)
-		  			{
-		  				if (*p++ != 0) density[r]++;
-					}
-		  		}
-			}
+      if (opt1)
+      {
+         ALLOC (indx, nr);
+         ALLOC (density, nr);
+         for (r = 0; r < nr; r++)
+         {
+            indx[r] = r;
+            p = matrix[r];
+            if (opt1 == 1) /* Decreasing order of density, slower. */
+            {
+               density[r] = 0;
+               for (c = 0; c < nc; c++)
+               {
+                  if (*p++ != 0) density[r]--;
+               }
+            }
+            else if (opt1 == 2) /* Increasing order of density, faster. */
+            {
+               density[r] = 0;
+               for (c = 0; c < nc; c++)
+               {
+                  if (*p++ != 0) density[r]++;
+               }
+            }
+         }
 
-			SORT2 (density, indx, nr);
-			FREE (density, nr);
-		}
+         SORT2 (density, indx, nr);
+         FREE (density, nr);
+      }
       size = 0;
-		inc  = 8;							// Faster
-		if (optn[PG_MINIMIZE]) inc = 1;	// Slower
-		if (optn[PG_BOOLMATRIX] > 1) inc = 8;	// Must be 8.
+      inc  = 8;                     // Faster
+      if (optn[PG_MINIMIZE]) inc = 1;  // Slower
+      if (optn[PG_BOOLMATRIX] > 1) inc = 8;  // Must be 8.
       for (x = 0; x < nr; x++)
       {
-			if (opt1) r = indx[x];
-			else		 r = x;
+         if (opt1) r = indx[x];
+         else      r = x;
          for (i = 0; i < size; i += inc)
          {
             n = size - i;
@@ -1025,17 +1025,17 @@ int   PGCreateTables::DISP_EQ1B (char** matrix, char* newmat, int* row, int nr, 
          }
       }
       for (i = 0; i < N_states; i++)
-		{
-			row[i] = base[row[i]];
-			if (optn[PG_BOOLMATRIX] > 1) row[i] /= 8;
-		}
-		if (opt1) FREE (indx, nr);
+      {
+         row[i] = base[row[i]];
+         if (optn[PG_BOOLMATRIX] > 1) row[i] /= 8;
+      }
+      if (opt1) FREE (indx, nr);
       FREE (base, nr);
       return ((size+7)/8*8);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-//																																 //
+//                                                                                               //
 
 int   PGCreateTables::DISP_EQ2 (int **matrix, int *newmat, int *row, int nr, int nc, int N_states, int opt1)
 {
@@ -1046,34 +1046,34 @@ int   PGCreateTables::DISP_EQ2 (int **matrix, int *newmat, int *row, int nr, int
       ALLOC (base, nr);
       ALLOC (indx, nr);
       for (r = 0; r < nr; r++) indx [r] = r;
-		if (opt1)
-		{
-			ALLOC (density, nr);
-			for (r = 0; r < nr; r++)
-			{
-				indx [r] = r;
-				p = matrix [r];
-				density [r] = 0;
-				if (opt1 == 1) // Must do this order for R_matrix. (why?)
-					for (c = 0; c < nc; c++) if (*p++ != 1) density [r]--; // Do most dense rows first.
-				else if (opt1 == 2)
-					for (c = 0; c < nc; c++) if (*p++ != 1) density [r]++; // Do most dense rows last.
-			}
-			SORT2 (density, indx, nr);
-			FREE (density, nr);
-		}
+      if (opt1)
+      {
+         ALLOC (density, nr);
+         for (r = 0; r < nr; r++)
+         {
+            indx [r] = r;
+            p = matrix [r];
+            density [r] = 0;
+            if (opt1 == 1) // Must do this order for R_matrix. (why?)
+               for (c = 0; c < nc; c++) if (*p++ != 1) density [r]--; // Do most dense rows first.
+            else if (opt1 == 2)
+               for (c = 0; c < nc; c++) if (*p++ != 1) density [r]++; // Do most dense rows last.
+         }
+         SORT2 (density, indx, nr);
+         FREE (density, nr);
+      }
 
-		inc = 1;
+      inc = 1;
       size = 0;
       for (x = 0; x < nr; x++)
       {
          r = indx [x];
-			for (i = 0; i < size; i += inc)
-			{
-				n = size - i;
-				if (n > nc) n = nc;
-				if (FASTCMP (newmat+i, matrix[r], n)) break;
-			}
+         for (i = 0; i < size; i += inc)
+         {
+            n = size - i;
+            if (n > nc) n = nc;
+            if (FASTCMP (newmat+i, matrix[r], n)) break;
+         }
          base [r] = i;
          if (i + nc > size)
          {
@@ -1083,16 +1083,16 @@ int   PGCreateTables::DISP_EQ2 (int **matrix, int *newmat, int *row, int nr, int
       }
 
       for (i = 0; i < N_states; i++)
-		{
-			row [i] = base [row [i]];
-		}
+      {
+         row [i] = base [row [i]];
+      }
       FREE (indx, nr);
       FREE (base, nr);
       return (size);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-//																																 //
+//                                                                                               //
 
 int   PGCreateTables::DISP_ZEQ (int **matrix, int *newmat, int *row, int nr, int nc, int N_states)
 {
@@ -1114,8 +1114,8 @@ int   PGCreateTables::DISP_ZEQ (int **matrix, int *newmat, int *row, int nr, int
          else /* Faster but slightly larger. */
          {
             for (c = 0; c < nc; c++) if (*p++) density[r]++; // Least dense rows first
-		   }
-		}
+         }
+      }
       SORT2 (density, indx, nr);
       FREE (density, nr);
 
@@ -1125,20 +1125,20 @@ int   PGCreateTables::DISP_ZEQ (int **matrix, int *newmat, int *row, int nr, int
          r = indx [x];
          for (i = 0; i < size; i++)
          {
-				for (j = 0; j < nc; j++)
-				{
-				  	if ( matrix[r][j] == 0) continue;
-					if ((newmat+i)[j] == 0) continue;
-					if ( matrix[r][j] != (newmat+i)[j]) goto Next;
-				}
-				goto Load;
-Next:			continue;
+            for (j = 0; j < nc; j++)
+            {
+               if ( matrix[r][j] == 0) continue;
+               if ((newmat+i)[j] == 0) continue;
+               if ( matrix[r][j] != (newmat+i)[j]) goto Next;
+            }
+            goto Load;
+Next:       continue;
          }
 Load:    base [r] = i;
-			for (j = 0; j < nc; j++)
-			{
-				(newmat+i)[j] |= matrix[r][j];
-			}
+         for (j = 0; j < nc; j++)
+         {
+            (newmat+i)[j] |= matrix[r][j];
+         }
          if (i + nc > size) size = i + nc;
       }
 
@@ -1149,26 +1149,26 @@ Load:    base [r] = i;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-//																																 //
+//                                                                                               //
 
 void  PGCreateTables::OUT_TOT (int size, int vectors, char *mark)
 {
-		char n1[12] = "           ";
-		char n2[12] = "           ";
-		char n3[12] = "           ";
-		number (size, n1);
-		number (vectors, n2);
-		number (size+vectors, n3);
+      char n1[12] = "           ";
+      char n2[12] = "           ";
+      char n3[12] = "           ";
+      number (size, n1);
+      number (vectors, n2);
+      number (size+vectors, n3);
 
       if (optn[PG_VERBOSE] > 1) prt_log     (" ->%8s +%8s =%8s %s\n", n1, n2, n3, mark);
       else                      prt_logonly (" ->%8s +%8s =%8s %s\n", n1, n2, n3, mark);
 
-		total1 += size;
-		total2 += vectors;
+      total1 += size;
+      total2 += vectors;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-//																																 //
+//                                                                                               //
 
 void  PGCreateTables::MakeERI () /* Make Error Reduction Items lists. */
 {
@@ -1198,6 +1198,6 @@ void  PGCreateTables::MakeERI () /* Make Error Reduction Items lists. */
       }
 }
 
-//																																 //
+//                                                                                               //
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 

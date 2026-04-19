@@ -1,63 +1,63 @@
 
 // LRX Lexer Grammar.
 
-	<eof>						-> \z
+   <eof>                -> \z
 
-	<alpha>        		->         alpha
-								->         alpha '_'
-								->     '_' alpha
-								->     '_' alpha '_'
-								->         alpha '_' '_'
-								-> '_' '_' alpha
-								-> '_' '_' alpha '_' '_'
+   <alpha>              ->         alpha
+                        ->         alpha '_'
+                        ->     '_' alpha
+                        ->     '_' alpha '_'
+                        ->         alpha '_' '_'
+                        -> '_' '_' alpha
+                        -> '_' '_' alpha '_' '_'
 
-	<lexical>      		-> '<' <alpha> '>'
+   <lexical>            -> '<' <alpha> '>'
 
-	<semantic>     		-> '{' <alpha> '}'
+   <semantic>           -> '{' <alpha> '}'
 
-	alpha          		-> letter
-								-> alpha letter
-								-> alpha digit
-								-> alpha '_' letter
-								-> alpha '_' digit
+   alpha                -> letter
+                        -> alpha letter
+                        -> alpha digit
+                        -> alpha '_' letter
+                        -> alpha '_' digit
 
-	<integer>      		-> digit+
+   <integer>            -> digit+
 
-	<literal>      		-> ''' lchar+ '''
+   <literal>            -> ''' lchar+ '''
 
-	lchar          		-> '\' '''
-   							->	'\' '"'
-   							->	'\' '\'
-								-> lany
+   lchar                -> '\' '''
+                        -> '\' '"'
+                        -> '\' '\'
+                        -> lany
 
-	lany     				= 33..254 - ''' - '"' - '\'
+   lany                 = 33..254 - ''' - '"' - '\'
 
-	<string>       		-> '"' '"'
-								-> '"' schar+ '"'
+   <string>             -> '"' '"'
+                        -> '"' schar+ '"'
 
-	schar          		-> '\' '''
-   							->	'\' '"'
-   							->	'\' '\'
-								-> sany
+   schar                -> '\' '''
+                        -> '\' '"'
+                        -> '\' '\'
+                        -> sany
 
-	sany     				= 32..254 - ''' - '"' - '\'
+   sany                 = 32..254 - ''' - '"' - '\'
 
-	{whitespace}			-> ( \t | \n | \r | ' ' )+
-	{commentline} 			-> '/' '/' neol*
-	{commentblock}			-> '/' '*' na* '*'+ (nans na* '*'+)* '/'
+   {whitespace}         -> ( \t | \n | \r | ' ' )+
+   {commentline}        -> '/' '/' neol*
+   {commentblock}       -> '/' '*' na* '*'+ (nans na* '*'+)* '/'
 
-	any						=  0..255 - \z				// any character except end of file
-	na             		= any - '*'					// not asterisk
-	nans           		= any - '*' - '/'			// not asterisk not slash
-	neol           		= any - \n					// not end of line
+   any                  =  0..255 - \z          // any character except end of file
+   na                   = any - '*'             // not asterisk
+   nans                 = any - '*' - '/'       // not asterisk not slash
+   neol                 = any - \n              // not end of line
 
-	letter         		= 'a'..'z' | 'A'..'Z'
-	digit          		= '0'..'9'
+   letter               = 'a'..'z' | 'A'..'Z'
+   digit                = '0'..'9'
 
-	\t							= 9
-	\n							= 10
-	\r							= 13
-	\z							= 26
+   \t                   = 9
+   \n                   = 10
+   \r                   = 13
+   \z                   = 26
 
 /* End of Lexical Grammar. */
 

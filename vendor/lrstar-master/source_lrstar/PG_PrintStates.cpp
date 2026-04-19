@@ -1,8 +1,8 @@
 
 /* Copyright 2018 Paul B Mann.  BSD License. */
 
-		#include "CM_Global.h"
-		#include "PG_PrintStates.h"
+      #include "CM_Global.h"
+      #include "PG_PrintStates.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -14,10 +14,10 @@ void  PG_PrintStates::PrintStates ()
 
       prt_sta ("\nSTATE MACHINE LISTING:\n\n");
       if (!optn[PG_STATES])
-		{
-	      prt_sta ("'st' option was not specified.\n");
-			return;
-		}
+      {
+         prt_sta ("'st' option was not specified.\n");
+         return;
+      }
       n = 0;
       for (s = 0; s < N_states; s++)
       {
@@ -43,7 +43,7 @@ void  PG_PrintStates::PrintStates ()
          PRT_STA (s);
          if (optn[PG_TRANSITIONS])
          {
-				int na = 0;
+            int na = 0;
          // max_symbl = C_max_symbl (s);
             if (nd_item[s+1] > nd_item[s])
             {
@@ -54,7 +54,7 @@ void  PG_PrintStates::PrintStates ()
             }
             for (i = nd_item[s]; i < nd_item[s+1]; i++)
             {
-					na++;
+               na++;
                t = nd_term[i];
                x = nd_action[i];
                if (x > 0) // shift and ...
@@ -64,12 +64,12 @@ void  PG_PrintStates::PrintStates ()
                   if (x > opt_states)
                   {
                      prt_sta (" shift & reduce ");
-							p = x - opt_states;
+                     p = x - opt_states;
                      p_prod  (p, prod_len[p]-1, "", "\n");
                   }
                   else prt_sta (" shift & goto   %4d\n",  x);
                }
-					else // reduce.
+               else // reduce.
                {
                   if (optn[PG_NONDETER]) P_SYMBOL (t, "   N ");
                   else                   P_SYMBOL (t, "   C ");
@@ -84,21 +84,21 @@ void  PG_PrintStates::PrintStates ()
                         break;
                      }
                   }
-						p_prod (p, -1, "", "\n");
+                  p_prod (p, -1, "", "\n");
                }
             }
             if (na) prt_sta ("\n");
             na = 0;
             for (i = tt_start[s]; i < tt_start[s+1]; i++)
             {
-					if (tt_action[i] != 0)
-					{
-						na++;
-						x = tt_action [i];
-						t = tt_symb [i];
-						P_SYMBOL (t);
-						if (x > 0) prt_sta (" shift & goto   %4d\n", x);
-					  	else
+               if (tt_action[i] != 0)
+               {
+                  na++;
+                  x = tt_action [i];
+                  t = tt_symb [i];
+                  P_SYMBOL (t);
+                  if (x > 0) prt_sta (" shift & goto   %4d\n", x);
+                  else
                   {
                      p = -x;
                      int c = 0; // counter.
@@ -111,20 +111,20 @@ void  PG_PrintStates::PrintStates ()
                            break;
                         }
                      }
-							if (c == 0)
-							{
-								prt_sta (" shift & reduce ");
-								p_prod (p, prod_len[p] - 1, "", "\n");
-							}
-							else p_prod (p, -1, "", "\n");
+                     if (c == 0)
+                     {
+                        prt_sta (" shift & reduce ");
+                        p_prod (p, prod_len[p] - 1, "", "\n");
+                     }
+                     else p_prod (p, -1, "", "\n");
                   }
-					}
+               }
             }
             if (la_start != NULL)
             {
                for (i = la_start[s]; i < la_start[s+1]; i++)
                {
-						na++;
+                  na++;
                   t = la_symb [i];
                   P_SYMBOL (t);
                   p = la_red [i];
@@ -138,56 +138,56 @@ void  PG_PrintStates::PrintStates ()
                         break;
                      }
                   }
-						if (c == 0)
-						{
-							prt_sta (" shift & reduce ");
-							p_prod (p, prod_len[p] - 1, "", "\n");
-						}
-						else p_prod(p, -1, "", "\n");
-					}
+                  if (c == 0)
+                  {
+                     prt_sta (" shift & reduce ");
+                     p_prod (p, prod_len[p] - 1, "", "\n");
+                  }
+                  else p_prod(p, -1, "", "\n");
+               }
             }
-				if (D_red[s] > 0)
-				{
-					na++;
+            if (D_red[s] > 0)
+            {
+               na++;
                p = D_red[s];
                if (N_Conflicts[s]) P_SYMBOL (-32767, "   # "); // default
                else                P_SYMBOL (-32767);          // default
                prt_sta (" reduce         ");
-   			  	p_prod (p, -1, "", "\n");
-				}
-				if (na > 0) prt_sta ("\n");
+               p_prod (p, -1, "", "\n");
+            }
+            if (na > 0) prt_sta ("\n");
             n = 0;
             for (i = ntt_start[s]; i < ntt_start[s+1]; i++)
             {
-					if (ntt_action[i] != 0)
-					{
-						n++;
-						x = ntt_action [i];
-						h = ntt_symb [i];
-						P_SYMBOL (-h);
-						if (x > 0) prt_sta (" goto           %4d\n", x);
-						else
+               if (ntt_action[i] != 0)
+               {
+                  n++;
+                  x = ntt_action [i];
+                  h = ntt_symb [i];
+                  P_SYMBOL (-h);
+                  if (x > 0) prt_sta (" goto           %4d\n", x);
+                  else
                   {
                      p = -x;
                      prt_sta (" reduce         ");
-     		  	         p_prod (p, -1, "", "\n");
+                     p_prod (p, -1, "", "\n");
                   }
-					}
+               }
             }
-				if (n > 0) prt_sta ("\n");
-			/*	if (f_camefrom[s+1] > f_camefrom[s])
-				{
-					prt_sta ("   from:");
-					for (i = f_camefrom[s]; i < f_camefrom[s+1]; i++)
-					{
-	               prt_sta (" %d", camefrom[i]);
-					}
-					prt_sta ("\n");
-				}  */
+            if (n > 0) prt_sta ("\n");
+         /* if (f_camefrom[s+1] > f_camefrom[s])
+            {
+               prt_sta ("   from:");
+               for (i = f_camefrom[s]; i < f_camefrom[s+1]; i++)
+               {
+                  prt_sta (" %d", camefrom[i]);
+               }
+               prt_sta ("\n");
+            }  */
          }
       }
       PRT_STA (-1);
-		prt_sta ("\n\n");
+      prt_sta ("\n\n");
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -197,12 +197,12 @@ int   PG_PrintStates::C_max_symbl (int s)
       int max_symbl = 20;
       for (int i = tt_start[s]; i < tt_start[s+1]; i++)
       {
-			if (tt_action[i] != 0)
-			{
-				int t   = tt_symb [i];
+         if (tt_action[i] != 0)
+         {
+            int t   = tt_symb [i];
             int len = (int)strlen (term_name[t]);
             if (len > max_symbl) max_symbl = len;
-			}
+         }
       }
    // if (optn[PG_NONDETER])
       {
@@ -224,12 +224,12 @@ int   PG_PrintStates::C_max_symbl (int s)
       }
       for (int i = ntt_start[s]; i < ntt_start[s+1]; i++)
       {
-			if (ntt_action[i] != 0)
-			{
-				int h   = ntt_symb [i];
+         if (ntt_action[i] != 0)
+         {
+            int h   = ntt_symb [i];
             int len = (int)strlen (head_name[h]);
             if (len > max_symbl) max_symbl = len;
-			}
+         }
       }
       return max_symbl;
 }
@@ -248,10 +248,10 @@ void  PG_PrintStates::P_HEAD (int s)
 void  PG_PrintStates::P_SYMBOL (int s)
 {
       int L = 0;
-		if (s >= 0)           prt_sta ("     %4d  ",  s);
-		else if (s == -32767) prt_sta ("           "   );
-		else if (s == -32768) prt_sta ("           "   );
-		else                  prt_sta ("     %4d  ", -s);
+      if (s >= 0)           prt_sta ("     %4d  ",  s);
+      else if (s == -32767) prt_sta ("           "   );
+      else if (s == -32768) prt_sta ("           "   );
+      else                  prt_sta ("     %4d  ", -s);
       L = p_sym60 (s, " ");
 }
 
@@ -260,10 +260,10 @@ void  PG_PrintStates::P_SYMBOL (int s)
 void  PG_PrintStates::P_SYMBOL (int s, char* prefix)
 {
       int L = 0;
-		if (s >= 0)           prt_sta ("%s%4d  ", prefix, s);
-		else if (s == -32767) prt_sta ("%s      ", prefix); // (default)
-		else if (s == -32768) prt_sta ("           ");      // (error)
-		else                  prt_sta ("     %4d  ", -s);
+      if (s >= 0)           prt_sta ("%s%4d  ", prefix, s);
+      else if (s == -32767) prt_sta ("%s      ", prefix); // (default)
+      else if (s == -32768) prt_sta ("           ");      // (error)
+      else                  prt_sta ("     %4d  ", -s);
       L = p_sym60 (s, " ");
 }
 
@@ -273,11 +273,11 @@ void  PG_PrintStates::PRT_STA (int s)
 {
       int k, i, f, p;
 
-		if (s == -1)
-		{
-			prt_sta ("END ................................................................................................\n\n", s);
-			return;
-		}
+      if (s == -1)
+      {
+         prt_sta ("END ................................................................................................\n\n", s);
+         return;
+      }
 
       if (optn[PG_NONDETER] == 0)
       {
@@ -311,7 +311,7 @@ void  PG_PrintStates::PRT_STA (int s)
          prt_sta ("   * ");
          p_prod (p, -1, "", "\n");
       }
-		prt_sta("\n");
+      prt_sta("\n");
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -336,21 +336,21 @@ void  PG_PrintStates::p_prod (int p, int dot, char *before, char* after)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-int	PG_PrintStates::p_head (int s, char *sp)
+int   PG_PrintStates::p_head (int s, char *sp)
 {
-		int len;
+      int len;
       char *p;
       p = head_name[s];
       prt_sta ("%s%s", p, sp);
-		len = (int)strlen(p) + (int)strlen(sp);
-		return (len);
+      len = (int)strlen(p) + (int)strlen(sp);
+      return (len);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
-int	PG_PrintStates::p_sym (int s, char *sp)
+int   PG_PrintStates::p_sym (int s, char *sp)
 {
-		int len;
+      int len;
       char *p;
       if (s == -32767)            /* Default symbol? */
       {
@@ -361,21 +361,21 @@ int	PG_PrintStates::p_sym (int s, char *sp)
          p = "(error)";
       }
       else if (s >= 0)            /* Terminal symbol? */
-		{
+      {
          p = term_name[s];
-		}
+      }
       else                        /* Nonterminal symbol? */
-		{
+      {
          p = head_name[-s];
-		}
+      }
       prt_sta ("%s%s", p, sp);
-		len = (int)strlen(p) + (int)strlen(sp);
-		return (len);
+      len = (int)strlen(p) + (int)strlen(sp);
+      return (len);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
-int	PG_PrintStates::p_sym60 (int s, char *sp)
+int   PG_PrintStates::p_sym60 (int s, char *sp)
 {
       char *p;
       if (s == -32767)            /* Default symbol? */
@@ -387,15 +387,15 @@ int	PG_PrintStates::p_sym60 (int s, char *sp)
          p = "(error)";
       }
       else if (s >= 0)            /* Terminal symbol? */
-		{
+      {
          p = term_name[s];
-		}
+      }
       else                        /* Nonterminal symbol? */
-		{
+      {
          p = head_name[-s];
-		}
+      }
       prt_sta ("%-30s%s", p, sp);
-		return (0);
+      return (0);
 }
 
 //                                                                           //

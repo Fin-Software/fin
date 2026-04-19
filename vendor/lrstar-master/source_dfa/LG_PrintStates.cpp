@@ -1,57 +1,57 @@
 
 /* Copyright 2018 Paul B Mann.  BSD License. */
 
-		#include "CM_Global.h"
-		#include "LG_PrintStates.h"
+      #include "CM_Global.h"
+      #include "LG_PrintStates.h"
 
-		static
-		uchar range[256] = /* characters within a range. */
-		{
-			  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
-			  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
-			  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-			  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  0,  0,  0,  0,  0,  0,
-			  0,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,
-			  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  0,  0,  0,  0,  0,
-			  0,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,
-			  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  0,  0,  0,  0,  0,
+      static
+      uchar range[256] = /* characters within a range. */
+      {
+           1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+           1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+           0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+           2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  0,  0,  0,  0,  0,  0,
+           0,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,
+           3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  0,  0,  0,  0,  0,
+           0,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,
+           4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  0,  0,  0,  0,  0,
 
-			  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
-			  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
-			  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
-			  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
-			  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
-			  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
-			  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
-			  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5
-		};
+           5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
+           5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
+           5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
+           5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
+           5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
+           5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
+           5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
+           5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5
+      };
 
 void  LG_PrintStates::PrintStates (int type)
 {
-		char *type_of_sm, *optstr;
+      char *type_of_sm, *optstr;
       int c, t, s, n, A, action, R, i, first_n, count, last_n, a, b, opt;
 
-		switch (type)
-		{
-			case 1:
-				if (optn[LG_STATELIST] == 0) return;
-				type_of_sm = "(for checking conflicts)";
-				opt = optn [LG_STATELIST];
-				for (i = 0; *LGOption[i].name != 0; i++) if (LGOption[i].numb == LG_STATELIST) break;
-				optstr = LGOption[i].name;
-				break;
-			case 2:
-				if (optn[LG_STATELISTOPT] == 0) return;
-				type_of_sm = "(final optimized one)";
-				opt = optn [LG_STATELISTOPT];
-				for (i = 0; *LGOption[i].name != 0; i++) if (LGOption[i].numb == LG_STATELISTOPT) break;
-				optstr = LGOption[i].name;
-				break;
-			default:
-				InternalError(7);
-		}
+      switch (type)
+      {
+         case 1:
+            if (optn[LG_STATELIST] == 0) return;
+            type_of_sm = "(for checking conflicts)";
+            opt = optn [LG_STATELIST];
+            for (i = 0; *LGOption[i].name != 0; i++) if (LGOption[i].numb == LG_STATELIST) break;
+            optstr = LGOption[i].name;
+            break;
+         case 2:
+            if (optn[LG_STATELISTOPT] == 0) return;
+            type_of_sm = "(final optimized one)";
+            opt = optn [LG_STATELISTOPT];
+            for (i = 0; *LGOption[i].name != 0; i++) if (LGOption[i].numb == LG_STATELISTOPT) break;
+            optstr = LGOption[i].name;
+            break;
+         default:
+            InternalError(7);
+      }
 
-		max_headl = 20;
+      max_headl = 20;
 
       prt_sta ("\nSTATE MACHINE %s\n\n", type_of_sm);
 
@@ -61,83 +61,83 @@ void  LG_PrintStates::PrintStates (int type)
          prt_sta ("\n");
          if (optn[LG_TRANSITIONS])
          {
-				c = 0;
-				count   = 0;
-				first_n = 0;
-				last_n  = 0;
-				a = tt_start[s];
-				b = tt_start[s+1];
-				if (tt_end != NULL) b = tt_end[s];
-				for (t = a; t < b; t++)
+            c = 0;
+            count   = 0;
+            first_n = 0;
+            last_n  = 0;
+            a = tt_start[s];
+            b = tt_start[s+1];
+            if (tt_end != NULL) b = tt_end[s];
+            for (t = a; t < b; t++)
             {
-					c++;
+               c++;
                A = tt_action [t];
                n = tt_symb [t];
-					if (range[n] > 0)
-					{
-Inside:				if (count == 0)
-						{
-							first_n = n;
-							action = A;
-							R = range[n];
-							count++;
-						}
-						else if (count > 0)
-						{
-							if (A == action && range[n] == R && n == last_n+1) count++;
-							else goto Out;
-						}
-					}
-					else
-					{
-Out:					if (count == 1)
-						{
-							P_SYMBOL (first_n);
-							prt_sta (" +=> %4d\n", action);
-						}
-						else if (count == 2)
-						{
-							P_SYMBOL (first_n);
-							prt_sta (" +=> %4d\n", action);
-							P_SYMBOL (last_n);
-							prt_sta (" +=> %4d\n", action);
-						}
-						else if (count > 2)
-						{
-							P_RANGE (first_n, last_n);
-							prt_sta (" +=> %4d\n", action);
-						}
-						R = 0;
-						count = 0;
-						if (range[n] > 0) goto Inside;
-						P_SYMBOL (n);
-						prt_sta (" +=> %4d\n", A);
-					}
-					last_n = n;
+               if (range[n] > 0)
+               {
+Inside:           if (count == 0)
+                  {
+                     first_n = n;
+                     action = A;
+                     R = range[n];
+                     count++;
+                  }
+                  else if (count > 0)
+                  {
+                     if (A == action && range[n] == R && n == last_n+1) count++;
+                     else goto Out;
+                  }
+               }
+               else
+               {
+Out:              if (count == 1)
+                  {
+                     P_SYMBOL (first_n);
+                     prt_sta (" +=> %4d\n", action);
+                  }
+                  else if (count == 2)
+                  {
+                     P_SYMBOL (first_n);
+                     prt_sta (" +=> %4d\n", action);
+                     P_SYMBOL (last_n);
+                     prt_sta (" +=> %4d\n", action);
+                  }
+                  else if (count > 2)
+                  {
+                     P_RANGE (first_n, last_n);
+                     prt_sta (" +=> %4d\n", action);
+                  }
+                  R = 0;
+                  count = 0;
+                  if (range[n] > 0) goto Inside;
+                  P_SYMBOL (n);
+                  prt_sta (" +=> %4d\n", A);
+               }
+               last_n = n;
             }
-				if (count == 1)
-				{
-					P_SYMBOL (first_n);
-					prt_sta (" +=> %4d\n", action);
-				}
-				else if (count == 2)
-				{
-					P_SYMBOL (first_n);
-					prt_sta (" +=> %4d\n", action);
-					P_SYMBOL (last_n);
-					prt_sta (" +=> %4d\n", action);
-				}
-				else if (count > 2)
-				{
-					P_RANGE (first_n, last_n);
-					prt_sta (" +=> %4d\n", action);
-				}
+            if (count == 1)
+            {
+               P_SYMBOL (first_n);
+               prt_sta (" +=> %4d\n", action);
+            }
+            else if (count == 2)
+            {
+               P_SYMBOL (first_n);
+               prt_sta (" +=> %4d\n", action);
+               P_SYMBOL (last_n);
+               prt_sta (" +=> %4d\n", action);
+            }
+            else if (count > 2)
+            {
+               P_RANGE (first_n, last_n);
+               prt_sta (" +=> %4d\n", action);
+            }
             if (la_start != NULL)
             {
-					a = la_start[s];
-					b = la_start[s+1];
-					if (la_end != NULL) b = la_end[s];
-					for (t = a; t < b; t++)
+               a = la_start[s];
+               b = la_start[s+1];
+               if (la_end != NULL) b = la_end[s];
+               for (t = a; t < b; t++)
                {
                   n = la_symb [t];
                   P_SYMBOL (n);
@@ -149,23 +149,23 @@ Out:					if (count == 1)
 
             if (D_red != NULL && (A = D_red [s]) >= 0 && s != 0 && s != illegal_char_state)
             {
-					c++;
+               c++;
                P_SYMBOL (-32767);
-					prt_sta ("  <= %4d\n", A);
-				//	p_prod (A, -1, "", "\n");
+               prt_sta ("  <= %4d\n", A);
+            // p_prod (A, -1, "", "\n");
             }
-				else if (s != accept_state)
-				{
-					c++;
-					prt_sta ("       (error)\n");
-				}
-				if (c) prt_sta ("\n");
+            else if (s != accept_state)
+            {
+               c++;
+               prt_sta ("       (error)\n");
+            }
+            if (c) prt_sta ("\n");
 
             c = 0;
-				a = ntt_start[s];
-				b = ntt_start[s+1];
-				if (ntt_end != NULL) b = ntt_end[s];
-				for (t = a; t < b; t++)
+            a = ntt_start[s];
+            b = ntt_start[s+1];
+            if (ntt_end != NULL) b = ntt_end[s];
+            for (t = a; t < b; t++)
             {
                A = ntt_action [t];
                if (A == 0) continue;
@@ -188,12 +188,12 @@ void  LG_PrintStates::P_SYMBOL (int s)
       {
          prt_sta ("       (default)            ");
          L = 21;
-			return;
+         return;
       }
       prt_sta ("       ");
       L = p_sym (s, " ");
-		L = max_headl-L+1;
-		if (L < 0) L = 0;
+      L = max_headl-L+1;
+      if (L < 0) L = 0;
       spaces [L] = 0;
       prt_sta ("%s", spaces);
       spaces [L] = ' ';
@@ -204,9 +204,9 @@ void  LG_PrintStates::P_RANGE (int s1, int s2)
       int L;
       prt_sta ("       ");
       L = p_sym (s1, "..");
-		L += p_sym (s2, "");
-		L = max_headl-L+1;
-		if (L < 0) L = 0;
+      L += p_sym (s2, "");
+      L = max_headl-L+1;
+      if (L < 0) L = 0;
       spaces [L] = 0;
       prt_sta ("%s", spaces);
       spaces [L] = ' ';
@@ -217,14 +217,14 @@ void  LG_PrintStates::PRT_STA (int s)
       int k, i, f, p, n, a, b, d_red;
       prt_sta ("STATE %d ................................................................................\n\n", s);
 
-		n = 0;
-		d_red = D_red[s];
-		a = f_kernel[s];
-		if (l_kernel != NULL) b = l_kernel[s];
-		else                  b = f_kernel[s+1];
-		for (k = a; k < b; k++)
+      n = 0;
+      d_red = D_red[s];
+      a = f_kernel[s];
+      if (l_kernel != NULL) b = l_kernel[s];
+      else                  b = f_kernel[s+1];
+      for (k = a; k < b; k++)
       {
-			n++;
+         n++;
          i = kernel [k];
          if (item[i].symb != -32767)
          {
@@ -233,41 +233,41 @@ void  LG_PrintStates::PRT_STA (int s)
          }
       }
 
-		a = f_final[s];
-		if (l_final != NULL) b = l_final[s];
-		else                 b = f_final[s+1];
+      a = f_final[s];
+      if (l_final != NULL) b = l_final[s];
+      else                 b = f_final[s+1];
       for (f = a; f < b; f++)
       {
-			n++;
+         n++;
          p = final [f];
          if (p >= 0)
          {
-				if (p == d_red) d_red = 0;
-				if (p >= n_oprods) prt_sta ("   . ");
-				else               prt_sta ("   * ");
-				p_prod (p, -1, "", "\n");
+            if (p == d_red) d_red = 0;
+            if (p >= n_oprods) prt_sta ("   . ");
+            else               prt_sta ("   * ");
+            p_prod (p, -1, "", "\n");
          }
       }
 
-		if (n == 0 && s == N_states-1) // Must be illegal_char state.
-		{
-			prt_sta ("   *   Illegal character state.\n");
-		}
+      if (n == 0 && s == N_states-1) // Must be illegal_char state.
+      {
+         prt_sta ("   *   Illegal character state.\n");
+      }
 
-		if (d_red > 0)
-		{
-			prt_sta ("   * ");
-			p_prod (d_red, -1, "", "\n");
-		}
+      if (d_red > 0)
+      {
+         prt_sta ("   * ");
+         p_prod (d_red, -1, "", "\n");
+      }
 }
 
 void  LG_PrintStates::p_prod (int p, int dot, char *before, char* after)
 {
       int t, u, d, h;
-		h = head_sym[p];
-		if (h < 0)
-		     prt_sta ("%s%4d  [%d] -> ", before, p, h);
-		else prt_sta ("%s%4d  %s -> ",   before, p, head_name [h]);
+      h = head_sym[p];
+      if (h < 0)
+           prt_sta ("%s%4d  [%d] -> ", before, p, h);
+      else prt_sta ("%s%4d  %s -> ",   before, p, head_name [h]);
       t = f_tail [p];
       u = l_tail [p];
       d = t + dot;
@@ -282,7 +282,7 @@ void  LG_PrintStates::p_prod (int p, int dot, char *before, char* after)
       prt_sta ("%s", after);
 }
 
-int	LG_PrintStates::p_sym (int s, char *sp)
+int   LG_PrintStates::p_sym (int s, char *sp)
 {
       char *p;
       if (s >= 0)                 /* Terminal symbol? */

@@ -39,7 +39,7 @@ semv=22.1.3 base=llvm-project-$semv.src.tar.xz url=github.com/llvm/llvm-project/
 
 semv=master base=LRSTAR-$semv.tar.gz url=github.com/p7r0x7/LRSTAR/archive/${base#*-}
 (
-    get f6b33c1ea42ebdd1793728daa82a30095848345958b9498b3fbb6e9da00534a2; set -f
+    get 59a221f233c12c1cee1559068270798a3008aacd5ccd3f1f38f65c32fc85df9d; set -f
         szip e -so $srcs/$base | szip x -o$vend -si -ttar $($print '-i!*/*/*.%s ' h hpp cpp txt grm lgr) \
         -x!*/bin -xr!?G.*.txt >/dev/null; mv $vend/LRSTAR-$semv $vend/lrstar-$semv; set +f
 ) &

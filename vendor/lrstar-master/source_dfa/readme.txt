@@ -19,15 +19,15 @@ ON WINDOWS SYSTEMS:
 
    If you are not using Visual C++, do the following:
 
-   1. Specify WINDOWS and LRSTAR on the command line:
+   1. Specify _WIN32 and LRSTAR on the command line:
 
-      /D WINDOWS /D LRSTAR
+      /D _WIN32 /D LRSTAR
 
       Compile all the code (*.cpp) to make lrstar.exe
 
-   2. Specify WINDOWS and DFA on the command line:
+   2. Specify _WIN32 and DFA on the command line:
 
-      /D WINDOWS /D DFA
+      /D _WIN32 /D DFA
 
       Compile all the code (*.cpp) to make dfa.exe
 
@@ -45,29 +45,29 @@ ON LINUX SYSTEMS:
 
       gcc *.cpp -lstdc++ -w -DUNIX -DDFA -odfa
 
-	This is the recommended batch file:
+   This is the recommended batch file:
 
-	@echo off
-	if exist *.obj del *.obj
-	if exist *.o   del *.o
-	del dfa.exe lrstar.exe
-	gcc -Os *.cpp -lstdc++ -w -DUNIX -DDFA -o dfa -s
-	gcc -Os *.cpp -lstdc++ -w -DUNIX -DLRSTAR -o lrstar -s
+   @echo off
+   if exist *.obj del *.obj
+   if exist *.o   del *.o
+   del dfa.exe lrstar.exe
+   gcc -Os *.cpp -lstdc++ -w -DUNIX -DDFA -o dfa -s
+   gcc -Os *.cpp -lstdc++ -w -DUNIX -DLRSTAR -o lrstar -s
 
-	To get the definition of S_IREAD and S_IWRITE,
-	you may have to add:
+   To get the definition of S_IREAD and S_IWRITE,
+   you may have to add:
 
    -D_GNU_SOURCE  (on the command line)
 
-	Or put this in the code:
+   Or put this in the code:
 
-	#define _GNU_SOURCE
+   #define _GNU_SOURCE
 
 ---------------------------------------------------------
 
 ON MAC OS X SYSTEMS:
 
-	I don't know about this, sorry.
+   I don't know about this, sorry.
 
 ---------------------------------------------------------
 

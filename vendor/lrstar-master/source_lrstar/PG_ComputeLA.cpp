@@ -2,7 +2,7 @@
 /* Copyright 2018 Paul B Mann.  BSD License. */
 
       #include "CM_Global.h"
-		#include "PG_ComputeLA.h"
+      #include "PG_ComputeLA.h"
 
       #ifdef _DEBUG
       #define PRINTF prt_con
@@ -10,26 +10,26 @@
       #define PRINTF prt_con
       #endif
 
-		int    PG_ComputeLA::n_nditems;
-		int    PG_ComputeLA::n_ndstates;
-		int    PG_ComputeLA::n_ndterms;
-		int*   PG_ComputeLA::nd_state;
-	   int*   PG_ComputeLA::nd_item;
-	   int*   PG_ComputeLA::nd_start;
-		int*   PG_ComputeLA::nd_term;
-		int*   PG_ComputeLA::nd_action;
-		int    PG_ComputeLA::c_states;
+      int    PG_ComputeLA::n_nditems;
+      int    PG_ComputeLA::n_ndstates;
+      int    PG_ComputeLA::n_ndterms;
+      int*   PG_ComputeLA::nd_state;
+      int*   PG_ComputeLA::nd_item;
+      int*   PG_ComputeLA::nd_start;
+      int*   PG_ComputeLA::nd_term;
+      int*   PG_ComputeLA::nd_action;
+      int    PG_ComputeLA::c_states;
 
-		int*   PG_ComputeLA::D_red;
+      int*   PG_ComputeLA::D_red;
       int*   PG_ComputeLA::N_Conflicts;
-		int*   PG_ComputeLA::la_start;
-		int*   PG_ComputeLA::la_end;
-		int*   PG_ComputeLA::la_symb;
-		int*   PG_ComputeLA::la_red;
+      int*   PG_ComputeLA::la_start;
+      int*   PG_ComputeLA::la_end;
+      int*   PG_ComputeLA::la_symb;
+      int*   PG_ComputeLA::la_red;
 
-		int    PG_ComputeLA::n_lookbacks;
-		int    PG_ComputeLA::n_lookah;
-		int    PG_ComputeLA::n_includes;
+      int    PG_ComputeLA::n_lookbacks;
+      int    PG_ComputeLA::n_lookah;
+      int    PG_ComputeLA::n_includes;
       int    PG_ComputeLA::rr_con;
       int    PG_ComputeLA::sr_con;
       int    PG_ComputeLA::nd_maxcount;
@@ -46,23 +46,23 @@
       static char*  firstaction;
       static int*   conflict;
       static int*   already;
-		static int	  depth;
+      static int    depth;
       static int*   f_lookback;
       static int    inc_on;
       static int*   include;
       static int*   lookback;
       static int    max_lookback;
       static int    max_include;
-		static int    max_nditems;
+      static int    max_nditems;
       static int    n_bytes;
       static int    n_relations;
       static int    n_words;
       static int*   newloc;
       static int*   redconf;
-		static int    sr_con_left;
-		static int    rr_con_left;
-		static int    c_states_left;
-		static int    n_states_fixed;
+      static int    sr_con_left;
+      static int    rr_con_left;
+      static int    c_states_left;
+      static int    n_states_fixed;
       static int    n_shift_prior;
       static int    n_oper_prec;
       static int    sr, rr;
@@ -73,37 +73,37 @@
 int   PG_ComputeLA::ComputeLA () /* Analyze States */
 {
       char* ch;
-		PRINTF("\n");
-		if (optn[PG_CONSHIFT] && optn[PG_CONREDUCE])
-		{
-			PRINTF("Shift-Reduce and Reduce-Reduce Conflicts Report\n\n");
-		}
-		else if (optn[PG_CONSHIFT])
-		{
-			PRINTF ("Shift-Reduce Conflicts Report:\n\n");
-		}
-		else if (optn[PG_CONREDUCE])
-		{
-			PRINTF ("Reduce-Reduce Conflicts Report:\n\n");
-		}
-		else
-		{
-	      PRINTF ("Conflicts Report:\n\n");
-			PRINTF ("Neither 'csr' nor 'crr' option was specified.\n\n");
-		}
+      PRINTF("\n");
+      if (optn[PG_CONSHIFT] && optn[PG_CONREDUCE])
+      {
+         PRINTF("Shift-Reduce and Reduce-Reduce Conflicts Report\n\n");
+      }
+      else if (optn[PG_CONSHIFT])
+      {
+         PRINTF ("Shift-Reduce Conflicts Report:\n\n");
+      }
+      else if (optn[PG_CONREDUCE])
+      {
+         PRINTF ("Reduce-Reduce Conflicts Report:\n\n");
+      }
+      else
+      {
+         PRINTF ("Conflicts Report:\n\n");
+         PRINTF ("Neither 'csr' nor 'crr' option was specified.\n\n");
+      }
 
       n_lookah      = 0;
       n_nditems     = 0;
       c_states      = 0;
       sr_con        = 0;
       rr_con        = 0;
-		c_states_left = 0;
-		sr_con_left   = 0;
-		rr_con_left   = 0;
+      c_states_left = 0;
+      sr_con_left   = 0;
+      rr_con_left   = 0;
       n_oper_prec   = 0;
       n_shift_prior = 0;
 
-		n_words = (N_terms +  3)/4;   // Number of 4-byte words.
+      n_words = (N_terms +  3)/4;   // Number of 4-byte words.
 
       n_bytes     = 4*n_words;           /* Number of bytes to allocate. */
       max_lookah  = optn[MAX_LA];
@@ -116,16 +116,16 @@ int   PG_ComputeLA::ComputeLA () /* Analyze States */
       ALLOC (N_Conflicts, N_states);
       for (int s = 0; s < N_states; s++) N_Conflicts[s] = 0;
 
-	 	C_LOOKBACKS ();
-		C_READS ();
-		C_LOOKAHEADS ();
+      C_LOOKBACKS ();
+      C_READS ();
+      C_LOOKAHEADS ();
 
-		ALLOC (nd_state, N_states);
-		for (int s = 0; s < N_states; s++)
-		{
-			if (nd_item[s+1] > nd_item[s]) nd_state[s] = 1;
-			else                             nd_state[s] = 0;
-		}
+      ALLOC (nd_state, N_states);
+      for (int s = 0; s < N_states; s++)
+      {
+         if (nd_item[s+1] > nd_item[s]) nd_state[s] = 1;
+         else                             nd_state[s] = 0;
+      }
 
    // Get maximum number of choices for a terminal in each state ...
       nd_maxcount = 0;
@@ -156,26 +156,26 @@ int   PG_ComputeLA::ComputeLA () /* Analyze States */
 
       if (sr_con || rr_con) PRINTF ("\n");
 
-		ch = "s";
-		if (c_states == 1) ch = "";
-		if (optn[PG_VERBOSE])
-		     prt_log     ("Conflicts %6d state%s, %d shift-reduce, %d reduce-reduce.\n", c_states, ch, sr_con, rr_con);
-		else prt_logonly ("Conflicts %6d state%s, %d shift-reduce, %d reduce-reduce.\n", c_states, ch, sr_con, rr_con);
+      ch = "s";
+      if (c_states == 1) ch = "";
+      if (optn[PG_VERBOSE])
+           prt_log     ("Conflicts %6d state%s, %d shift-reduce, %d reduce-reduce.\n", c_states, ch, sr_con, rr_con);
+      else prt_logonly ("Conflicts %6d state%s, %d shift-reduce, %d reduce-reduce.\n", c_states, ch, sr_con, rr_con);
 
-		prt_con ("%5d conflict state%s.\n", c_states, ch);
-		prt_con ("%5d shift-reduce conflicts.\n", sr_con);
-		prt_con ("%5d reduce-reduce conflicts.\n\n", rr_con);
+      prt_con ("%5d conflict state%s.\n", c_states, ch);
+      prt_con ("%5d shift-reduce conflicts.\n", sr_con);
+      prt_con ("%5d reduce-reduce conflicts.\n\n", rr_con);
 
-		if (n_ndstates > 0)
-		{
-		/*	ch = "s";
-			if (n_ndstates == 1) ch = "";
-			if (optn[PG_VERBOSE])
-				  prt_log     ("ND       %7d state%s will use LR(*) parsing.\n", n_ndstates, ch);
-			else prt_logonly ("ND       %7d state%s will use LR(*) parsing.\n", n_ndstates, ch);
-		*/
-		}
-		return 1;
+      if (n_ndstates > 0)
+      {
+      /* ch = "s";
+         if (n_ndstates == 1) ch = "";
+         if (optn[PG_VERBOSE])
+              prt_log     ("ND       %7d state%s will use LR(*) parsing.\n", n_ndstates, ch);
+         else prt_logonly ("ND       %7d state%s will use LR(*) parsing.\n", n_ndstates, ch);
+      */
+      }
+      return 1;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -188,149 +188,149 @@ void  PG_ComputeLA::C_LOOKAHEADS ()
       {
          include[i] = -(include[i]+1); // Reset includes.
       }
-		max_nditems = optn[MAX_ND];
+      max_nditems = optn[MAX_ND];
       ALLOC (LASUM,       n_bytes);
       ALLOC (action,      N_terms);
       ALLOC (actionindx,  N_terms);
       ALLOC (firstaction, N_terms);
       ALLOC (conflict,    N_terms);
-		ALLOC (nd_item,     N_states+1);
-		ALLOC (nd_term,     max_nditems);
-		ALLOC (nd_action,   max_nditems);
+      ALLOC (nd_item,     N_states+1);
+      ALLOC (nd_term,     max_nditems);
+      ALLOC (nd_action,   max_nditems);
 
       n_ndstates = 0;
-		n_states_fixed = 0;
-		nw = n_warnings;
+      n_states_fixed = 0;
+      nw = n_warnings;
       for (s = 0; s < opt_states; s++)
       {
-		//	printf ("state = %d\n", s);
-			sr = rr = 0;
-			la_start[s] = n_lookah;
-			nfi = f_final[s+1] - f_final[s];
-			D_red[s] = -1;	                        // No default reduction.
-			nd_item[s] = n_nditems;
-			if (nfi)			                        // Any reductions in this state?
-			{
+      // printf ("state = %d\n", s);
+         sr = rr = 0;
+         la_start[s] = n_lookah;
+         nfi = f_final[s+1] - f_final[s];
+         D_red[s] = -1;                         // No default reduction.
+         nd_item[s] = n_nditems;
+         if (nfi)                               // Any reductions in this state?
+         {
             memset (firstaction, 1, N_terms);
-				FASTINI (0, conflict,   N_terms);
-				FASTINI (0, action,     N_terms);
-				for (i = tt_start [s]; i < tt_start [s+1]; i++)
-				{
-					action [tt_symb[i]] = tt_action[i];
+            FASTINI (0, conflict,   N_terms);
+            FASTINI (0, action,     N_terms);
+            for (i = tt_start [s]; i < tt_start [s+1]; i++)
+            {
+               action [tt_symb[i]] = tt_action[i];
                actionindx [tt_symb[i]] = i;
-				}
+            }
 
-				for (f = f_final [s]; f < f_final [s+1]; f++) // For each reduction.
-				{
-					ANALYZE (s, f);
-				}
+            for (f = f_final [s]; f < f_final [s+1]; f++) // For each reduction.
+            {
+               ANALYZE (s, f);
+            }
 
-            if (sr+rr > 0)							// Any conflicts?
-				{
-					c_states++;							// Update conflict state count.
-					sr_con += sr;						// Add to SR total.
-					rr_con += rr;						// Add to RR total.
-					if (REPORT_CONFLICTS (s,sr,rr))
-					{
-						DF_TRACE_BACK (s,sr,rr);
-					}
-					if (sr > 0)							// Any SR conflicts?
-					{
-					//	nd_item[s+1] = n_nditems;	// Update.
-					//	CYCLE_CHECK (s);				// Chack for if-else situation.
-					}
-					if (n_nditems > nd_item[s])	// Any new nditems?
-					{
-						n = nd_item[s];
-						for (i = nd_item[s]; i < n_nditems; i++)	// For all new items.
-						{
-							if (nd_action[i] != 0)						// nd action not deleted?
-							{
-								t            = nd_term[i];				// Get terminal symbol.
-								nd_term[n]   = nd_term[i];				// Move term.
-								nd_action[n] = nd_action[i];			// Move action.
-         				   if (optn[PG_NONDETER])					// ND is on?
+            if (sr+rr > 0)                   // Any conflicts?
+            {
+               c_states++;                   // Update conflict state count.
+               sr_con += sr;                 // Add to SR total.
+               rr_con += rr;                 // Add to RR total.
+               if (REPORT_CONFLICTS (s,sr,rr))
+               {
+                  DF_TRACE_BACK (s,sr,rr);
+               }
+               if (sr > 0)                   // Any SR conflicts?
+               {
+               // nd_item[s+1] = n_nditems;  // Update.
+               // CYCLE_CHECK (s);           // Chack for if-else situation.
+               }
+               if (n_nditems > nd_item[s])   // Any new nditems?
+               {
+                  n = nd_item[s];
+                  for (i = nd_item[s]; i < n_nditems; i++)  // For all new items.
+                  {
+                     if (nd_action[i] != 0)                 // nd action not deleted?
+                     {
+                        t            = nd_term[i];          // Get terminal symbol.
+                        nd_term[n]   = nd_term[i];          // Move term.
+                        nd_action[n] = nd_action[i];        // Move action.
+                        if (optn[PG_NONDETER])              // ND is on?
                         {
-				 	  			   if (action[t] > 0)               // Shift action?
-									   tt_action[actionindx[t]] = 0; // Cancel tt_action.
-								   action[t] = 0;	                  // Cancel action.
+                           if (action[t] > 0)               // Shift action?
+                              tt_action[actionindx[t]] = 0; // Cancel tt_action.
+                           action[t] = 0;                   // Cancel action.
                         }
-								n++;
-							}
-						}
-						n_nditems = n;						// Update nditems.
-						if (n_nditems > nd_item[s])	// Any nd entries?
-						{
-				  			SORT2 (nd_term + nd_item[s], nd_action + nd_item[s], n_nditems - nd_item[s]);
+                        n++;
+                     }
+                  }
+                  n_nditems = n;                // Update nditems.
+                  if (n_nditems > nd_item[s])   // Any nd entries?
+                  {
+                     SORT2 (nd_term + nd_item[s], nd_action + nd_item[s], n_nditems - nd_item[s]);
                   // Create LA terms, larger parser tables, but faster parser code.
                      if (optn[PG_NONDETER])
                      {
-							// Add all terminals that cause a reduction ...
-                        for (t = 0; t < N_terms; t++)	// For all terminal symbols.
-							   {
-								   if (action[t] < 0)			// Reduce action?
-								   {
-									   if (n_lookah >= max_lookah) MemCrash ("Number of lookaheads", max_lookah);
-									   la_symb[n_lookah] = t;
-									   la_red [n_lookah++] = -action[t];
-								   }
-							   }
+                     // Add all terminals that cause a reduction ...
+                        for (t = 0; t < N_terms; t++) // For all terminal symbols.
+                        {
+                           if (action[t] < 0)         // Reduce action?
+                           {
+                              if (n_lookah >= max_lookah) MemCrash ("Number of lookaheads", max_lookah);
+                              la_symb[n_lookah] = t;
+                              la_red [n_lookah++] = -action[t];
+                           }
+                        }
                         D_red[s] = -1; // No default reduction.
-   							n_ndstates++;
-	   						goto Next;
+                        n_ndstates++;
+                        goto Next;
                      }
-						}
-						else // Removed by CYCLE_CHECK.
-						{
-							n_states_fixed++;
-							prt_con ("STATE %d does not require ND parsing.\n\n", s);
-						}
-					}
-				}
-			// Can have default reduction if no ND items ...
-				if (optn[PG_DEFAULTRED])
-				{
-				   p = -1;											// No default reduction set.
-					for (t = 0; t < N_terms; t++)				// For all terminal symbols.
-					{
-						if (action[t] < 0)						// Reduction?
-						{
-							if (p == -1)                     // Undefined?
-                        p = -action[t];				   // Define it.
-							else if (p != -action[t])        // Defined to something else?.
+                  }
+                  else // Removed by CYCLE_CHECK.
+                  {
+                     n_states_fixed++;
+                     prt_con ("STATE %d does not require ND parsing.\n\n", s);
+                  }
+               }
+            }
+         // Can have default reduction if no ND items ...
+            if (optn[PG_DEFAULTRED])
+            {
+               p = -1;                                // No default reduction set.
+               for (t = 0; t < N_terms; t++)          // For all terminal symbols.
+               {
+                  if (action[t] < 0)                  // Reduction?
+                  {
+                     if (p == -1)                     // Undefined?
+                        p = -action[t];               // Define it.
+                     else if (p != -action[t])        // Defined to something else?.
                         goto NoDef;                   // No default reduction.
-						}
-					}
+                  }
+               }
                D_red[s] = p;
-				}
-				else // PG_DEFAULTRED not specified.
-				{
-NoDef:			D_red[s] = -1;									// No default reduction.
-					for (t = 0; t < N_terms; t++)				// For all terminal symbols.
-					{
-						if (action[t] < 0)						// Reduction?
-						{
-							if (n_lookah >= max_lookah)
-							{
-								n_lookah++;
-								MemCrash ("Number of lookaheads", max_lookah);
-							}
-							la_symb[n_lookah] = t;
-							la_red [n_lookah++] = -action[t];
-						}
-					}
-				}
+            }
+            else // PG_DEFAULTRED not specified.
+            {
+NoDef:         D_red[s] = -1;                         // No default reduction.
+               for (t = 0; t < N_terms; t++)          // For all terminal symbols.
+               {
+                  if (action[t] < 0)                  // Reduction?
+                  {
+                     if (n_lookah >= max_lookah)
+                     {
+                        n_lookah++;
+                        MemCrash ("Number of lookaheads", max_lookah);
+                     }
+                     la_symb[n_lookah] = t;
+                     la_red [n_lookah++] = -action[t];
+                  }
+               }
+            }
          }
 Next:    continue;
       }
-		for (s = opt_states; s < N_states; s++)
-		{
-			la_start[s] = n_lookah;
-			nd_item[s] = n_nditems;
-			D_red[s] = item [final[f_final[s]]].prod;
-		}
-		la_start[s] = n_lookah;
-		nd_item[s] = n_nditems;
+      for (s = opt_states; s < N_states; s++)
+      {
+         la_start[s] = n_lookah;
+         nd_item[s] = n_nditems;
+         D_red[s] = item [final[f_final[s]]].prod;
+      }
+      la_start[s] = n_lookah;
+      nd_item[s] = n_nditems;
 
       FREE (conflict,   N_terms);
       FREE (action,     N_terms);
@@ -344,108 +344,108 @@ Next:    continue;
       FREE (FIRST, N_heads);
 
       FREE (lookback,   max_lookback);
-	   FREE (f_lookback, n_finals+2);
-		FREE (prod_line, N_prods);
-		FREE (head_line, N_heads);
+      FREE (f_lookback, n_finals+2);
+      FREE (prod_line, N_prods);
+      FREE (head_line, N_heads);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void	PG_ComputeLA::ANALYZE (int s, int f)
+void  PG_ComputeLA::ANALYZE (int s, int f)
 {
-		int p, lb, t;
-		p = item [final[f]].prod;
+      int p, lb, t;
+      p = item [final[f]].prod;
       FASTINI (0, LASUM, n_words);
-		for (lb = f_lookback[f]; lb < f_lookback[f+1]; lb++)
-		{
-			FASTOR (LA[lookback[lb]], LASUM, n_words);
-		}
-		for (t = 0; t < N_terms; t++)								// For all terminal symbols.
-		{
-			if (LASUM[t])												// Reduction defined for t?
-			{
-				if (action[t] == 0)								   // Current action undefined?
-				{
-					action[t] = -p;									// Reduce by -p
-				}
-				else if (action[t] < 0)								// Reduce already defined for t?
-				{
-			      rr++;					                        // Increment number of RR conflicts.
-               if (firstaction[t])								// If first action for this t ...
+      for (lb = f_lookback[f]; lb < f_lookback[f+1]; lb++)
+      {
+         FASTOR (LA[lookback[lb]], LASUM, n_words);
+      }
+      for (t = 0; t < N_terms; t++)                      // For all terminal symbols.
+      {
+         if (LASUM[t])                                   // Reduction defined for t?
+         {
+            if (action[t] == 0)                          // Current action undefined?
+            {
+               action[t] = -p;                           // Reduce by -p
+            }
+            else if (action[t] < 0)                      // Reduce already defined for t?
+            {
+               rr++;                                     // Increment number of RR conflicts.
+               if (firstaction[t])                       // If first action for this t ...
                {
-					   if (n_nditems >= max_nditems) MemCrash ("Number of ND entries", max_nditems);
-					   nd_term   [n_nditems  ] = t;           // Assign t to terminal list.
-					   nd_action [n_nditems++] = action[t];	// Assign original action.
-                  firstaction[t] = 0;							// Clear first action flag.
+                  if (n_nditems >= max_nditems) MemCrash ("Number of ND entries", max_nditems);
+                  nd_term   [n_nditems  ] = t;           // Assign t to terminal list.
+                  nd_action [n_nditems++] = action[t];   // Assign original action.
+                  firstaction[t] = 0;                    // Clear first action flag.
                }
-				   if (n_nditems >= max_nditems) MemCrash ("Number of ND entries", max_nditems);
-				   nd_term   [n_nditems  ] =  t;
-				   nd_action [n_nditems++] = -p;				// Assign previous reduction, keep in order.
-			      if (-action[t] < p)
+               if (n_nditems >= max_nditems) MemCrash ("Number of ND entries", max_nditems);
+               nd_term   [n_nditems  ] =  t;
+               nd_action [n_nditems++] = -p;          // Assign previous reduction, keep in order.
+               if (-action[t] < p)
                {
-                  conflict[t] = -p;						   // Save the reduction first seen in the grammar.
+                  conflict[t] = -p;                   // Save the reduction first seen in the grammar.
                }
-			      else
-			      {
-				      conflict[t] = action[t];			   // Switch to reduction first seen.
-				      action[t]   = -p;
-			      }
-				}
-				else
-				{
-               int op = OPER_PREC (s,p,t);	         // Operator precedence.
+               else
+               {
+                  conflict[t] = action[t];            // Switch to reduction first seen.
+                  action[t]   = -p;
+               }
+            }
+            else
+            {
+               int op = OPER_PREC (s,p,t);            // Operator precedence.
                if (op == 0)
                {
                   int pr = PRIORITY (s,p,t);          // Rule has priority?
-						if (pr == 0)								//	NO.
-						{
-							if (!optn[PG_FORCESHIFT])
-							{
-								sr++;										// Increment number of SR conflicts.
-								if (firstaction[t])              // If first action for this t ...
-								{
-									if (n_nditems >= max_nditems) MemCrash("Number of ND entries", max_nditems);
-									nd_term[n_nditems] = t;					// Assign t to terminal list.
-									nd_action[n_nditems++] = action[t];	// Assign original action.
-									firstaction[t] = 0;						// Clear first action flag.
-								}
-								if (n_nditems >= max_nditems) MemCrash("Number of ND entries", max_nditems);
-								nd_term[n_nditems] = t;
-								nd_action[n_nditems++] = -p;		   // Assign previous reduction, keep in order.
-								conflict[t] = -p;							// Save reduction for reporting.
-							}
+                  if (pr == 0)                        // NO.
+                  {
+                     if (!optn[PG_FORCESHIFT])
+                     {
+                        sr++;                            // Increment number of SR conflicts.
+                        if (firstaction[t])              // If first action for this t ...
+                        {
+                           if (n_nditems >= max_nditems) MemCrash("Number of ND entries", max_nditems);
+                           nd_term[n_nditems] = t;             // Assign t to terminal list.
+                           nd_action[n_nditems++] = action[t]; // Assign original action.
+                           firstaction[t] = 0;                 // Clear first action flag.
+                        }
+                        if (n_nditems >= max_nditems) MemCrash("Number of ND entries", max_nditems);
+                        nd_term[n_nditems] = t;
+                        nd_action[n_nditems++] = -p;        // Assign previous reduction, keep in order.
+                        conflict[t] = -p;                   // Save reduction for reporting.
+                     }
                   }
                }
-				}
-			}
-		}
+            }
+         }
+      }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
-int   PG_ComputeLA::OPER_PREC (int s, int p, int t)					// Operator precedence defined?
+int   PG_ComputeLA::OPER_PREC (int s, int p, int t)               // Operator precedence defined?
 {
       int a, b;
       a = abs (Oper_prec [t]);
-      if (a == 32767) return (0);						// Already warned.
-		if (a == -32768)										// Non associative, make syntax error at runtime.
-		{
-			/* nothing yet */
-		}
-      if (prod_len [p]         >=  3					// Prod length >= 3?
-      && Tail [F_tail [p]]     == -head_sym [p]		// Left recursive?
-      && Tail [F_tail [p+1]-1] == -head_sym [p])	// Right recursive?
+      if (a == 32767) return (0);                  // Already warned.
+      if (a == -32768)                             // Non associative, make syntax error at runtime.
       {
-         if (a == 0)											// Oper_prec undefined?
+         /* nothing yet */
+      }
+      if (prod_len [p]         >=  3               // Prod length >= 3?
+      && Tail [F_tail [p]]     == -head_sym [p]    // Left recursive?
+      && Tail [F_tail [p+1]-1] == -head_sym [p])   // Right recursive?
+      {
+         if (a == 0)                               // Oper_prec undefined?
          {
-				Oper_prec [t] = 32767;
-				sprintf (string, "%s has no operator precedence in state %d", term_name[t], s);
-				prt_warning (string, NULL, NULL, 0);
+            Oper_prec [t] = 32767;
+            sprintf (string, "%s has no operator precedence in state %d", term_name[t], s);
+            prt_warning (string, NULL, NULL, 0);
             return (0);
          }
          n_oper_prec++;
          b = abs (Oper_prec [Tail [F_tail [p] + 1]]);
-         if (a > b)		// Higher?
+         if (a > b)     // Higher?
          {
             return (1); // Choose shift.
          }
@@ -453,8 +453,8 @@ int   PG_ComputeLA::OPER_PREC (int s, int p, int t)					// Operator precedence d
          {
             return (1); // Choose shift.
          }
-			tt_action[actionindx[t]] = 0; // Cancel shift and goto action.
-         action [t] = -p;			      // Force reduction instead.
+         tt_action[actionindx[t]] = 0; // Cancel shift and goto action.
+         action [t] = -p;              // Force reduction instead.
          return (1);
       }
       return (0);
@@ -494,7 +494,7 @@ int   PG_ComputeLA::PRIORITY (int s, int p, int t)
                }
                else // nonterminal.
                {
-			         if (FIRST[-sym][t])
+                  if (FIRST[-sym][t])
                   {
 Bingo:               npm++;    // number of production matches for t.
                      int p2 = item[i].prod;
@@ -534,113 +534,113 @@ Bingo:               npm++;    // number of production matches for t.
 
 int   PG_ComputeLA::REPORT_CONFLICTS (int state, int sr, int rr)
 {
-		int nc, t, first = 1, rc = 0;
+      int nc, t, first = 1, rc = 0;
 
       N_Conflicts[state] += sr + rr;
-		nc = 0; // Number of conflicts.
+      nc = 0; // Number of conflicts.
       if (rr) // Do reduce-reduce conflicts first.
       {
-			if (optn[PG_CONREDUCE])
-			{
-				for (t = 0; t < N_terms; t++)
-				{
-					if (conflict[t] != 0)	// Got conflict on this terminal?
-					{
-						if (action[t] < 0)	// Reduce action?
-						{
-							nc++;
-							if (first)
-							{
-								first = 0;
-								PRT_STA (state);
-								PRINTF ("\n");
-							}
-							PRINTF ("   RR conflict on %-20s, ", term_name[t]);
-							PRINTF ("reduce %d or reduce %d, ", -action[t], -conflict[t]);
-							if (optn[PG_NONDETER])
-								PRINTF ("resolved by ND parsing.\n");
-							else
-								PRINTF ("choosing reduce %d.\n", -action[t]);
-						}
-					}
-				}
-			}
+         if (optn[PG_CONREDUCE])
+         {
+            for (t = 0; t < N_terms; t++)
+            {
+               if (conflict[t] != 0)   // Got conflict on this terminal?
+               {
+                  if (action[t] < 0)   // Reduce action?
+                  {
+                     nc++;
+                     if (first)
+                     {
+                        first = 0;
+                        PRT_STA (state);
+                        PRINTF ("\n");
+                     }
+                     PRINTF ("   RR conflict on %-20s, ", term_name[t]);
+                     PRINTF ("reduce %d or reduce %d, ", -action[t], -conflict[t]);
+                     if (optn[PG_NONDETER])
+                        PRINTF ("resolved by ND parsing.\n");
+                     else
+                        PRINTF ("choosing reduce %d.\n", -action[t]);
+                  }
+               }
+            }
+         }
       }
-		if (nc) rc = 1;
-		nc = 0; // Number of conflicts.
+      if (nc) rc = 1;
+      nc = 0; // Number of conflicts.
       if (sr) // Do shift-reduce conflicts.
       {
-			if (optn[PG_CONSHIFT])
-			{
-				for (t = 0; t < N_terms; t++)
-				{
-					if (conflict[t] != 0) // Got conflict on this terminal?
-					{
-						if (action[t] > 0) // Shift action?
-						{
-							nc++;
-							if (first)
-							{
-								first = 0;
-								PRT_STA (state);
-								PRINTF ("\n");
-							}
-							PRINTF ("   SR conflict on %-20s, ", term_name[t]);
-							PRINTF ("shift or reduce %d, ", -conflict[t]);
-							if (optn[PG_NONDETER])
-								PRINTF ("resolved by ND parsing.\n");
-							else
+         if (optn[PG_CONSHIFT])
+         {
+            for (t = 0; t < N_terms; t++)
+            {
+               if (conflict[t] != 0) // Got conflict on this terminal?
+               {
+                  if (action[t] > 0) // Shift action?
+                  {
+                     nc++;
+                     if (first)
+                     {
+                        first = 0;
+                        PRT_STA (state);
+                        PRINTF ("\n");
+                     }
+                     PRINTF ("   SR conflict on %-20s, ", term_name[t]);
+                     PRINTF ("shift or reduce %d, ", -conflict[t]);
+                     if (optn[PG_NONDETER])
+                        PRINTF ("resolved by ND parsing.\n");
+                     else
                      {
                         int x = action[t];
                         if (x > opt_states)
                         {
                            x = item[final[f_final[x]]].prod;
-   								PRINTF ("choosing shift and reduce %d.\n", x);
+                           PRINTF ("choosing shift and reduce %d.\n", x);
                         }
-								else PRINTF ("choosing shift and goto %d.\n", x);
+                        else PRINTF ("choosing shift and goto %d.\n", x);
                      }
-						}
-					}
-				}
-			}
+                  }
+               }
+            }
+         }
       }
-		if (nc) rc = 1;
-		if (first == 0) PRINTF ("\n");
-		return (rc);
+      if (nc) rc = 1;
+      if (first == 0) PRINTF ("\n");
+      return (rc);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void	PG_ComputeLA::prt_prod (int p)
+void  PG_ComputeLA::prt_prod (int p)
 {
-		printf ("%6d %s -> ", p, head_name[head_sym[p]]);
-		for (int i = F_tail[p]; i < F_tail[p+1]; i++)
-		{
-			char* symb;
-			int   s = Tail[i];
-			if (s >= 0) symb = term_name[ s];
-			else        symb = head_name[-s];
-			printf ("%s ", symb);
-		}
-		printf ("\n");
+      printf ("%6d %s -> ", p, head_name[head_sym[p]]);
+      for (int i = F_tail[p]; i < F_tail[p+1]; i++)
+      {
+         char* symb;
+         int   s = Tail[i];
+         if (s >= 0) symb = term_name[ s];
+         else        symb = head_name[-s];
+         printf ("%s ", symb);
+      }
+      printf ("\n");
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void	PG_ComputeLA::prt_prod (int p, int dot)
+void  PG_ComputeLA::prt_prod (int p, int dot)
 {
       int d = 0;
-		printf ("%6d %s -> ", p, head_name[head_sym[p]]);
-		for (int i = F_tail[p]; i < F_tail[p+1]; i++)
-		{
-			char* symb;
-			int   s = Tail[i];
-			if (s >= 0) symb = term_name[ s];
-			else        symb = head_name[-s];
+      printf ("%6d %s -> ", p, head_name[head_sym[p]]);
+      for (int i = F_tail[p]; i < F_tail[p+1]; i++)
+      {
+         char* symb;
+         int   s = Tail[i];
+         if (s >= 0) symb = term_name[ s];
+         else        symb = head_name[-s];
          if (d++ == dot) printf (". ");
-			printf ("%s ", symb);
-		}
-		printf ("\n");
+         printf ("%s ", symb);
+      }
+      printf ("\n");
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -655,7 +655,7 @@ void  PG_ComputeLA::C_LOOKBACKS ()
       n_childs     = 0;
       n_relations  = 0;
       n_includes   = 0;
-		max_child_usage   = 0;
+      max_child_usage   = 0;
 
       max_lookback = optn[MAX_LB];
       max_include  = optn[MAX_INC];
@@ -700,7 +700,7 @@ void  PG_ComputeLA::LOOK_BACK (int i, int p, int dot, int state)
             LOOK_BACK (i, p, dot, camefrom [cfi]);
          }
       }
-	   else if ((inc = NTX (state, head_sym [p])) >= 0)
+      else if ((inc = NTX (state, head_sym [p])) >= 0)
       {
          if (inc_on == 0)
          {
@@ -720,7 +720,7 @@ void  PG_ComputeLA::LOOK_BACK (int i, int p, int dot, int state)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-int	PG_ComputeLA::NTX (int s, int h) /* Nonterminal transition. */
+int   PG_ComputeLA::NTX (int s, int h) /* Nonterminal transition. */
 {
       int ntti;
       for (ntti = ntt_start[s]; ntti < ntt_start[s+1]; ntti++)
@@ -840,7 +840,7 @@ void  PG_ComputeLA::IND_READ (int i, int s)
          if (tt_action [j] > 0)
          {
             t = tt_symb [j];
-				LA[i][t] = 1;
+            LA[i][t] = 1;
          }
       }
 }
@@ -880,7 +880,7 @@ void  PG_ComputeLA::PRT_STA (int s)
       int k, i;
       int f, p;
 
-		PRINTF ("STATE %d ..........................................................................................\n\n", s);
+      PRINTF ("STATE %d ..........................................................................................\n\n", s);
       for (k = f_kernel [s]; k < f_kernel [s+1]; k++)
       {
          i = kernel [k];
@@ -923,7 +923,7 @@ void  PG_ComputeLA::prt_prod (int p, int dot, char *before)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-int	PG_ComputeLA::prt_sym (int s, char *sp)
+int   PG_ComputeLA::prt_sym (int s, char *sp)
 {
       char *p;
 
@@ -952,12 +952,12 @@ void  PG_ComputeLA::BF_TRACE_BACK (int state, int sr, int rr)
 
    // PRINTF ("\n");
       ALLOC (ntt_done, n_nttran);
-      for (t = 0; t < N_terms; t++)								// For all terminal symbols.
+      for (t = 0; t < N_terms; t++)                      // For all terminal symbols.
       {
          if (conflict[t])
          {
             n = 0;
-		      memset (ntt_done, 0, n_nttran);
+            memset (ntt_done, 0, n_nttran);
             PRINTF ("CHOICES for lookahead '%s'\n\n", term_name[t]);
             if (action[t] >= 0)  // shift-reduce conflict? (zeroed action is possible)
             {
@@ -970,8 +970,8 @@ void  PG_ComputeLA::BF_TRACE_BACK (int state, int sr, int rr)
             {
                if (rr == 0) continue; // skip this one.
             }
-	         for (f = f_final[state]; f < f_final[state+1]; f++)      // For each reduction.
-	         {
+            for (f = f_final[state]; f < f_final[state+1]; f++)      // For each reduction.
+            {
                p = item [final[f]].prod;
                h = head_sym[p];
                if (p == -conflict[t] || p == -action[t])
@@ -980,8 +980,8 @@ void  PG_ComputeLA::BF_TRACE_BACK (int state, int sr, int rr)
                   prt_prod (p, -1, "");
                   for (lb = f_lookback[f]; lb < f_lookback[f+1]; lb++)  // For all lookbacks of final item.
                   {
-			            if (LA[lookback[lb]][t])								   // Reduction defined for t?
-			            {
+                     if (LA[lookback[lb]][t])                           // Reduction defined for t?
+                     {
                         ntti = include[lookback[lb]];
                         next = ntt_action[ntti]; // Get next state.
                         for (i = tt_start[next]; i < tt_start[next+1]; i++)
@@ -1027,7 +1027,7 @@ Shift:                           PRINTF ("    goto    %4d\n", next);
 Cont:          continue;
             }
          }
-	   }
+      }
       FREE (ntt_done, n_nttran);
 }
 
@@ -1113,7 +1113,7 @@ void  PG_ComputeLA::DF_TRACE_BACK (int state, int sr, int rr)
          if (conflict[t]) // Conflict on this terminal?
          {
             n = 0;
-		      memset (ntt_done, 0, n_nttran);
+            memset (ntt_done, 0, n_nttran);
             PRINTF ("Choices for lookahead: %s\n\n", term_name[t]);
             if (action[t] >= 0)  // shift-reduce conflict? (zeroed action is possible)
             {
@@ -1126,8 +1126,8 @@ void  PG_ComputeLA::DF_TRACE_BACK (int state, int sr, int rr)
             {
                if (rr == 0) continue; // skip this one.
             }
-	         for (f = f_final[state]; f < f_final[state+1]; f++)      // For each reduction.
-	         {
+            for (f = f_final[state]; f < f_final[state+1]; f++)      // For each reduction.
+            {
                p = item [final[f]].prod;
                h = head_sym[p];
                if (p == -conflict[t] || p == -action[t])
@@ -1136,8 +1136,8 @@ void  PG_ComputeLA::DF_TRACE_BACK (int state, int sr, int rr)
                   prt_prod (p, -1, "");
                   for (lb = f_lookback[f]; lb < f_lookback[f+1]; lb++)  // For all lookbacks of final item.
                   {
-			            if (LA[lookback[lb]][t])								   // Reduction defined for t?
-			            {
+                     if (LA[lookback[lb]][t])                           // Reduction defined for t?
+                     {
                      // printf ("\nLookback %d\n", lb);
                         ntti = include[lookback[lb]];
                         if (ntt_done[ntti] == 0)
@@ -1180,9 +1180,9 @@ Shift:                           PRINTF ("    goto    %4d\n", next);
                }
 Cont:          continue;
             }
-			//	PRINTF ("\n");
+         // PRINTF ("\n");
          }
-	   }
+      }
       FREE (ntt_done, n_nttran);
 }
 
@@ -1263,8 +1263,8 @@ int   PG_ComputeLA::df_look_back (int t, int p, int dot, int state, int& next, i
             }
          }
       }
-		PRINTF ("\nNonfatal error caused by 'ca' option\n");
-		return 0;
+      PRINTF ("\nNonfatal error caused by 'ca' option\n");
+      return 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1282,10 +1282,10 @@ void  PG_ComputeLA::CYCLE_CHECK (int state)
          if (conflict[t] && action[t] >= 0) // conflict and shift action?
          {
             n = 0;
-		      memset (ntt_done, 0, n_nttran);
+            memset (ntt_done, 0, n_nttran);
             if (action[t] == 0) action[t] = tt_action [actionindx[t]];
-	         for (f = f_final[state]; f < f_final[state+1]; f++)      // For each reduction.
-	         {
+            for (f = f_final[state]; f < f_final[state+1]; f++)      // For each reduction.
+            {
                p = item [final[f]].prod;
                h = head_sym[p];
                if (p == -conflict[t] || p == -action[t])
@@ -1294,8 +1294,8 @@ void  PG_ComputeLA::CYCLE_CHECK (int state)
                // prt_prod (p, -1, "");
                   for (lb = f_lookback[f]; lb < f_lookback[f+1]; lb++)  // For all lookbacks of final item.
                   {
-			            if (LA[lookback[lb]][t])								   // Reduction defined for t?
-			            {
+                     if (LA[lookback[lb]][t])                           // Reduction defined for t?
+                     {
                      // printf ("\nLookback %d\n", lb);
                         ntti = include[lookback[lb]];
                         if (ntt_done[ntti] == 0)
@@ -1321,25 +1321,25 @@ void  PG_ComputeLA::CYCLE_CHECK (int state)
                               {
 Shift:                           if (next == state /* || last == action[t]*/ )
                                  {
-												sr--;
-												PRINTF ("CYCLE in state %d, choosing shift instead of reduce for %s.\n", state, term_name[t]);
-											/*	if (optn[PG_CONTRACEBACK])
-												{
-												//	prt_state (state);
-												   PRINTF ("\n");
-													PRINTF ("%d   shift        %s\n", ++n, term_name[t]);
-													PRINTF ("    goto    %4d\n", action[t]);
-													prt_state (action[t]);
-												// PRINTF ("\n");
-													PRINTF ("%d   reduce ", ++n);
-													prt_prod (item[final[f]].prod, -1, "");
-													PRINTF ("    goto    %4d\n", next);
-													prt_state (next);
-													PRINTF ("    shift        %s\n", term_name[t]);
-													PRINTF ("    goto    %4d\n", last);
-													prt_state (last);
-												// PRINTF ("\n");
-												}	*/
+                                    sr--;
+                                    PRINTF ("CYCLE in state %d, choosing shift instead of reduce for %s.\n", state, term_name[t]);
+                                 /* if (optn[PG_CONTRACEBACK])
+                                    {
+                                    // prt_state (state);
+                                       PRINTF ("\n");
+                                       PRINTF ("%d   shift        %s\n", ++n, term_name[t]);
+                                       PRINTF ("    goto    %4d\n", action[t]);
+                                       prt_state (action[t]);
+                                    // PRINTF ("\n");
+                                       PRINTF ("%d   reduce ", ++n);
+                                       prt_prod (item[final[f]].prod, -1, "");
+                                       PRINTF ("    goto    %4d\n", next);
+                                       prt_state (next);
+                                       PRINTF ("    shift        %s\n", term_name[t]);
+                                       PRINTF ("    goto    %4d\n", last);
+                                       prt_state (last);
+                                    // PRINTF ("\n");
+                                    }  */
                                     for (i = nd_item[state]; i < nd_item[state+1]; i++)
                                     {
                                        if (nd_term[i] == t) nd_action[i] = 0; // Delete this action.
@@ -1363,7 +1363,7 @@ Nextf:         continue;
             tt_action [actionindx[t]] = 0; // Delete deterministic action.
          }
 Nextt:   continue;
-	   }
+      }
       FREE (ntt_done, n_nttran);
 }
 
@@ -1444,7 +1444,7 @@ int   PG_ComputeLA::cycle_look_back (int t, int p, int dot, int state, int& next
             }
          }
       }
-		PRINTF ("\nNonfatal error caused by 'ct' option\n");
+      PRINTF ("\nNonfatal error caused by 'ct' option\n");
       return 0;
 }
 
@@ -1453,7 +1453,7 @@ int   PG_ComputeLA::cycle_look_back (int t, int p, int dot, int state, int& next
 void  PG_ComputeLA::prt_state (int s)
 {
       int k, i, f, p;
-		PRINTF ("\n    //STATE %4d ////////////////////////////////////////////////////////////////\n", s);
+      PRINTF ("\n    //STATE %4d ////////////////////////////////////////////////////////////////\n", s);
       for (k = f_kernel [s]; k < f_kernel [s+1]; k++)
       {
          i = kernel [k];
@@ -1469,7 +1469,7 @@ void  PG_ComputeLA::prt_state (int s)
          PRINTF ("    // rule");
          prt_prod2 (p, -1, "");
       }
-		PRINTF ("    /////////////////////////////////////////////////////////////////////////////\n\n");
+      PRINTF ("    /////////////////////////////////////////////////////////////////////////////\n\n");
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1494,7 +1494,7 @@ void  PG_ComputeLA::prt_prod2 (int p, int dot, char *before)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-int	PG_ComputeLA::prt_sym2 (int s, char *sp)
+int   PG_ComputeLA::prt_sym2 (int s, char *sp)
 {
       char *p;
       if (s >= 0) p = term_name[s];

@@ -2,8 +2,8 @@
 /* Copyright 2018 Paul B Mann.  BSD License. */
 
       #include "CM_Global.h"
-		#include "PG_Main.h"
-		#include "PG_CheckGrammar.h"
+      #include "PG_Main.h"
+      #include "PG_CheckGrammar.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
@@ -12,14 +12,14 @@ int   PG_CheckGrammar::CheckGrammar ()
 {
       if (optn[PG_VERBOSE])
            prt_log     ("Grammar  %7d rules, %d terminals, %d nonterminals.\n", N_prods, N_terms, N_heads);
-		else prt_logonly ("Grammar  %7d rules, %d terminals, %d nonterminals.\n", N_prods, N_terms, N_heads);
+      else prt_logonly ("Grammar  %7d rules, %d terminals, %d nonterminals.\n", N_prods, N_terms, N_heads);
 
-		eof_term = Tail [F_tail[0]+1];
+      eof_term = Tail [F_tail[0]+1];
 
       C_LENG ();
       C_NULLS ();
       C_HEADSYM ();
-		check_first_args ();
+      check_first_args ();
       P_UNUSED_OR_UNDECLARED ();
       P_USELESS_PROD ();
       P_UNREACHABLES ();
@@ -29,7 +29,7 @@ int   PG_CheckGrammar::CheckGrammar ()
       FREE (term_end,   N_terms);
       FREE (term_line,  N_terms);
 
-		if (n_errors) return (0);
+      if (n_errors) return (0);
       return (1);
 }
 
@@ -37,20 +37,20 @@ int   PG_CheckGrammar::CheckGrammar ()
 
 void  prt_chars (char* sym, char ch, char prev)
 {
-		prt_warnscreen ("%c", prev);
-		int len = (int)strlen (sym);
-		while (len-- > 0)
-		{
-			prt_warnscreen("%c", ch);
-		}
+      prt_warnscreen ("%c", prev);
+      int len = (int)strlen (sym);
+      while (len-- > 0)
+      {
+         prt_warnscreen("%c", ch);
+      }
 }
 
 void  prt_chars (int len, char ch)
 {
-		while (len-- > 0)
-		{
-			prt_warnscreen("%c", ch);
-		}
+      while (len-- > 0)
+      {
+         prt_warnscreen("%c", ch);
+      }
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -58,44 +58,44 @@ void  prt_chars (int len, char ch)
 void  PG_CheckGrammar::check_first_args()
 {
       if (optn[PG_ARGPOINTATNT] == 0) return;
-		char *name, *sym;
-		int p, argx, tail, n = 0;
-		for (p = 0; p < N_prods; p++)
-		{
-			if (F_parg[p] >= 0)
-			{
-				argx = Arg_numb[F_parg[p]] - 1;
-				tail = Tail[F_tail[p] + argx];
-				if (tail < 0)
-				{
-					n++;
-					n_warnings++;
-					name = head_name[-tail];
-					prt_warnscreen("\n%s(%04d) : %s -> ", grmfid, prod_line[p], head_name[head_sym[p]]);
-					for (int t = F_tail[p]; t < F_tail[p + 1]; t++)
-					{
-						tail = Tail[t];
-						if (tail < 0) sym = head_name[-tail];
-						else          sym = term_name[ tail];
-						prt_warnscreen("%s ", sym);
-					}
-					prt_warnscreen("\n%s(%04d) : ", grmfid, prod_line[p]);
-					prt_chars (head_name[head_sym[p]],'.','.');
-					prt_chars (2,'.');
-					int t, i = 0;
-					for (t = F_tail[p]; t < F_tail[p + 1]; t++)
-					{
-						tail = Tail[t];
-						if (tail < 0) sym = head_name[-tail];
-						else          sym = term_name[ tail];
-						if (i++ == argx) prt_chars (sym,'^','.');
-						else             prt_chars (sym,'.','.');
-					}
-					prt_warnscreen ("\n%s(%04d) : Warning, Argument %d points at nonterminal %s\n", grmfid, prod_line[p], argx+1, name);
-				}
-			}
-		}
-		if (n) prt_warnscreen("\n");
+      char *name, *sym;
+      int p, argx, tail, n = 0;
+      for (p = 0; p < N_prods; p++)
+      {
+         if (F_parg[p] >= 0)
+         {
+            argx = Arg_numb[F_parg[p]] - 1;
+            tail = Tail[F_tail[p] + argx];
+            if (tail < 0)
+            {
+               n++;
+               n_warnings++;
+               name = head_name[-tail];
+               prt_warnscreen("\n%s(%04d) : %s -> ", grmfid, prod_line[p], head_name[head_sym[p]]);
+               for (int t = F_tail[p]; t < F_tail[p + 1]; t++)
+               {
+                  tail = Tail[t];
+                  if (tail < 0) sym = head_name[-tail];
+                  else          sym = term_name[ tail];
+                  prt_warnscreen("%s ", sym);
+               }
+               prt_warnscreen("\n%s(%04d) : ", grmfid, prod_line[p]);
+               prt_chars (head_name[head_sym[p]],'.','.');
+               prt_chars (2,'.');
+               int t, i = 0;
+               for (t = F_tail[p]; t < F_tail[p + 1]; t++)
+               {
+                  tail = Tail[t];
+                  if (tail < 0) sym = head_name[-tail];
+                  else          sym = term_name[ tail];
+                  if (i++ == argx) prt_chars (sym,'^','.');
+                  else             prt_chars (sym,'.','.');
+               }
+               prt_warnscreen ("\n%s(%04d) : Warning, Argument %d points at nonterminal %s\n", grmfid, prod_line[p], argx+1, name);
+            }
+         }
+      }
+      if (n) prt_warnscreen("\n");
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -110,20 +110,20 @@ void  PG_CheckGrammar::C_LENG () /* Compute maximum symbol length. */
             fix_backslash (term_name [i]);
          }
       }
-		max_terml = 30;
-		for (i = 0; i < N_terms; i++)
-		{
-			L = (int)strlen (term_name[i]);
-			if (L > max_terml) max_terml = L;
-		}
-		max_headl = 30;
-		for (i = 0; i < N_heads; i++)
-		{
-			L = (int)strlen (head_name[i]);
-			if (L > max_headl) max_headl = L;
-		}
-		if (max_headl > max_terml) max_symbl = max_headl;
-		else                       max_symbl = max_terml;
+      max_terml = 30;
+      for (i = 0; i < N_terms; i++)
+      {
+         L = (int)strlen (term_name[i]);
+         if (L > max_terml) max_terml = L;
+      }
+      max_headl = 30;
+      for (i = 0; i < N_heads; i++)
+      {
+         L = (int)strlen (head_name[i]);
+         if (L > max_headl) max_headl = L;
+      }
+      if (max_headl > max_terml) max_symbl = max_headl;
+      else                       max_symbl = max_terml;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -136,7 +136,7 @@ void  PG_CheckGrammar::C_NULLS ()
       ALLOC (nullable, N_heads);
       FASTINI (0, nullable, N_heads);
       do
-		{
+      {
          n = 0;
          for (h = 0; h < N_heads; h++)
          {
@@ -192,39 +192,39 @@ void  PG_CheckGrammar::P_UNUSED_OR_UNDECLARED ()
       if (term_type[0] & TAIL) error_used = 1;
 
    // Check terminal symbols for usage in the grammar rules ...
-		for (t = 1; t < N_terms; t++)
-		{
-			if (!(term_type[t] & UNDECLARED)) // Declared ?
-			{
-				if (!(term_type[t] & TAIL)) // Not used in grammar?
-				{
-					if (!(term_type[t] & ARGUMENT)) // Not used as argument?
-					{
-						if (term_const[t] >= 0) // Defined constant for this term?
-						{
-							prt_warning ("Constant %s was declared but not used anywhere",
-								term_start[t], term_end[t], term_line[t]);
-						}
-						else
-						{
-							prt_warning ("Terminal %s was declared but not used anywhere",
-								term_start[t], term_end[t], term_line[t]);
-						}
-					}
-				}
-			}
-			else // Not declared!
-			{
-				if (!(term_type[t] & TAIL)) // Not used in grammar?
-				{
-					if ((term_type[t] & ARGUMENT)) // Used as argument?
-					{
-						prt_warning ("Argument %s was not used in the grammar",
-						term_start[t], term_end[t], term_line[t]);
-					}
-				}
-			}
-		}
+      for (t = 1; t < N_terms; t++)
+      {
+         if (!(term_type[t] & UNDECLARED)) // Declared ?
+         {
+            if (!(term_type[t] & TAIL)) // Not used in grammar?
+            {
+               if (!(term_type[t] & ARGUMENT)) // Not used as argument?
+               {
+                  if (term_const[t] >= 0) // Defined constant for this term?
+                  {
+                     prt_warning ("Constant %s was declared but not used anywhere",
+                        term_start[t], term_end[t], term_line[t]);
+                  }
+                  else
+                  {
+                     prt_warning ("Terminal %s was declared but not used anywhere",
+                        term_start[t], term_end[t], term_line[t]);
+                  }
+               }
+            }
+         }
+         else // Not declared!
+         {
+            if (!(term_type[t] & TAIL)) // Not used in grammar?
+            {
+               if ((term_type[t] & ARGUMENT)) // Used as argument?
+               {
+                  prt_warning ("Argument %s was not used in the grammar",
+                  term_start[t], term_end[t], term_line[t]);
+               }
+            }
+         }
+      }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -232,22 +232,22 @@ void  PG_CheckGrammar::P_UNUSED_OR_UNDECLARED ()
 void  PG_CheckGrammar::P_USELESS_PROD ()
 {
       int h, p;
-		for (h = 1; h < N_heads; h++)
-		{
-			for (p = F_prod[h]; p < F_prod[h+1]; p++)
-			{
-				if ((F_tail[p+1]-F_tail[p]) == 1)
-				{
-					if (h == -Tail[F_tail[p]])
-					{
-						prt_log ("%s(%04d) : ", grmfid, prod_line[p]);
-						p_prod (-p, -1, "");
-						prt_log ("\n");
-						prt_error ("Useless production", 0, 0, prod_line[p]);
-					}
-				}
-			}
-		}
+      for (h = 1; h < N_heads; h++)
+      {
+         for (p = F_prod[h]; p < F_prod[h+1]; p++)
+         {
+            if ((F_tail[p+1]-F_tail[p]) == 1)
+            {
+               if (h == -Tail[F_tail[p]])
+               {
+                  prt_log ("%s(%04d) : ", grmfid, prod_line[p]);
+                  p_prod (-p, -1, "");
+                  prt_log ("\n");
+                  prt_error ("Useless production", 0, 0, prod_line[p]);
+               }
+            }
+         }
+      }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -286,12 +286,12 @@ void  PG_CheckGrammar::P_UNREACHABLES ()
 
       for (h = 0; h < N_heads; h++)
       {
-		// if (h_vect[h] == 0 && *head_name[h] != '$')  /* Not used?         */
+      // if (h_vect[h] == 0 && *head_name[h] != '$')  /* Not used?         */
          if (h_vect[h] == 0)  /* Not used?         */
          {
             if (head_line[h] != 0) // Added by PBM, 2018-08-16.
-				prt_warning ("Nonterminal symbol %s is not reachable from the goal symbol",
-					head_name[h], 0, head_line[h]);
+            prt_warning ("Nonterminal symbol %s is not reachable from the goal symbol",
+               head_name[h], 0, head_line[h]);
          }
       }
       FREE (h_list, N_heads);
@@ -341,7 +341,7 @@ nexth:      continue;
          {
             if (red [h] != 1)
             {
-					prt_error ("Nonterminal symbol %s is in a cycle, cannot derive anything", head_name[h], 0, head_line[h]);
+               prt_error ("Nonterminal symbol %s is in a cycle, cannot derive anything", head_name[h], 0, head_line[h]);
             }
          }
       }
@@ -353,15 +353,15 @@ nexth:      continue;
 void  PG_CheckGrammar::p_prod (int p, int dot, char *before)
 {
       int t, u, d;
-		if (p < 0)
-		{
-			p = -p;
-	      prt_log ("%s%s -> ", before, head_name [head_sym [p]]);
-		}
-		else
-		{
-			prt_log ("%s%5d %s -> ", before, p, head_name [head_sym [p]]);
-		}
+      if (p < 0)
+      {
+         p = -p;
+         prt_log ("%s%s -> ", before, head_name [head_sym [p]]);
+      }
+      else
+      {
+         prt_log ("%s%5d %s -> ", before, p, head_name [head_sym [p]]);
+      }
       t = F_tail [p];
       u = F_tail [p+1];
       d = t + dot;
@@ -378,7 +378,7 @@ void  PG_CheckGrammar::p_prod (int p, int dot, char *before)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-int	PG_CheckGrammar::p_sym (int s, char *sp)
+int   PG_CheckGrammar::p_sym (int s, char *sp)
 {
       char *p;
 
