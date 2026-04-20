@@ -10,22 +10,13 @@
 //
 // ── Top level ───────────────────────────────────────────────────────────────
 //
-//
 
-RUNE     <rune>              => lookup();
-FLOAT    <float>             => lookup();
-FAULT    <fault>             => lookup();
-TYPEID   <typeid>            => lookup();
-INT      <integer>           => lookup();
-CONSTID  <constid>           => lookup();
-IDENT    <identifier>        => lookup();
-DQSTRING <doubleQuoteString> => lookup();
+ID    <id>   => lookup();
 
 srcFile: decl+ <eof>;
 
 decl
-    : varDecl
-	| constDecl
+    : valDecl
 	| funcDecl
 	| structDecl
 	| enumDecl
@@ -33,38 +24,28 @@ decl
 	| interfaceDecl
 	| faultDecl;
 
-varDecl: ids typeSig (EQUALS expr)?;
-
-ids: IDENT | ids COMMA IDENT;
+valDecl: ids typeSig (EQUALS expr)?;
+ids: ID | ids COMMA ID;
 
 //typeSig: ;
 
-constDecl: constids typeSig (EQUALS expr)?;
+funcDecl: contracts typeSig BANG? ID ctParams? funcParams attributes body FIN;
 
-constids: CONSTID | constids COMMA CONSTID;
+contracts: (OPAREN_STAR STAR_CPAREN)*;
 
-funcDecl: contracts typeSig BANG? IDENT ctParams? funcParams attributes body FIN;
-
-contracts: (OPAREN_STAR expr* STAR_CPAREN)*;
-
-ctParams: OBRACK param (COMMA param)* COMMA? CBRACK;
-param: constids typeSig (COLON expr)?;
-
-funcParams: OPAREN (IDENT STAR? (COMMA rtFields)? | rtFields)? CPAREN;
-
-rtFields: field (COMMA field)* COMMA?;
+ctParams: OBRACK fields CBRACK;
+fields: field (COMMA field)* COMMA?;
 field: ids typeSig (COLON expr)?;
+
+funcParams: OPAREN (ID STAR? (COMMA fields)? | fields)? CPAREN;
 
 attributes: (INLINE | LINKABLE | LINKED | NAKED | NORETURN)*;
 
 body: stmt*;
 
-structDecl: STRUCT TYPEID ctParams? OBRACE rtFields? funcDecl* implBlock* CBRACE;
+structDecl: STRUCT ID ctParams? OBRACE fields? funcDecl* implBlock* CBRACE;
 
 implBlock: IMPL typeids COLON funcDecl*;
-
-typeids: TYPEID | typeids COMMA TYPEID;
-
 
 // AI:
 /*

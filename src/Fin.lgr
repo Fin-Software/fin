@@ -1,9 +1,53 @@
 
+<eof> -> \z
 
+{comment} -> ';' ';' neol*
 
+<id> -> (lower | upper | '_') (alnum | '_')*  // underscore-only IDs must be rejected later
 
+//<string> -> '\"' schar* '\"'
 
+//<rune> -> '\'' rchar '\''
 
+{whitespace} -> (wchar | ';')+
+
+{skipped} -> (ctrl | nonascii)+
+
+\t = 9
+\n = 10
+\r = 13
+\z = 26
+
+deci = '0'..'9'
+upper = 'A'..'Z'
+lower = 'a'..'z'
+alnum = deci | upper | lower
+
+nonascii = 128..255
+neol = any - \n - \r
+any = 0..255 - \z - ctrl
+wchar = ' ' | \t | \n | \r
+ctrl = 0..31 - \z - wchar | 127
+
+/*
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
+bin      = '0'..'1'
+octa     = '0'..'7'
+hexa     = deci | 'a'..'f' | 'A'..'F'
+neol     = any - \n - \r
+any      = 0..255 - ignored - \z
+\t       = 9
+\n       = 10
+\r       = 13
+
+ignored  = 0..8 | 11..12 | 14..25 | 27..31 | 127 | 176..177 | 245..255
+
+//escapes -> '\\' '\\'
+//        -> '\\' 'n'
+//        -> '\\' 't'
+//        -> '\\' 'r'
+//        -> '\\' hexa hexa
 
 
 // Ignored bytes
@@ -37,22 +81,7 @@
 <constid>  -> (upper | '_') (upper | '_' | deci)* '_'?   // THIS_CASE constants/params; must not shadow typeid
 <ident>    -> lower (alnum | '_')*                        // camelCase everything else
 
-<eof>      -> \z
 
 
-upper    = 'A'..'Z'
-lower    = 'a'..'z'
-deci     = '0'..'9'
-alnum    = upper | lower | deci
-bin      = '0'..'1'
-octa     = '0'..'7'
-hexa     = deci | 'a'..'f' | 'A'..'F'
-neol     = any - \n - \r
-any      = 0..255 - ignored - \z
-\t = 9; \n = 10; \r = 13; \z = 26
 
-escapes  = '\\' '\\'
-         | '\\' 'n'
-         | '\\' 't'
-         | '\\' 'r'
-         | '\\' hexa hexa
+*/

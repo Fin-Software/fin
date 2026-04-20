@@ -34,7 +34,7 @@
 #define ND_PARSING
 #define ND_THREADS 2
 
-enum termcon { RUNE = 2, FLOAT = 3, FAULT = 4, TYPEID = 5, INT = 6, CONSTID = 7, IDENT = 8, DQSTRING = 9 };
+enum termcon { ID = 2 };
 
 typedef unsigned int uint;
 typedef unsigned char uchar;
@@ -48,36 +48,36 @@ class Fin_ParserTables {
     friend class Fin_Parser;
 
   public:
-    static char* term_symb[38]; // Terminal symbols of the grammar.
-    static char* head_symb[44]; // Nonterminal symbols of the grammar.
+    static char* term_symb[32]; // Terminal symbols of the grammar.
+    static char* head_symb[37]; // Nonterminal symbols of the grammar.
     static char* tact_name[1];  // Terminal action names found in the grammar.
-    static uchar head_numb[77]; // Head symbol number for a production.
-    static uchar f_tail[78];    // First tail in a production.
-    static char tail[119];      // Tail symbol number.
-    static char arga[38];       // Arguments for terminal actions.
+    static uchar head_numb[65]; // Head symbol number for a production.
+    static uchar f_tail[66];    // First tail in a production.
+    static char tail[95];       // Tail symbol number.
+    static char arga[32];       // Arguments for terminal actions.
 
   private:
-    static uchar Bm[44]; // Boolean matrix.
-    static uchar Br[53]; // Boolean matrix row.
-    static uchar Bc[38]; // Boolean matrix column.
-    static uchar Bf[38]; // Boolean matrix filter/mask.
-    static char Tm[76];  // Terminal transition matrix.
-    static uchar Tr[53]; // Terminal transition matrix row.
-    static uchar Tc[38]; // Terminal transition matrix column.
-    static char Nm[101]; // Nonterminal transition matrix.
-    static uchar Nr[53]; // Nonterminal transition matrix row.
-    static uchar Nc[77]; // Nonterminal transition matrix column.
+    static uchar Bm[37]; // Boolean matrix.
+    static uchar Br[43]; // Boolean matrix row.
+    static uchar Bc[32]; // Boolean matrix column.
+    static uchar Bf[32]; // Boolean matrix filter/mask.
+    static char Tm[52];  // Terminal transition matrix.
+    static uchar Tr[43]; // Terminal transition matrix row.
+    static uchar Tc[32]; // Terminal transition matrix column.
+    static char Nm[72];  // Nonterminal transition matrix.
+    static uchar Nr[43]; // Nonterminal transition matrix row.
+    static uchar Nc[65]; // Nonterminal transition matrix column.
     static uchar Rm[18]; // Reduction matrix.
-    static char Rr[53];  // Reduction matrix row.
-    static uchar Rc[38]; // Reduction matrix column.
-    static char PL[77];  // Production length minus one.
+    static char Rr[43];  // Reduction matrix row.
+    static uchar Rc[32]; // Reduction matrix column.
+    static char PL[65];  // Production length minus one.
 
-    static uchar nd_fterm[54];  // ND: first terminal in the list.
+    static uchar nd_fterm[44];  // ND: first terminal in the list.
     static uchar nd_term[1];    // ND: terminal list.
     static uchar nd_faction[2]; // ND: first action in the list.
     static char nd_action[2];   // ND: action list.
 
-    static char tact_numb[38]; // Terminal action numbers.
+    static char tact_numb[32]; // Terminal action numbers.
 
     static void (*init_func[2])();      // Init action function pointers.
     static int (*tact_func[1])(int& t); // Terminal action function pointers.
