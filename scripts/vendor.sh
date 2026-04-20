@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 # Copyright © 2025 The Fin Authors. All rights reserved.
 # Contributors responsible for this file:
-# @p7r0x7 <mattrbonnette@pm.me>
+# @p7r0x7 <maxibonnette@pm.me>
 
 # vendor/ must be kept current in VCS with this file that publicly defines its deterministic generation.
 # And for security reasons, only @p7r0x7 may sign and push commits changing vendor.sh and vendor/.

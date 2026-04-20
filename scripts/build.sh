@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 # Copyright © 2026 The Fin Authors. All rights reserved.
 # Contributors responsible for this file:
-# @p7r0x7 <mattrbonnette@pm.me>
+# @p7r0x7 <maxibonnette@pm.me>
 
 supported='android/arm64 darwin/arm64 linux/arm64 linux/riscv64 linux/x64 windows/arm64 windows/x64'
 # fin also supports wasi/wasm and wasi/wasm64, but cannot be hosted on them

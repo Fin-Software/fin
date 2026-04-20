@@ -1,19 +1,58 @@
-// lang.grm — Parser grammar
-//
-// Operator precedence (low → high):
-//
-// { OR } << { AND } << { EQ NEQ LT GT LTE GTE } << { PLUS HYPHEN PIPE CARET PLUS_PERCENT
-// HYPHEN_PERCENT } << { STAR SLASH PERCENT AMP LSHIFT RSHIFT STAR_PERCENT LROTATE RROTATE } << { AS
-// } << // highest binary { BANG QUESTION DOT_TYPE DOT_LEN DOT_SIZEOF DOT DOT_STAR DOT_AMP } << //
-// postfix { TILDE HYPHEN (unary) } << // prefix
+// SPDX-License-Identifier: Apache-2.0
+// Copyright (C) 2026 The Fin Authors. All rights reserved.
+// Contributors responsible for this file:
+// @p7r0x7 <maxibonnette@pm.me>
 
-//
-// ── Top level ───────────────────────────────────────────────────────────────
-//
+BANG               '!';
+CBRACE             '}';
+CBRACK             ']';
+COLON              ':';
+COMMA              ',';
+CPAREN             ')';
+EQUALS             '=';
+FIN              'fin';
+ID    <id> => lookup();
+IMPL            'impl';
+INLINE        'inline';
+LINKABLE    'linkable';
+LINKED        'linked';
+NAKED          'naked';
+NORETURN    'noreturn';
+OBRACE             '{';
+OBRACK             '[';
+OPAREN             '(';
+OPAREN_STAR       '(*';
+STAR               '*';
+STAR_CPAREN       '*)';
+STRUCT        'struct';
 
-ID    <id>   => lookup();
+srcFile: (mlcomment | decl)+ <eof>;
 
-srcFile: decl+ <eof>;
+mlcomment: <mlopen> (mlbody | mlcomment)* <mlclose>;
+mlbody
+    : BANG
+    | CBRACE
+    | CBRACK
+    | COLON
+    | COMMA
+    | CPAREN
+    | EQUALS
+    | FIN
+    | ID
+    | IMPL
+    | INLINE
+    | LINKABLE
+    | LINKED
+    | NAKED
+    | NORETURN
+    | OBRACE
+    | OBRACK
+    | OPAREN
+    | OPAREN_STAR
+    | STAR
+    | STAR_CPAREN
+    | STRUCT;  // Sync with above; above excludes what shouldn't be here.
+
 
 decl
     : valDecl
@@ -33,24 +72,33 @@ funcDecl: contracts typeSig BANG? ID ctParams? funcParams attributes body FIN;
 
 contracts: (OPAREN_STAR STAR_CPAREN)*;
 
-ctParams: OBRACK fields CBRACK;
-fields: field (COMMA field)* COMMA?;
-field: ids typeSig (COLON expr)?;
+ctParams: OBRACK params CBRACK;
+params: param (COMMA param)* COMMA?;
+param: ids typeSig (COLON expr)?;
 
-funcParams: OPAREN (ID STAR? (COMMA fields)? | fields)? CPAREN;
+funcParams: OPAREN (ID STAR? (COMMA params)? | params)? CPAREN;
 
 attributes: (INLINE | LINKABLE | LINKED | NAKED | NORETURN)*;
 
 body: stmt*;
 
 structDecl: STRUCT ID ctParams? OBRACE fields? funcDecl* implBlock* CBRACE;
+fields: params;
 
 implBlock: IMPL typeids COLON funcDecl*;
 
-// AI:
 /*
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-	fieldDecl:
+
+    // AI:
+
+    // Operator precedence (low → high):
+    // { OR } << { AND } << { EQ NEQ LT GT LTE GTE } << { PLUS HYPHEN PIPE CARET PLUS_PERCENT
+    // HYPHEN_PERCENT } << { STAR SLASH PERCENT AMP LSHIFT RSHIFT STAR_PERCENT LROTATE RROTATE } << { AS
+    // } << // highest binary { BANG QUESTION DOT_TYPE DOT_LEN DOT_SIZEOF DOT DOT_STAR DOT_AMP } << //
+    // postfix { TILDE HYPHEN (unary) } << // prefix
+
+    fieldDecl:
 		MUT? VOLATILE? THREADL? ids typeSig
 		| MUT? VOLATILE? THREADL? ids typeSig COLON expr ; // default value
 

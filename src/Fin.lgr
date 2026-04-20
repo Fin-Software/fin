@@ -1,17 +1,26 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright (C) 2026 The Fin Authors. All rights reserved.
+// Contributors responsible for this file:
+// @p7r0x7 <maxibonnette@pm.me>
 
-<eof> -> \z
+/* Rules <passed> {omitted} subrule */
 
+<eof> -> \z  // Mandatory in LRSTAR.
+
+<mlopen>  -> '<' '>' '<'
+<mlclose> -> '>' '<' '>'
 {comment} -> ';' ';' neol*
 
-<id> -> (lower | upper | '_') (alnum | '_')*  // underscore-only IDs must be rejected later
+{whitespace} -> (wchar | ';')+
+{skipped} -> (ctrl | nonascii)+
+
+<id> -> (lower | upper | '_') (alnum | '_')*  // Underscore-only IDs must be rejected later.
 
 //<string> -> '\"' schar* '\"'
 
 //<rune> -> '\'' rchar '\''
 
-{whitespace} -> (wchar | ';')+
-
-{skipped} -> (ctrl | nonascii)+
+/* Character Classes */
 
 \t = 9
 \n = 10
@@ -25,9 +34,9 @@ alnum = deci | upper | lower
 
 nonascii = 128..255
 neol = any - \n - \r
-any = 0..255 - \z - ctrl
+any = 0..255 - ctrl - \z
 wchar = ' ' | \t | \n | \r
-ctrl = 0..31 - \z - wchar | 127
+ctrl = 127 | 0..31 - wchar - \z
 
 /*
 ///////////////////////////////////////////////////////////////////////////////////////////////////

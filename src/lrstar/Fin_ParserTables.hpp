@@ -6,11 +6,11 @@
 #include "Fin_Actions.h"
 #include "Fin_ParserTables.h"
 
-static int n_terms = 32;      // Number of terminals.
-static int n_heads = 37;      // Number of nonterminals.
-static int n_prods = 65;      // Number of productions.
-static int n_states = 43;     // Number of states.
-static int accept_state = 42; // Accept state.
+static int n_terms = 34;      // Number of terminals.
+static int n_heads = 43;      // Number of nonterminals.
+static int n_prods = 95;      // Number of productions.
+static int n_states = 45;     // Number of states.
+static int accept_state = 44; // Accept state.
 static int n_termactns = 1;   // Number of terminal actions.
 static int n_nodenames = 0;   // Number of node names.
 static int n_nodeactns = 0;   // Number of node actions.
@@ -18,51 +18,84 @@ static int eof_symb = 1;      // <eof> symbol number.
 static int err_used = 0;      // <error> used in grammar?
 
 // Terminal symbols of the grammar ...
-char* Fin_ParserTables::term_symb[32] = {
-    "<error>",           "<eof>",         "<id>",         "\'enumDecl\'",    "\'unionDecl\'",
-    "\'interfaceDecl\'", "\'faultDecl\'", "\'typeSig\'",  "\'EQUALS\'",      "\'expr\'",
-    "\'COMMA\'",         "\'BANG\'",      "\'FIN\'",      "\'OPAREN_STAR\'", "\'STAR_CPAREN\'",
-    "\'OBRACK\'",        "\'CBRACK\'",    "\'COLON\'",    "\'OPAREN\'",      "\'STAR\'",
-    "\'CPAREN\'",        "\'INLINE\'",    "\'LINKABLE\'", "\'LINKED\'",      "\'NAKED\'",
-    "\'NORETURN\'",      "\'stmt\'",      "\'STRUCT\'",   "\'OBRACE\'",      "\'CBRACE\'",
-    "\'IMPL\'",          "\'typeids\'"
+char* Fin_ParserTables::term_symb[34] = {
+    "<error>",
+    "<eof>",
+    "\'!\'",
+    "\'}\'",
+    "\']\'",
+    "\':\'",
+    "\',\'",
+    "\')\'",
+    "\'=\'",
+    "\'fin\'",
+    "<id>",
+    "\'impl\'",
+    "\'inline\'",
+    "\'linkable\'",
+    "\'linked\'",
+    "\'naked\'",
+    "\'noreturn\'",
+    "\'{\'",
+    "\'[\'",
+    "\'(\'",
+    "\'(*\'",
+    "\'*\'",
+    "\'*)\'",
+    "\'struct\'",
+    "<mlopen>",
+    "<mlclose>",
+    "\'enumDecl\'",
+    "\'unionDecl\'",
+    "\'interfaceDecl\'",
+    "\'faultDecl\'",
+    "\'typeSig\'",
+    "\'expr\'",
+    "\'stmt\'",
+    "\'typeids\'"
 };
 
 // Nonterminal symbols of the grammar ...
-char* Fin_ParserTables::head_symb[37] = {
+char* Fin_ParserTables::head_symb[43] = {
     "srcFile",
+    "mlcomment",
+    "mlbody",
     "decl",
     "valDecl",
     "ids",
     "funcDecl",
     "contracts",
     "ctParams",
-    "fields",
-    "field",
+    "params",
+    "param",
     "funcParams",
     "attributes",
     "body",
     "structDecl",
+    "fields",
     "implBlock",
-    "decl+",
-    "(EQUALS expr)",
-    "(EQUALS expr)?",
-    "BANG?",
+    "(mlcomment | decl)",
+    "(mlcomment | decl)+",
+    "(mlbody | mlcomment)",
+    "(mlbody | mlcomment)*",
+    "('=' expr)",
+    "('=' expr)?",
+    "'!'?",
     "ctParams?",
-    "(OPAREN_STAR STAR_CPAREN)",
-    "(OPAREN_STAR STAR_CPAREN)*",
-    "(COMMA field)",
-    "(COMMA field)*",
-    "COMMA?",
-    "(COLON expr)",
-    "(COLON expr)?",
-    "STAR?",
-    "(COMMA fields)",
-    "(COMMA fields)?",
-    "(<id> STAR? (COMMA fields)? | fields)",
-    "(<id> STAR? (COMMA fields)? | fields)?",
-    "(INLINE | LINKABLE | LINKED | NAKED | NORETURN)",
-    "(INLINE | LINKABLE | LINKED | NAKED | NORETURN)*",
+    "('(*' '*)')",
+    "('(*' '*)')*",
+    "(',' param)",
+    "(',' param)*",
+    "','?",
+    "(':' expr)",
+    "(':' expr)?",
+    "'*'?",
+    "(',' params)",
+    "(',' params)?",
+    "(<id> '*'? (',' params)? | params)",
+    "(<id> '*'? (',' params)? | params)?",
+    "('inline' | 'linkable' | 'linked' | 'naked' | 'noreturn')",
+    "('inline' | 'linkable' | 'linked' | 'naked' | 'noreturn')*",
     "stmt*",
     "fields?",
     "funcDecl*",
@@ -73,105 +106,119 @@ char* Fin_ParserTables::head_symb[37] = {
 char* Fin_ParserTables::tact_name[1] = {"lookup"};
 
 // Head symbol numbers for the productions ...
-uchar Fin_ParserTables::head_numb[65] = {0,  1,  1,  1,  1,  1,  1,  1,  2,  3,  3,  4,  5,  6,  7,  8,  9,
-                                         10, 11, 12, 13, 14, 14, 15, 16, 16, 17, 17, 18, 18, 19, 20, 20, 21,
-                                         22, 22, 23, 23, 24, 25, 25, 26, 26, 27, 28, 28, 29, 29, 30, 30, 31,
-                                         31, 31, 31, 31, 32, 32, 33, 33, 34, 34, 35, 35, 36, 36};
+uchar Fin_ParserTables::head_numb[95] = {0,  1,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,
+                                         2,  2,  2,  2,  2,  3,  3,  3,  3,  3,  3,  3,  4,  5,  5,  6,  7,  8,  9,
+                                         10, 11, 12, 13, 14, 15, 16, 17, 17, 18, 18, 19, 19, 20, 20, 21, 22, 22, 23,
+                                         23, 24, 24, 25, 26, 26, 27, 28, 28, 29, 29, 30, 31, 31, 32, 32, 33, 34, 34,
+                                         35, 35, 36, 36, 37, 37, 37, 37, 37, 38, 38, 39, 39, 40, 40, 41, 41, 42, 42};
 
 // First tail symbol index into the tail list ...
-uchar Fin_ParserTables::f_tail[66] = {0,  2,  3,  4,  5,  6,  7,  8,  9,  12, 13, 16, 25, 26, 29, 32, 35,
-                                      38, 39, 40, 48, 52, 53, 55, 57, 57, 58, 58, 59, 59, 60, 62, 62, 64,
-                                      66, 66, 68, 68, 69, 71, 71, 72, 72, 73, 75, 75, 76, 79, 80, 80, 81,
-                                      82, 83, 84, 85, 86, 86, 88, 88, 90, 90, 91, 91, 93, 93, 95};
+uchar Fin_ParserTables::f_tail[96] = {0,   2,   5,   6,   7,   8,   9,   10,  11,  12,  13,  14,  15,  16,  17,  18,
+                                      19,  20,  21,  22,  23,  24,  25,  26,  27,  28,  29,  30,  31,  32,  33,  34,
+                                      37,  38,  41,  50,  51,  54,  57,  60,  63,  64,  65,  73,  74,  78,  79,  80,
+                                      81,  83,  84,  85,  85,  87,  89,  89,  90,  90,  91,  91,  92,  94,  94,  96,
+                                      98,  98,  100, 100, 101, 103, 103, 104, 104, 105, 107, 107, 108, 111, 112, 112,
+                                      113, 114, 115, 116, 117, 118, 118, 120, 120, 122, 122, 123, 123, 125, 125, 127};
 
 // Tail symbol numbers ...
-char Fin_ParserTables::tail[95] = {-14, 1,  -2,  -4,  -12, 3,   4,   5,   6,   -3,  7,   -16, 2,   -3,  10,  2,
-                                   -5,  7,  -17, 2,   -18, -9,  -10, -11, 12,  -20, 15,  -7,  16,  -8,  -22, -23,
-                                   -3,  7,  -25, 18,  -30, 20,  -32, -33, 27,  2,   -18, 28,  -34, -35, -36, 29,
-                                   30,  31, 17,  -35, -1,  -14, -1,  8,   9,   -15, 11,  -6,  13,  14,  -20, -19,
-                                   10,  -8, -22, -21, 10,  17,  9,   -24, 19,  10,  -7,  -27, 2,   -26, -28, -7,
-                                   -29, 21, 22,  23,  24,  25,  -32, -31, -33, 26,  -7,  -35, -4,  -36, -13};
+char Fin_ParserTables::tail[127] = {-18, 1,   24,  -20, 25,  2,   3,   4,   5,   6,   7,   8,   9,  10,  11,  12,
+                                    13,  14,  15,  16,  17,  18,  19,  20,  21,  22,  23,  -4,  -6, -14, 26,  27,
+                                    28,  29,  -5,  30,  -22, 10,  -5,  6,   10,  -7,  30,  -23, 10, -24, -11, -12,
+                                    -13, 9,   -26, 18,  -9,  4,   -10, -28, -29, -5,  30,  -31, 19, -36, 7,   -38,
+                                    -39, 23,  10,  -24, 17,  -40, -41, -42, 3,   -9,  11,  33,  5,  -41, -1,  -3,
+                                    -17, -18, -17, -2,  -1,  -20, -19, 8,   31,  -21, 2,   -8,  20, 22,  -26, -25,
+                                    6,   -10, -28, -27, 6,   5,   31,  -30, 21,  6,   -9,  -33, 10, -32, -34, -9,
+                                    -35, 12,  13,  14,  15,  16,  -38, -37, -39, 32,  -15, -41, -6, -42, -16};
 
 // Arguments for token actions ...
-char Fin_ParserTables::arga[32] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-                                   -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
+char Fin_ParserTables::arga[34] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+                                   -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
 
 // Boolean matrix ...
-uchar Fin_ParserTables::Bm[37] = {0, 0, 0, 12, 0, 0, 14, 0, 0,   144, 0, 0, 16, 0, 0, 4, 0, 0, 32,
-                                  0, 0, 1, 0,  8, 0, 64, 0, 128, 0,   0, 2, 0,  0, 8, 0, 0, 64};
+uchar Fin_ParserTables::Bm[55] = {0, 0, 0, 4,   20, 2, 4, 20,  64,  0,  32, 0, 0,   32, 0,  128, 0, 4,  0,
+                                  0, 1, 0, 4,   0,  0, 2, 252, 255, 15, 0,  0, 64,  0,  16, 0,   0, 64, 0,
+                                  0, 8, 0, 128, 0,  0, 8, 0,   0,   2,  0,  0, 128, 0,  0,  0,   1};
 
 // Booeal matrix row (for state)...
-uchar Fin_ParserTables::Br[43] = {3,  6,  9, 12, 14, 15, 18, 15, 20, 22, 11, 25, 15, 7,  15, 11, 15, 17, 0, 9, 26, 0,
-                                  27, 24, 0, 15, 0,  15, 25, 0,  13, 28, 19, 16, 29, 31, 27, 34, 15, 24, 0, 0, 0};
+uchar Fin_ParserTables::Br[45] = {2,  5,  8,  11, 14, 0,  16, 19, 16, 22, 23, 26, 9,  29, 16,
+                                  32, 16, 9,  16, 33, 0,  8,  30, 0,  36, 10, 0,  16, 0,  16,
+                                  29, 0,  38, 41, 18, 44, 46, 48, 36, 51, 16, 10, 0,  0,  0};
 
 // Booolean matrix column (displacement) ...
-uchar Fin_ParserTables::Bc[32] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1,
-                                  1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 0, 2, 2, 2, 2};
+uchar Fin_ParserTables::Bc[34] = {0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1,
+                                  1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3};
 
 // Boolean matrix filter/mask value ...
-uchar Fin_ParserTables::Bf[32] = {1,  2,  4,   8, 8, 8, 8, 16, 32, 64, 128, 1, 2,  4,  8,  16,
-                                  32, 64, 128, 1, 2, 4, 4, 4,  4,  4,  8,   8, 16, 32, 32, 64};
+uchar Fin_ParserTables::Bf[34] = {1,  2,  4,  8,   16, 32, 64, 128, 1, 2,  4,  8,  8,  8,  8,  8,   8,
+                                  16, 32, 64, 128, 1,  2,  4,  4,   8, 16, 16, 16, 16, 32, 64, 128, 1};
 
 // Terminal transition matrix ...
-char Fin_ParserTables::Tm[52] = {15,  19, 32,  -10, 10,  0,  23, 0,  38,  7,   2,   -22, 8,  42,  -38, 27,  0, 0,
-                                 0,   0,  0,   0,   40,  0,  0,  0,  0,   0,   5,   2,   1,  6,   11,  -23, 7, 12,
-                                 -11, 9,  -30, 14,  -13, 28, 25, 36, -16, -56, -58, 5,   16, -19, 37,  39};
+char Fin_ParserTables::Tm[80] = {0,   0,   0,   0,   0,   0,   0,   40,  17,  21,  34,  -33, 8,   0,   44,  0,
+                                 12,  42,  29,  0,   0,   0,   2,   0,   0,   0,   0,   0,   25,  0,   0,   6,
+                                 5,   -48, 9,   -68, -52, -52, -52, -52, -52, -52, -52, -52, -52, -52, -52, -52,
+                                 -52, -52, -52, -52, -52, -52, 5,   -1,  14,  -42, -36, 30,  8,   -39, 13,  -34,
+                                 2,   39,  -86, 18,  16,  27,  10,  38,  -60, 6,   5,   1,   7,   -53, -88, 41};
 
 // Terminal transition matrix row ...
-uchar Fin_ParserTables::Tr[43] = {29, 10, 29, 10, 29, 4, 29, 3,  29, 29, 29, 29, 0,  29, 1, 29, 1, 29, 29, 4,  29, 29,
-                                  10, 29, 29, 2,  29, 1, 10, 29, 29, 29, 29, 29, 29, 29, 3, 29, 1, 10, 29, 29, 29};
+uchar Fin_ParserTables::Tr[45] = {56, 14, 56, 14, 56, 56, 8,  56, 3,  56, 56, 36, 56, 56, 0,
+                                  56, 1,  56, 1,  56, 56, 8,  56, 56, 14, 56, 56, 2,  56, 1,
+                                  14, 56, 56, 56, 56, 56, 56, 56, 3,  56, 1,  14, 56, 56, 56};
 
 // Terminal transition matrix column ...
-uchar Fin_ParserTables::Tc[32] = {3,  3,  0,  1,  1,  1,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10,
-                                  11, 12, 13, 14, 15, 16, 16, 16, 16, 16, 17, 18, 19, 20, 21, 22};
+uchar Fin_ParserTables::Tc[34] = {0,  0,  0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 10, 10, 10, 10,
+                                  11, 12, 13, 14, 15, 16, 17, 18, 19, 19, 19, 19, 19, 20, 21, 22, 23};
 
 // Nonterminal transition matrix ...
-char Fin_ParserTables::Nm[72] = {19, -33, 19,  18, 19,  18, 0,   -43, 0,  21,  19, 18, 2,   0,  -22, 31, 0,  20,
-                                 0,  4,   0,   0,  0,   21, 31,  31,  3,  0,   19, 18, -62, 0,  41,  17, 0,  4,
-                                 0,  0,   0,   0,  0,   0,  3,   0,   0,  0,   0,  0,  0,   33, 2,   24, 1,  -8,
-                                 12, 13,  -32, 4,  -35, 22, -14, -15, 36, -46, 3,  29, -56, 30, 35,  34, 26, -64};
+char Fin_ParserTables::Nm[79] = {21,  -63, 21,  20,  21,  20, 0,   23, 0,  -73, 0,  23, 21,  20, 2,  0,
+                                 -48, -48, 0,   33,  0,   22, 0,   4,  0,  23,  0,  0,  33,  33, 3,  21,
+                                 20,  -52, -92, -52, 43,  0,  19,  0,  4,  0,   0,  0,  0,   0,  0,  3,
+                                 0,   0,   0,   0,   0,   0,  35,  2,  26, 1,   1,  31, -31, 14, 15, -62,
+                                 4,   -65, 24,  -37, -38, 38, -76, 3,  36, -86, 32, 37, -94, 28, 11};
 
 // Nonterminal transition matrix row ...
-uchar Fin_ParserTables::Nr[43] = {50, 12, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 28, 12, 4, 50, 50, 50, 50, 50,
-                                  50, 50, 50, 10, 28, 0,  50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 2, 50, 12, 28, 50};
+uchar Fin_ParserTables::Nr[45] = {55, 14, 55, 55, 55, 55, 55, 55, 55, 55, 55, 31, 55, 55, 55,
+                                  55, 31, 14, 4,  55, 55, 55, 55, 55, 55, 55, 55, 12, 31, 0,
+                                  55, 55, 55, 55, 55, 55, 55, 55, 55, 55, 2,  55, 14, 31, 55};
 
 // Nonterminal transition matrix column ...
-uchar Fin_ParserTables::Nc[65] = {2,  2,  2,  2,  2,  2,  2,  2,  2,  0,  0,  2,  14, 5,  5,  1,  1,
-                                  15, 19, 2,  21, 2,  2,  3,  3,  3,  4,  4,  5,  5,  6,  7,  7,  8,
-                                  9,  9,  10, 10, 11, 11, 11, 12, 12, 13, 13, 13, 14, 14, 15, 15, 16,
-                                  16, 16, 16, 16, 17, 17, 18, 18, 19, 19, 20, 20, 21, 21};
+uchar Fin_ParserTables::Nc[95] = {2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,
+                                  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  0,  0,  3,  16, 7,  7,
+                                  1,  1,  4,  17, 2,  3,  21, 2,  2,  3,  3,  4,  4,  23, 23, 5,  5,  5,  6,
+                                  6,  7,  7,  8,  9,  9,  10, 11, 11, 12, 12, 13, 13, 13, 14, 14, 15, 15, 15,
+                                  16, 16, 17, 17, 18, 18, 18, 18, 18, 19, 19, 20, 20, 21, 21, 22, 22, 23, 23};
 
 // Reduction matrix ...
-uchar Fin_ParserTables::Rm[18] = {0, 0, 0, 0, 0, 31, 31, 0, 63, 0, 9, 0, 41, 0, 31, 31, 0, 20};
+uchar Fin_ParserTables::Rm[19] = {0, 0, 0, 0, 0, 93, 0, 61, 61, 0, 0, 71, 0, 32, 0, 44, 0, 61, 61};
 
 // Reduction matrix row ...
-char Fin_ParserTables::Rr[43] = {31, 31, 0,  0,  12, 0,  24, 0,  26, 0, 28, 0, 0, 0,  0,  28, 59, 0, 34, 0,   0, 61,
-                                 36, 39, 55, 48, -4, 37, 0,  57, 17, 0, -9, 0, 0, 18, 44, 0,  0,  0, 61, -13, 0};
+char Fin_ParserTables::Rr[45] = {61, 61, 0,  0,  35, 51, 0,  54, 0,  56, 0, 0,  58, 0, 0,  0,  0, 58, 89, 0,  64,  0, 0,
+                                 91, 66, 69, 85, 78, -4, 67, 0,  87, 40, 0, -9, 0,  0, 41, 74, 0, 0,  0,  91, -14, 0};
 
 // Reduction matrix column ...
-uchar Fin_ParserTables::Rc[32] = {0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 2, 0, 0,
-                                  0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 0};
+uchar Fin_ParserTables::Rc[34] = {0, 0, 0, 1, 0, 0, 0, 2, 0, 0, 0, 1, 0, 0, 0, 0, 0,
+                                  0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0};
 
 // Production lengths (minus one) ...
-char Fin_ParserTables::PL[65] = {1,  0, 0,  0, 0,  0, 0,  0, 2, 0,  2, 8,  0,  2,  2,  2,  2, 0,  0, 7,  3, 0,
-                                 1,  1, -1, 0, -1, 0, -1, 0, 1, -1, 1, 1,  -1, 1,  -1, 0,  1, -1, 0, -1, 0, 1,
-                                 -1, 0, 2,  0, -1, 0, 0,  0, 0, 0,  0, -1, 1,  -1, 1,  -1, 0, -1, 1, -1, 1};
+char Fin_ParserTables::PL[95] = {1, 2, 0,  0,  0, 0, 0,  0, 0,  0, 0,  0, 0, 0,  0, 0,  0,  0,  0,  0,  0, 0,  0, 0,
+                                 0, 0, 0,  0,  0, 0, 0,  2, 0,  2, 8,  0, 2, 2,  2, 2,  0,  0,  7,  0,  3, 0,  0, 0,
+                                 1, 0, 0,  -1, 1, 1, -1, 0, -1, 0, -1, 0, 1, -1, 1, 1,  -1, 1,  -1, 0,  1, -1, 0, -1,
+                                 0, 1, -1, 0,  2, 0, -1, 0, 0,  0, 0,  0, 0, -1, 1, -1, 1,  -1, 0,  -1, 1, -1, 1};
 
 // Nondeterministic first terminal in the list ...
-uchar Fin_ParserTables::nd_fterm[44] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+uchar Fin_ParserTables::nd_fterm[46] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
 
 // Nondeterministic terminal list ...
-uchar Fin_ParserTables::nd_term[1] = {10};
+uchar Fin_ParserTables::nd_term[1] = {6};
 
 // Nondeterministic first action in the list ...
 uchar Fin_ParserTables::nd_faction[2] = {0, 2};
 
 // Nondeterministic actions list ...
-char Fin_ParserTables::nd_action[2] = {-9, -41};
+char Fin_ParserTables::nd_action[2] = {-32, -71};
 // Terminal action number ...
-char Fin_ParserTables::tact_numb[32] = {-1, -1, 0,  -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-                                        -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
+char Fin_ParserTables::tact_numb[34] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0,  -1, -1, -1, -1, -1, -1,
+                                        -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
 
 // Init action function pointers ...
 void (*Fin_ParserTables::init_func[2])() = {Fin_Actions::init_actions, Fin_Actions::term_actions};
