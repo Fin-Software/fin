@@ -3,7 +3,7 @@
 ## Contributors responsible for this file:
 ## @p7r0x7 <maxibonnette@pm.me>
 
-module std\constraints
+module std/constraints
 
 interface Scalar {}
 interface Float: Scalar {}
@@ -16,32 +16,32 @@ extend f16, bf16, f32, f64                        { impl Float: }
 extend i8, i16, int, i64, i128, word              { impl SignedInt: }
 extend u8, char, u16, u32, rune, u64, u128, uword { impl UnsignedInt: }
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+###################################################################################################
 module std/env
 
 SupportedTargets (Host, Arch)[_] = {
-    (.android, .arm64),
-    (.darwin,  .arm64),
-    (.linux,   .arm64),
-    (.linux,   .riscv64),
-    (.linux,   .x64),
-    (.wasi,    .wasm),
-    (.wasi,    .wasm64),
-    (.windows, .arm64),
-    (.windows, .x64),
+    (Android, Arm64),
+    (Darwin,  Arm64),
+    (Linux,   Arm64),
+    (Linux,   Riscv64),
+    (Linux,   X64),
+    (Wasi,    Wasm),
+    (Wasi,    Wasm64),
+    (Windows, Arm64),
+    (Windows, X64),
 }
-enum Arch { x64, riscv64, arm64, wasm64, wasm }
-enum Host { android, darwin, linux, windows }
-enum Mode { debug, jit, safe, fast, tiny }
+enum Arch { X64, Riscv64, Arm64, Wasm64, Wasm }
+enum Host { Android, Darwin, Linux, Windows }
+enum Mode { Debug, Jit, Safe, Fast, Tiny }
 
 
 module std/debug
 
-void Assert(ok bool) inline  ## unreachable alone doesn't require a function be marked as divergent
-    if (!ok) unreachable fin
-fin
+void assert(ok bool) inline  ## unreachable alone doesn't require a function be marked as divergent
+    if (!ok) unreachable ;;
+;;
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+###################################################################################################
 module std/encoding/utf8
 
 runeLen u8[256] = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
@@ -61,27 +61,27 @@ runeLen u8[256] = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
                     3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
                     4, 4, 4, 4, 4, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, }
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+###################################################################################################
 module std/mem
 
-u8 alias[] SliceToBytesZC[T any](slice T alias[]) inline
-    if (slice.len == 0) return {} fin
+u8 alias[] sliceToBytesZC[T any](slice T alias[]) inline
+    if (slice.len == 0) return {} ;;
     return ((u8 alias*)&slice[0])[..slice[0].sizeof*slice.len]
-fin
+;;
 
-u8 alias[] ToBytesZC[T any](memory T alias*) inline
-    size := (*memory).sizeof; if (size == 0) return {} fin
+u8 alias[] toBytesZC[T any](memory T alias*) inline
+    size int = (*memory).sizeof; if (size == 0) return {} ;;
     return ((u8 alias*)memory)[..size]
-fin
+;;
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+###################################################################################################
 module std/mem/alloc
 
 dyn interface Allocator {
 
 }
 
-;; Higher-Order
+## Higher-Order
 
 struct StandardAlloc {
 
@@ -95,7 +95,7 @@ struct FragStackAlloc {
 
 }
 
-enum AuditMode { .metrics, .safety, .metricsAndSafety }
+enum AuditMode { Metrics, Safety, SafeMetrics }
 
 struct AuditAlloc[MODE AuditMode] {
 
@@ -105,7 +105,7 @@ struct ArenaAlloc {
 
 }
 
-;; Sourced
+## Sourced
 
 struct PageAlloc {
 
@@ -119,126 +119,129 @@ struct NullAlloc {
 
 }
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+###################################################################################################
 module std/io
 
 interface Reader {
-    needs int! ReadSome(rd*, buf u8[])
+    needs int! readSome(rd*, buf u8[])
 
-    void! Read(rd*, buf u8[]) inline rd.ReadAtLeast(buf, buf.len)! fin
+    void! read(rd*, buf u8[]) inline rd.readAtLeast(buf, buf.len)! ;;
 
-    int! ReadAtLeast(rd*, buf u8[], len int)
-        debug:Assert(buf.len >= len)
-        while (r := 0; r < len; r += n)
-            n := rd.ReadSome(buf[r..])!; if (n == 0) return .UnexpectedEOF fin
-        fin
+    (* assert buf.len >= len *)
+    int! readAtLeast(rd*, buf u8[], len int)
+        while (r int; r < len; r += n)
+            n int = rd.readSome(buf[r..])!; if (n == 0) return UnexpectedEOF! ;;
+        ;;
         return r
-    fin
+    ;;
 }
 interface Writer {
-    needs int! WriteSome(wr*, bytes u8[])
+    needs int! writeSome(wr*, bytes u8[])
 
-    void! Write(wr*, bytes u8[])
-        w := 0; while (w < bytes.len) w += wr.WriteSome(bytes[w..])! fin
-    fin
+    void! write(wr*, bytes u8[])
+        w int; while (w < bytes.len) w += wr.writeSome(bytes[w..])! ;;
+    ;;
 
-    void! WriteChar(wr*, c char) inline wr.WriteSome({c}[..])! fin
+    void! writeChar(wr*, c char) inline wr.writeSome({c}[..])! ;;
 
-    int! WriteRune(wr*, r rune)
-        if (r < 128) wr.WriteChar(r)!; return 1 fin
-        buf char[4]; n := utf8:EncodeRune(buf[..], r)!
-        wr.Write(buf[..n])!; return n
-    fin
+    int! writeRune(wr*, r rune)
+        if (r < 128) wr.writeChar(r)!; return 1 ;;
+        buf char[4]; n int = utf8:encodeRune(buf[..], r)!
+        wr.write(buf[..n])!; return n
+    ;;
 
-    void! Flush(_*) return fin
+    void! flush(_*) return ;;
 }
 
-struct BufferedReader[RDT Reader, LEN int: 4<<10] {
-    buf u8[LEN], inner RDT, start, end int: 0,
-
-impl Reader:
-    void! Read(br*, buf u8[]) inline br.ReadSome(buf)! fin
-
-    int! ReadSome(br*, buf u8[])
-        if (buf.len == 0) return 0 fin; avail := br.end - br.start
-        if (avail > 0)
-            n := min(buf.len, avail)
-            mem:Copy(buf[..n], br.buf[br.start..br.start+n])
-            br.start += n
-            if (br.start == br.end) br.start = 0; br.end = 0 fin
-            return n
-        fin
-        if (buf.len >= LEN)
-            return br.inner.ReadSome(buf)!
-        fin
-        br.start = 0
-        br.end = br.inner.ReadSome(br.buf[..])!
-        n := min(buf.len, br.end)
-        mem:Copy(buf[..n], br.buf[..n])
-        br.start = n
-        if (br.start == br.end) br.start = 0; br.end = 0 fin
-        return n
-    fin
-
-    u8[]! Peek(br*, want int)
-        avail int = br.end - br.start
-        if (avail >= want) return br.buf[br.start..br.end] fin
-        if (br.start > 0)
-            mem:Copy(br.buf[..avail], br.buf[br.start..br.end])
-            br.start = 0; br.end = avail
-        fin
-        if (want > LEN) return .BufferTooSmall? fin
-        while (br.end < want)
-            n int = br.inner.ReadSome(br.buf[br.end..])!
-            if (n == 0) return error(.EndOfFile) fin
-            br.end += n
-        fin
-        return br.buf[br.start..br.end]
-    fin
-
-    void! Init(br*, inner RDT)
-        debug:Assert(br.start == 0 and br.end == 0); br.inner = inner
-    fin
-}
+##struct BufferedReader[RDT Reader, LEN int: 4<<10] {
+##    buf u8[LEN], inner RDT, start, end int: 0,
+##
+##impl Reader:
+##    void! read(br*, buf u8[]) inline br.readSome(buf)! ;;
+##
+##    int! readSome(br*, buf u8[])
+##        if (buf.len == 0) return 0 ;; avail int = br.end - br.start
+##        if (avail > 0)
+##            n := min(buf.len, avail)
+##            mem:copy(buf[..n], br.buf[br.start..br.start+n])
+##            br.start += n
+##            if (br.start == br.end) br.start = 0; br.end = 0 ;;
+##            return n
+##        ;;
+##        if (buf.len >= LEN)
+##            return br.inner.readSome(buf)!
+##        ;;
+##        br.start = 0
+##        br.end = br.inner.readSome(br.buf[..])!
+##        n := min(buf.len, br.end)
+##        mem:copy(buf[..n], br.buf[..n])
+##        br.start = n
+##        if (br.start == br.end) br.start = 0; br.end = 0 ;;
+##        return n
+##    ;;
+##
+##    u8[]! peek(br*, want int)
+##        avail int = br.end - br.start
+##        if (avail >= want) return br.buf[br.start..br.end] ;;
+##        if (br.start > 0)
+##            mem:copy(br.buf[..avail], br.buf[br.start..br.end])
+##            br.start = 0; br.end = avail
+##        ;;
+##        if (want > LEN) BufferTooSmall! ;;
+##        while (br.end < want)
+##            n int = br.inner.readSome(br.buf[br.end..])!
+##        if (n == 0) EndOfFile! ;;
+##            br.end += n
+##        ;;
+##        return br.buf[br.start..br.end]
+##    ;;
+#
+##    (* assert br.start == 0 and br.end == 0 *)
+##    void! init(br*, inner RDT) br.inner = inner ;;
+##}
 
 struct BufferedWriter[LEN int: 4<<10] {
     buf u8[LEN], inner Writer, end int: 0,
 
 impl Writer:
-    void! Write(bw*, bytes u8[]) inline bw.WriteSome(bytes)! fin
+    void! write(bw*, bytes u8[]) inline bw.writeSome(bytes)! ;;
 
-    int! WriteSome(bw*, bytes u8[])
-        if (bytes.len == 0) return 0 fin; end int = bw.end; cap int = LEN - end
+    int! writeSome(bw*, bytes u8[]) pub
+        if (bytes.len == 0) return 0 ;; end int = bw.end; cap int = LEN - end
 
         if (bytes.len >= cap)
             if (end > 0)
-                mem:Copy(bw.buf[end..LEN], bytes[..cap])
-                bw.inner.Write(bw.buf)!
-            fin
+                mem:copy(bw.buf[end..LEN], bytes[..cap])
+                bw.inner.write(bw.buf)!
+            ;;
             full int = (bytes.len - cap) / LEN * LEN
-            if (full > 0) bw.inner.Write(bytes[cap..cap+full])! fin
+            if (full > 0) bw.inner.write(bytes[cap..cap+full])! ;;
 
             tail int = bytes.len - cap - full
-            if (tail > 0) mem:Copy(bw.buf[..tail], bytes[bytes.len-tail..]) fin
+                if (tail > 0) mem:copy(bw.buf[..tail], bytes[bytes.len-tail..]) ;;
             bw.end = tail
         else
-            mem:Copy(bw.buf[end..end+bytes.len], bytes)
+            mem:copy(bw.buf[end..end+bytes.len], bytes)
             bw.end = end + bytes.len
-        fin
+        ;;
         return bytes.len
-    fin
+    ;;
 
-    void! Flush(bw*)
-        if (bw.end > 0) bw.inner.Write(bw.buf[0..bw.end])! bw.end = 0 fin
-        bw.inner.Flush()!
-    fin
+    void! flush(bw*) pub
+        if (bw.end > 0) bw.inner.write(bw.buf[0..bw.end])! bw.end = 0 ;;
+        bw.inner.flush()!
+    ;;
 
     (* BufferedWriter wraps and is generic over inner's underlying type *)
     (* assert bw.end == 0 *)
-    void! Init(bw*, inner Writer) bw.inner = inner fin
+    void! init(bw*, inner Writer) pub bw.inner = inner ;;
 }
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+###################################################################################################
 module main
 
-u8 main(args char[][]) pub return 0 fin
+u8 main(args char[][]) pub return 0 ;;
+
+
+
+
