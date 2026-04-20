@@ -15,7 +15,7 @@ opt='-pipe -O3 -flto=thin -mllvm -polly -mllvm -polly-vectorizer=stripmine -fno-
 
 cd src/lrstar; ln ../Fin.grm Fin.grm; ln ../Fin.lgr Fin.lgr
 
-printf '\033[1;33m'; { ../../.build/lrstar Fin.grm /st /crr /csr /k=2 /o; echo
+printf '\033[1;33m'; { ../../.build/lrstar Fin.grm /crr /csr /st /k=2 /o; echo
   ../../.build/dfa Fin.lgr /crr /csr /sto; } || true; printf '\033[0m\n'
 
 rm -f -- *.grm *.lgr *.lex *grammar.txt *warnings.txt *log.txt make.bat memory; cd ../..

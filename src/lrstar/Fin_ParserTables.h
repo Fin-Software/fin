@@ -41,9 +41,9 @@ enum termcon {
     COLON = 5,
     COMMA = 6,
     CPAREN = 7,
-    EQUALS = 8,
-    FIN = 9,
-    ID = 10,
+    CTID = 8,
+    EQUALS = 9,
+    FIN = 10,
     IMPL = 11,
     INLINE = 12,
     LINKABLE = 13,
@@ -54,9 +54,10 @@ enum termcon {
     OBRACK = 18,
     OPAREN = 19,
     OPAREN_STAR = 20,
-    STAR = 21,
-    STAR_CPAREN = 22,
-    STRUCT = 23
+    RTID = 21,
+    STAR = 22,
+    STAR_CPAREN = 23,
+    STRUCT = 24
 };
 
 typedef unsigned int uint;
@@ -71,31 +72,31 @@ class Fin_ParserTables {
     friend class Fin_Parser;
 
   public:
-    static char* term_symb[34]; // Terminal symbols of the grammar.
-    static char* head_symb[43]; // Nonterminal symbols of the grammar.
-    static char* tact_name[1];  // Terminal action names found in the grammar.
-    static uchar head_numb[95]; // Head symbol number for a production.
-    static uchar f_tail[96];    // First tail in a production.
-    static char tail[127];      // Tail symbol number.
-    static char arga[34];       // Arguments for terminal actions.
+    static char* term_symb[34];  // Terminal symbols of the grammar.
+    static char* head_symb[48];  // Nonterminal symbols of the grammar.
+    static char* tact_name[1];   // Terminal action names found in the grammar.
+    static uchar head_numb[104]; // Head symbol number for a production.
+    static uchar f_tail[105];    // First tail in a production.
+    static char tail[145];       // Tail symbol number.
+    static char arga[34];        // Arguments for terminal actions.
 
   private:
-    static uchar Bm[55]; // Boolean matrix.
-    static uchar Br[45]; // Boolean matrix row.
-    static uchar Bc[34]; // Boolean matrix column.
-    static uchar Bf[34]; // Boolean matrix filter/mask.
-    static char Tm[80];  // Terminal transition matrix.
-    static uchar Tr[45]; // Terminal transition matrix row.
-    static uchar Tc[34]; // Terminal transition matrix column.
-    static char Nm[79];  // Nonterminal transition matrix.
-    static uchar Nr[45]; // Nonterminal transition matrix row.
-    static uchar Nc[95]; // Nonterminal transition matrix column.
-    static uchar Rm[19]; // Reduction matrix.
-    static char Rr[45];  // Reduction matrix row.
-    static uchar Rc[34]; // Reduction matrix column.
-    static char PL[95];  // Production length minus one.
+    static uchar Bm[52];  // Boolean matrix.
+    static uchar Br[53];  // Boolean matrix row.
+    static uchar Bc[34];  // Boolean matrix column.
+    static uchar Bf[34];  // Boolean matrix filter/mask.
+    static char Tm[89];   // Terminal transition matrix.
+    static uchar Tr[53];  // Terminal transition matrix row.
+    static uchar Tc[34];  // Terminal transition matrix column.
+    static char Nm[102];  // Nonterminal transition matrix.
+    static uchar Nr[53];  // Nonterminal transition matrix row.
+    static uchar Nc[104]; // Nonterminal transition matrix column.
+    static uchar Rm[19];  // Reduction matrix.
+    static char Rr[53];   // Reduction matrix row.
+    static uchar Rc[34];  // Reduction matrix column.
+    static char PL[104];  // Production length minus one.
 
-    static uchar nd_fterm[46];  // ND: first terminal in the list.
+    static uchar nd_fterm[54];  // ND: first terminal in the list.
     static uchar nd_term[1];    // ND: terminal list.
     static uchar nd_faction[2]; // ND: first action in the list.
     static char nd_action[2];   // ND: action list.

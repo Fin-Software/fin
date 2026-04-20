@@ -3,28 +3,29 @@
 // Contributors responsible for this file:
 // @p7r0x7 <maxibonnette@pm.me>
 
-BANG               '!';
-CBRACE             '}';
-CBRACK             ']';
-COLON              ':';
-COMMA              ',';
-CPAREN             ')';
-EQUALS             '=';
-FIN              'fin';
-ID    <id> => lookup();
-IMPL            'impl';
-INLINE        'inline';
-LINKABLE    'linkable';
-LINKED        'linked';
-NAKED          'naked';
-NORETURN    'noreturn';
-OBRACE             '{';
-OBRACK             '[';
-OPAREN             '(';
-OPAREN_STAR       '(*';
-STAR               '*';
-STAR_CPAREN       '*)';
-STRUCT        'struct';
+BANG                '!';
+CBRACE              '}';
+CBRACK              ']';
+COLON               ':';
+COMMA               ',';
+CPAREN              ')';
+CTID <ctid> => lookup();
+EQUALS              '=';
+FIN                ';;';
+IMPL             'impl';
+INLINE         'inline';
+LINKABLE     'linkable';
+LINKED         'linked';
+NAKED           'naked';
+NORETURN     'noreturn';
+OBRACE              '{';
+OBRACK              '[';
+OPAREN              '(';
+OPAREN_STAR        '(*';
+RTID <rtid> => lookup();
+STAR                '*';
+STAR_CPAREN        '*)';
+STRUCT         'struct';
 
 srcFile: (mlcomment | decl)+ <eof>;
 
@@ -36,9 +37,9 @@ mlbody
     | COLON
     | COMMA
     | CPAREN
+    | CTID
     | EQUALS
     | FIN
-    | ID
     | IMPL
     | INLINE
     | LINKABLE
@@ -49,13 +50,15 @@ mlbody
     | OBRACK
     | OPAREN
     | OPAREN_STAR
+    | RTID
     | STAR
     | STAR_CPAREN
     | STRUCT;  // Sync with above; above excludes what shouldn't be here.
 
 
 decl
-    : valDecl
+    : ctDecl
+    | rtDecl
 	| funcDecl
 	| structDecl
 	| enumDecl
@@ -63,29 +66,33 @@ decl
 	| interfaceDecl
 	| faultDecl;
 
-valDecl: ids typeSig (EQUALS expr)?;
-ids: ID | ids COMMA ID;
+ctDecl: ctids typeSig (EQUALS expr)?;
+ctids: CTID | ctids COMMA CTID;
 
 //typeSig: ;
 
-funcDecl: contracts typeSig BANG? ID ctParams? funcParams attributes body FIN;
+rtDecl: rtids typeSig (EQUALS expr)?;
+rtids: RTID | rtids COMMA RTID;
+
+funcDecl: contracts typeSig BANG? RTID ctParams? funcParams attributes body FIN;
 
 contracts: (OPAREN_STAR STAR_CPAREN)*;
 
 ctParams: OBRACK params CBRACK;
 params: param (COMMA param)* COMMA?;
-param: ids typeSig (COLON expr)?;
+param: ctids typeSig (COLON expr)?;
 
-funcParams: OPAREN (ID STAR? (COMMA params)? | params)? CPAREN;
+funcParams: OPAREN (RTID STAR? (COMMA fields)? | fields)? CPAREN;
+fields: field (COMMA field)* COMMA?;
+field: rtids typeSig (COLON expr)?;
 
 attributes: (INLINE | LINKABLE | LINKED | NAKED | NORETURN)*;
 
 body: stmt*;
 
-structDecl: STRUCT ID ctParams? OBRACE fields? funcDecl* implBlock* CBRACE;
-fields: params;
+structDecl: STRUCT CTID ctParams? OBRACE fields? funcDecl* implBlock* CBRACE;
 
-implBlock: IMPL typeids COLON funcDecl*;
+implBlock: IMPL ctids COLON funcDecl*;
 
 /*
 ///////////////////////////////////////////////////////////////////////////////////////////////////

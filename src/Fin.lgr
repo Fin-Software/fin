@@ -9,12 +9,13 @@
 
 <mlopen>  -> '<' '>' '<'
 <mlclose> -> '>' '<' '>'
-{comment} -> ';' ';' neol*
+{comment} -> '#' '#' neol*
 
 {whitespace} -> (wchar | ';')+
 {skipped} -> (ctrl | nonascii)+
 
-<id> -> (lower | upper | '_') (alnum | '_')*  // Underscore-only IDs must be rejected later.
+<ctid> -> '_'* upper ('_' | alnum)*
+<rtid> -> '_'* lower ('_' | alnum)*
 
 //<string> -> '\"' schar* '\"'
 
