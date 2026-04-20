@@ -35,29 +35,51 @@
 #define ND_THREADS 2
 
 enum termcon {
-    BANG = 2,
-    CBRACE = 3,
-    CBRACK = 4,
-    COLON = 5,
-    COMMA = 6,
-    CPAREN = 7,
-    CTID = 8,
-    EQUALS = 9,
-    FIN = 10,
-    IMPL = 11,
-    INLINE = 12,
-    LINKABLE = 13,
-    LINKED = 14,
-    NAKED = 15,
-    NORETURN = 16,
-    OBRACE = 17,
-    OBRACK = 18,
-    OPAREN = 19,
-    OPAREN_STAR = 20,
-    RTID = 21,
-    STAR = 22,
-    STAR_CPAREN = 23,
-    STRUCT = 24
+    BOOL = 2,
+    F16 = 3,
+    BF16 = 4,
+    F32 = 5,
+    F64 = 6,
+    I8 = 7,
+    I16 = 8,
+    INT = 9,
+    I64 = 10,
+    I128 = 11,
+    WORD = 12,
+    U8 = 13,
+    CHAR = 14,
+    U16 = 15,
+    U32 = 16,
+    RUNE = 17,
+    U64 = 18,
+    U128 = 19,
+    UWORD = 20,
+    BANG = 21,
+    CBRACE = 22,
+    CBRACK = 23,
+    COLON = 24,
+    COMMA = 25,
+    CPAREN = 26,
+    CTID = 27,
+    EQUALS = 28,
+    EXTEND = 29,
+    FIN = 30,
+    IMPL = 31,
+    INLINE = 32,
+    LINKABLE = 33,
+    LINKED = 34,
+    MODULE = 35,
+    NAKED = 36,
+    NORETURN = 37,
+    OBRACE = 38,
+    OBRACK = 39,
+    OPAREN = 40,
+    OPAREN_STAR = 41,
+    RTID = 42,
+    SLASH = 43,
+    STAR = 44,
+    STAR_CPAREN = 45,
+    STRUCT = 46
 };
 
 typedef unsigned int uint;
@@ -72,36 +94,36 @@ class Fin_ParserTables {
     friend class Fin_Parser;
 
   public:
-    static char* term_symb[34];  // Terminal symbols of the grammar.
-    static char* head_symb[48];  // Nonterminal symbols of the grammar.
+    static char* term_symb[56];  // Terminal symbols of the grammar.
+    static char* head_symb[57];  // Nonterminal symbols of the grammar.
     static char* tact_name[1];   // Terminal action names found in the grammar.
-    static uchar head_numb[104]; // Head symbol number for a production.
-    static uchar f_tail[105];    // First tail in a production.
-    static char tail[145];       // Tail symbol number.
-    static char arga[34];        // Arguments for terminal actions.
+    static uchar head_numb[141]; // Head symbol number for a production.
+    static uchar f_tail[142];    // First tail in a production.
+    static char tail[194];       // Tail symbol number.
+    static char arga[56];        // Arguments for terminal actions.
 
   private:
-    static uchar Bm[52];  // Boolean matrix.
-    static uchar Br[53];  // Boolean matrix row.
-    static uchar Bc[34];  // Boolean matrix column.
-    static uchar Bf[34];  // Boolean matrix filter/mask.
-    static char Tm[89];   // Terminal transition matrix.
-    static uchar Tr[53];  // Terminal transition matrix row.
-    static uchar Tc[34];  // Terminal transition matrix column.
-    static char Nm[102];  // Nonterminal transition matrix.
-    static uchar Nr[53];  // Nonterminal transition matrix row.
-    static uchar Nc[104]; // Nonterminal transition matrix column.
-    static uchar Rm[19];  // Reduction matrix.
-    static char Rr[53];   // Reduction matrix row.
-    static uchar Rc[34];  // Reduction matrix column.
-    static char PL[104];  // Production length minus one.
+    static uchar Bm[71];  // Boolean matrix.
+    static uchar Br[66];  // Boolean matrix row.
+    static uchar Bc[56];  // Boolean matrix column.
+    static uchar Bf[56];  // Boolean matrix filter/mask.
+    static short Tm[119]; // Terminal transition matrix.
+    static uchar Tr[66];  // Terminal transition matrix row.
+    static uchar Tc[56];  // Terminal transition matrix column.
+    static short Nm[111]; // Nonterminal transition matrix.
+    static uchar Nr[66];  // Nonterminal transition matrix row.
+    static uchar Nc[141]; // Nonterminal transition matrix column.
+    static uchar Rm[39];  // Reduction matrix.
+    static short Rr[66];  // Reduction matrix row.
+    static uchar Rc[56];  // Reduction matrix column.
+    static char PL[141];  // Production length minus one.
 
-    static uchar nd_fterm[54];  // ND: first terminal in the list.
-    static uchar nd_term[1];    // ND: terminal list.
-    static uchar nd_faction[2]; // ND: first action in the list.
-    static char nd_action[2];   // ND: action list.
+    static uchar nd_fterm[67];  // ND: first terminal in the list.
+    static uchar nd_term[2];    // ND: terminal list.
+    static uchar nd_faction[3]; // ND: first action in the list.
+    static short nd_action[4];  // ND: action list.
 
-    static char tact_numb[34]; // Terminal action numbers.
+    static char tact_numb[56]; // Terminal action numbers.
 
     static void (*init_func[2])();      // Init action function pointers.
     static int (*tact_func[1])(int& t); // Terminal action function pointers.
