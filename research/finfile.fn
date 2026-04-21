@@ -19,7 +19,7 @@ extend u8, char, u16, u32, rune, u64, u128, uword { impl UnsignedInt: }
 ###################################################################################################
 module std/env
 
-SupportedTargets (Host, Arch)[_] = {
+supportedTargets (Host, Arch)[_] = {
     (Android, Arm64),
     (Darwin,  Arm64),
     (Linux,   Arm64),
@@ -34,42 +34,37 @@ enum Arch { X64, Riscv64, Arm64, Wasm64, Wasm }
 enum Host { Android, Darwin, Linux, Windows }
 enum Mode { Debug, Jit, Safe, Fast, Tiny }
 
-
-module std/debug
-
-void assert(ok bool) inline  ## unreachable alone doesn't require a function be marked as divergent
-    if (!ok) unreachable ;;
-;;
-
 ###################################################################################################
 module std/encoding/utf8
 
-runeLen u8[256] = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-                    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-                    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-                    4, 4, 4, 4, 4, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, }
+runeLen u8[256] @priv = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                          1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                          1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                          1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                          1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                          1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                          1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                          1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                          1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                          1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                          1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                          1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                          2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+                          2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+                          3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+                          4, 4, 4, 4, 4, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, }
+
+int! encodeRune(dst u8[], r rune) ;;
 
 ###################################################################################################
 module std/mem
 
-u8 alias[] sliceToBytesZC[T any](slice T alias[]) inline
+u8 alias[] sliceToBytesZC[T any](slice T alias[]) @inline
     if (slice.len == 0) return {} ;;
     return ((u8 alias*)&slice[0])[..slice[0].sizeof*slice.len]
 ;;
 
-u8 alias[] toBytesZC[T any](memory T alias*) inline
+u8 alias[] toBytesZC[T any](memory T alias*) @inline
     size int = (*memory).sizeof; if (size == 0) return {} ;;
     return ((u8 alias*)memory)[..size]
 ;;
@@ -77,47 +72,29 @@ u8 alias[] toBytesZC[T any](memory T alias*) inline
 ###################################################################################################
 module std/mem/alloc
 
-dyn interface Allocator {
-
-}
+dyn interface Allocator {}
 
 ## Higher-Order
 
-struct StandardAlloc {
+struct StandardAlloc {}
 
-}
+struct LIFOStackAlloc {}
 
-struct LIFOStackAlloc {
-
-}
-
-struct FragStackAlloc {
-
-}
+struct FragStackAlloc {}
 
 enum AuditMode { Metrics, Safety, SafeMetrics }
 
-struct AuditAlloc[MODE AuditMode] {
+struct AuditAlloc[MODE AuditMode] {}
 
-}
-
-struct ArenaAlloc {
-
-}
+struct ArenaAlloc {}
 
 ## Sourced
 
-struct PageAlloc {
+struct PageAlloc {}
 
-}
+struct LibCAlloc {}
 
-struct LibCAlloc {
-
-}
-
-struct NullAlloc {
-
-}
+struct NullAlloc {}
 
 ###################################################################################################
 module std/io
@@ -125,12 +102,12 @@ module std/io
 interface Reader {
     needs int! readSome(rd*, buf u8[])
 
-    void! read(rd*, buf u8[]) inline rd.readAtLeast(buf, buf.len)! ;;
+    void! read(rd*, buf u8[]) @inline rd.readAtLeast(buf, buf.len)! ;;
 
-    (* assert buf.len >= len *)
+    (% @assert buf.len >= len %)
     int! readAtLeast(rd*, buf u8[], len int)
-        while (r int; r < len; r += n)
-            n int = rd.readSome(buf[r..])!; if (n == 0) return UnexpectedEOF! ;;
+        r int; while (r < len; r += n)
+            n int = rd.readSome(buf[r..])!; if (n == 0) return UnexpectedEOF# ;;
         ;;
         return r
     ;;
@@ -142,7 +119,7 @@ interface Writer {
         w int; while (w < bytes.len) w += wr.writeSome(bytes[w..])! ;;
     ;;
 
-    void! writeChar(wr*, c char) inline wr.writeSome({c}[..])! ;;
+    void! writeChar(wr*, c char) @inline wr.writeSome({c}[..])! ;;
 
     int! writeRune(wr*, r rune)
         if (r < 128) wr.writeChar(r)!; return 1 ;;
@@ -153,60 +130,62 @@ interface Writer {
     void! flush(_*) return ;;
 }
 
-##struct BufferedReader[RDT Reader, LEN int: 4<<10] {
-##    buf u8[LEN], inner RDT, start, end int: 0,
-##
-##impl Reader:
-##    void! read(br*, buf u8[]) inline br.readSome(buf)! ;;
-##
-##    int! readSome(br*, buf u8[])
-##        if (buf.len == 0) return 0 ;; avail int = br.end - br.start
-##        if (avail > 0)
-##            n := min(buf.len, avail)
-##            mem:copy(buf[..n], br.buf[br.start..br.start+n])
-##            br.start += n
-##            if (br.start == br.end) br.start = 0; br.end = 0 ;;
-##            return n
-##        ;;
-##        if (buf.len >= LEN)
-##            return br.inner.readSome(buf)!
-##        ;;
-##        br.start = 0
-##        br.end = br.inner.readSome(br.buf[..])!
-##        n := min(buf.len, br.end)
-##        mem:copy(buf[..n], br.buf[..n])
-##        br.start = n
-##        if (br.start == br.end) br.start = 0; br.end = 0 ;;
-##        return n
-##    ;;
-##
-##    u8[]! peek(br*, want int)
-##        avail int = br.end - br.start
-##        if (avail >= want) return br.buf[br.start..br.end] ;;
-##        if (br.start > 0)
-##            mem:copy(br.buf[..avail], br.buf[br.start..br.end])
-##            br.start = 0; br.end = avail
-##        ;;
-##        if (want > LEN) BufferTooSmall! ;;
-##        while (br.end < want)
-##            n int = br.inner.readSome(br.buf[br.end..])!
-##        if (n == 0) EndOfFile! ;;
-##            br.end += n
-##        ;;
-##        return br.buf[br.start..br.end]
-##    ;;
-#
-##    (* assert br.start == 0 and br.end == 0 *)
-##    void! init(br*, inner RDT) br.inner = inner ;;
-##}
+<><
+struct BufferedReader[RDT Reader, LEN int: 4<<10] {
+    buf u8[LEN], inner RDT, start, end int: 0,
+
+impl Reader:
+    void! read(br*, buf u8[]) @inline br.readSome(buf)! ;;
+
+    int! readSome(br*, buf u8[])
+        if (buf.len == 0) return 0 ;; avail int = br.end - br.start
+        if (avail > 0)
+            n := min(buf.len, avail)
+            mem:copy(buf[..n], br.buf[br.start..br.start+n])
+            br.start += n
+            if (br.start == br.end) br.start = 0; br.end = 0 ;;
+            return n
+        ;;
+        if (buf.len >= LEN)
+            return br.inner.readSome(buf)!
+        ;;
+        br.start = 0
+        br.end = br.inner.readSome(br.buf[..])!
+        n := min(buf.len, br.end)
+        mem:copy(buf[..n], br.buf[..n])
+        br.start = n
+        if (br.start == br.end) br.start = 0; br.end = 0 ;;
+        return n
+    ;;
+
+    u8[]! peek(br*, want int)
+        avail int = br.end - br.start
+        if (avail >= want) return br.buf[br.start..br.end] ;;
+        if (br.start > 0)
+            mem:copy(br.buf[..avail], br.buf[br.start..br.end])
+            br.start = 0; br.end = avail
+        ;;
+        if (want > LEN) BufferTooSmall! ;;
+        while (br.end < want)
+            n int = br.inner.readSome(br.buf[br.end..])!
+            if (n == 0) EndOfFile! ;;
+            br.end += n
+        ;;
+        return br.buf[br.start..br.end]
+    ;;
+
+    (% @assert br.start == 0 and br.end == 0 %)
+    void! init(br*, inner RDT) br.inner = inner ;;
+}
+><>
 
 struct BufferedWriter[LEN int: 4<<10] {
     buf u8[LEN], inner Writer, end int: 0,
 
 impl Writer:
-    void! write(bw*, bytes u8[]) inline bw.writeSome(bytes)! ;;
+    void! write(bw*, bytes u8[]) @inline bw.writeSome(bytes)! ;;
 
-    int! writeSome(bw*, bytes u8[]) pub
+    int! writeSome(bw*, bytes u8[])
         if (bytes.len == 0) return 0 ;; end int = bw.end; cap int = LEN - end
 
         if (bytes.len >= cap)
@@ -218,7 +197,7 @@ impl Writer:
             if (full > 0) bw.inner.write(bytes[cap..cap+full])! ;;
 
             tail int = bytes.len - cap - full
-                if (tail > 0) mem:copy(bw.buf[..tail], bytes[bytes.len-tail..]) ;;
+            if (tail > 0) mem:copy(bw.buf[..tail], bytes[bytes.len-tail..]) ;;
             bw.end = tail
         else
             mem:copy(bw.buf[end..end+bytes.len], bytes)
@@ -227,21 +206,17 @@ impl Writer:
         return bytes.len
     ;;
 
-    void! flush(bw*) pub
-        if (bw.end > 0) bw.inner.write(bw.buf[0..bw.end])! bw.end = 0 ;;
+    void! flush(bw*)
+        if (bw.end > 0) bw.inner.write(bw.buf[0..bw.end])!; bw.end = 0 ;;
         bw.inner.flush()!
     ;;
 
-    (* BufferedWriter wraps and is generic over inner's underlying type *)
-    (* assert bw.end == 0 *)
-    void! init(bw*, inner Writer) pub bw.inner = inner ;;
+    (% BufferedWriter wraps and is generic over inner's underlying type %)
+    (% @assert bw.end == 0 %)
+    void! init(bw*, inner Writer) bw.inner = inner ;;
 }
 
 ###################################################################################################
 module main
 
-u8 main(args char[][]) pub return 0 ;;
-
-
-
-
+u8 main(args char[][]) return 0 ;;
