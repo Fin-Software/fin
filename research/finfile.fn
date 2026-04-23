@@ -99,7 +99,15 @@ struct NullAlloc {}
 ###################################################################################################
 module std/io
 
-interface Reader {
+interface InStream {
+
+}
+
+interface OutStream {
+
+}
+
+interface Reader: InStream {
     needs int! readSome(rd*, buf u8[])
 
     void! read(rd*, buf u8[]) @inline rd.readAtLeast(buf, buf.len)! ;;
@@ -112,7 +120,7 @@ interface Reader {
         return r
     ;;
 }
-interface Writer {
+interface Writer: OutStream {
     needs int! writeSome(wr*, bytes u8[])
 
     void! write(wr*, bytes u8[])

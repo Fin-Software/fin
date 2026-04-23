@@ -7,10 +7,6 @@
 
 <eof> -> \z  // Mandatory in LRSTAR.
 
-<mlopen>  -> '<' '>' '<'
-<mlclose> -> '>' '<' '>'
-{comment} -> '#' '#' neol*
-
 {whitespace} -> (wchar | ';')+
 {skipped} -> (ctrl | nonascii)+
 

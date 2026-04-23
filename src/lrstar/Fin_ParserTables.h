@@ -94,36 +94,36 @@ class Fin_ParserTables {
     friend class Fin_Parser;
 
   public:
-    static char* term_symb[56];  // Terminal symbols of the grammar.
-    static char* head_symb[57];  // Nonterminal symbols of the grammar.
-    static char* tact_name[1];   // Terminal action names found in the grammar.
-    static uchar head_numb[141]; // Head symbol number for a production.
-    static uchar f_tail[142];    // First tail in a production.
-    static char tail[194];       // Tail symbol number.
-    static char arga[56];        // Arguments for terminal actions.
+    static char* term_symb[55]; // Terminal symbols of the grammar.
+    static char* head_symb[49]; // Nonterminal symbols of the grammar.
+    static char* tact_name[1];  // Terminal action names found in the grammar.
+    static uchar head_numb[85]; // Head symbol number for a production.
+    static uchar f_tail[86];    // First tail in a production.
+    static char tail[136];      // Tail symbol number.
+    static char arga[55];       // Arguments for terminal actions.
 
   private:
-    static uchar Bm[71];  // Boolean matrix.
-    static uchar Br[66];  // Boolean matrix row.
-    static uchar Bc[56];  // Boolean matrix column.
-    static uchar Bf[56];  // Boolean matrix filter/mask.
-    static short Tm[119]; // Terminal transition matrix.
-    static uchar Tr[66];  // Terminal transition matrix row.
-    static uchar Tc[56];  // Terminal transition matrix column.
-    static short Nm[111]; // Nonterminal transition matrix.
-    static uchar Nr[66];  // Nonterminal transition matrix row.
-    static uchar Nc[141]; // Nonterminal transition matrix column.
-    static uchar Rm[39];  // Reduction matrix.
-    static short Rr[66];  // Reduction matrix row.
-    static uchar Rc[56];  // Reduction matrix column.
-    static char PL[141];  // Production length minus one.
+    static uchar Bm[54]; // Boolean matrix.
+    static uchar Br[62]; // Boolean matrix row.
+    static uchar Bc[55]; // Boolean matrix column.
+    static uchar Bf[55]; // Boolean matrix filter/mask.
+    static char Tm[106]; // Terminal transition matrix.
+    static uchar Tr[62]; // Terminal transition matrix row.
+    static uchar Tc[55]; // Terminal transition matrix column.
+    static char Nm[116]; // Nonterminal transition matrix.
+    static uchar Nr[62]; // Nonterminal transition matrix row.
+    static uchar Nc[85]; // Nonterminal transition matrix column.
+    static uchar Rm[39]; // Reduction matrix.
+    static char Rr[62];  // Reduction matrix row.
+    static uchar Rc[55]; // Reduction matrix column.
+    static char PL[85];  // Production length minus one.
 
-    static uchar nd_fterm[67];  // ND: first terminal in the list.
+    static uchar nd_fterm[63];  // ND: first terminal in the list.
     static uchar nd_term[2];    // ND: terminal list.
     static uchar nd_faction[3]; // ND: first action in the list.
-    static short nd_action[4];  // ND: action list.
+    static char nd_action[4];   // ND: action list.
 
-    static char tact_numb[56]; // Terminal action numbers.
+    static char tact_numb[55]; // Terminal action numbers.
 
     static void (*init_func[2])();      // Init action function pointers.
     static int (*tact_func[1])(int& t); // Terminal action function pointers.

@@ -48,64 +48,34 @@ RTID <rtid> => lookup();
 SLASH               '/';
 STAR                '*';
 STAR_CPAREN        '*)';
-STRUCT         'struct';  // <eof>, <mlopen>, and <mlclose> are omitted and aren't part of mlBody.
+STRUCT         'struct';
 
-srcFile: (mlComment? moduleDecl+) <eof>;
+srcFile: moduleDecl+ <eof>;
 
-mlComment: <mlopen> (mlComment | mlBody)* <mlclose>;
-mlBody
-    : builtinTypes
-    | BANG
-    | CBRACE
-    | CBRACK
-    | COLON
-    | COMMA
-    | CPAREN
-    | CTID
-    | EQUALS
-    | EXTEND
-    | FIN
-    | IMPL
-    | INLINE
-    | LINKABLE
-    | LINKED
-    | MODULE
-    | NAKED
-    | NORETURN
-    | OBRACE
-    | OBRACK
-    | OPAREN
-    | OPAREN_STAR
-    | RTID
-    | SLASH
-    | STAR
-    | STAR_CPAREN
-    | STRUCT;      // Sync with above. This currently has a design flaw.
-    
-builtinTypes
-    : BOOL
-    | F16
-    | BF16
-    | F32
-    | F64
-    | I8
-    | I16
-    | INT
-    | I64
-    | I128
-    | WORD
-    | U8
-    | CHAR
-    | U16
-    | U32
-    | RUNE
-    | U64
-    | U128
-    | UWORD;
+//builtinTypes
+//    : BOOL
+//    | F16
+//    | BF16
+//    | F32
+//    | F64
+//    | I8
+//    | I16
+//    | INT
+//    | I64
+//    | I128
+//    | WORD
+//    | U8
+//    | CHAR
+//    | U16
+//    | U32
+//    | RUNE
+//    | U64
+//    | U128
+//    | UWORD;
 
-moduleDecl: MODULE namespace (mlComment | decl)+;
+moduleDecl: MODULE namespace decl+;
 namespace: RTID | namespace SLASH RTID;
-    
+
 decl: ctDecl | rtDecl | funcDecl | structDecl | extendDecl | enumDecl | unionDecl | interfaceDecl | faultDecl;
 
 ctDecl: ctids typeSig (EQUALS expr)?;
