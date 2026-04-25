@@ -108,12 +108,12 @@ interface OutStream {
 }
 
 interface Reader: InStream {
-    needs int! readSome(rd*, buf u8[])
+    needs int! readSome(rd*; buf u8[])
 
-    void! read(rd*, buf u8[]) @inline rd.readAtLeast(buf, buf.len)! ;;
+    void! read(rd*; buf u8[]) @inline rd.readAtLeast(buf, buf.len)! ;;
 
     (% @assert buf.len >= len %)
-    int! readAtLeast(rd*, buf u8[], len int)
+    int! readAtLeast(rd*; buf u8[], len int)
         r int; while (r < len; r += n)
             n int = rd.readSome(buf[r..])!; if (n == 0) return UnexpectedEOF# ;;
         ;;
@@ -121,15 +121,15 @@ interface Reader: InStream {
     ;;
 }
 interface Writer: OutStream {
-    needs int! writeSome(wr*, bytes u8[])
+    needs int! writeSome(wr*; bytes u8[])
 
-    void! write(wr*, bytes u8[])
+    void! write(wr*; bytes u8[])
         w int; while (w < bytes.len) w += wr.writeSome(bytes[w..])! ;;
     ;;
 
-    void! writeChar(wr*, c char) @inline wr.writeSome({c}[..])! ;;
+    void! writeChar(wr*; c char) @inline wr.writeSome({c}[..])! ;;
 
-    int! writeRune(wr*, r rune)
+    int! writeRune(wr*; r rune)
         if (r < 128) wr.writeChar(r)!; return 1 ;;
         buf char[4]; n int = utf8:encodeRune(buf[..], r)!
         wr.write(buf[..n])!; return n
@@ -143,9 +143,9 @@ struct BufferedReader[RDT Reader, LEN int: 4<<10] {
     buf u8[LEN], inner RDT, start, end int: 0,
 
 impl Reader:
-    void! read(br*, buf u8[]) @inline br.readSome(buf)! ;;
+    void! read(br*; buf u8[]) @inline br.readSome(buf)! ;;
 
-    int! readSome(br*, buf u8[])
+    int! readSome(br*; buf u8[])
         if (buf.len == 0) return 0 ;; avail int = br.end - br.start
         if (avail > 0)
             n := min(buf.len, avail)
@@ -166,7 +166,7 @@ impl Reader:
         return n
     ;;
 
-    u8[]! peek(br*, want int)
+    u8[]! peek(br*; want int)
         avail int = br.end - br.start
         if (avail >= want) return br.buf[br.start..br.end] ;;
         if (br.start > 0)
@@ -183,7 +183,7 @@ impl Reader:
     ;;
 
     (% @assert br.start == 0 and br.end == 0 %)
-    void! init(br*, inner RDT) br.inner = inner ;;
+    void! init(br*; inner RDT) br.inner = inner ;;
 }
 ><>
 
@@ -191,9 +191,9 @@ struct BufferedWriter[LEN int: 4<<10] {
     buf u8[LEN], inner Writer, end int: 0,
 
 impl Writer:
-    void! write(bw*, bytes u8[]) @inline bw.writeSome(bytes)! ;;
+    void! write(bw*; bytes u8[]) @inline bw.writeSome(bytes)! ;;
 
-    int! writeSome(bw*, bytes u8[])
+    int! writeSome(bw*; bytes u8[])
         if (bytes.len == 0) return 0 ;; end int = bw.end; cap int = LEN - end
 
         if (bytes.len >= cap)
@@ -221,7 +221,7 @@ impl Writer:
 
     (% BufferedWriter wraps and is generic over inner's underlying type %)
     (% @assert bw.end == 0 %)
-    void! init(bw*, inner Writer) bw.inner = inner ;;
+    void! init(bw*; inner Writer) bw.inner = inner ;;
 }
 
 ###################################################################################################

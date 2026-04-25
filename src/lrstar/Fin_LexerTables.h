@@ -11,10 +11,10 @@
 #define LEXER Fin_Lexer
 
 /*
-      static uchar  Tm[  8476]        ; // Terminal transition matrix.
-      static ushort Tr[   176]        ; // Terminal transition matrix row.
+      static uchar  Tm[  7752]        ; // Terminal transition matrix.
+      static ushort Tr[   168]        ; // Terminal transition matrix row.
       static uchar  Tc[   256]        ; // Terminal transition matrix column.
-      static char   term_numb[   176] ; // Terminal number.
+      static char   term_numb[   168] ; // Terminal number.
 */
 
 //

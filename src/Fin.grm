@@ -23,6 +23,7 @@ U64               'u64';
 U128             'u128';
 UWORD           'uword';
 
+ALIAS           'alias';
 BANG                '!';
 CBRACE              '}';
 CBRACK              ']';
@@ -30,6 +31,7 @@ COLON               ':';
 COMMA               ',';
 CPAREN              ')';
 CTID <ctid> => lookup();
+ELLIPSES          '...';
 EQUALS              '=';
 EXTEND         'extend';
 FIN                ';;';
@@ -43,71 +45,69 @@ NORETURN     'noreturn';
 OBRACE              '{';
 OBRACK              '[';
 OPAREN              '(';
-OPAREN_STAR        '(*';
+OPAREN_PCENT       '(%';
+PCENT_CPAREN       '%)';
 RTID <rtid> => lookup();
 SLASH               '/';
 STAR                '*';
-STAR_CPAREN        '*)';
 STRUCT         'struct';
+QMARK               '?';
 
 srcFile: moduleDecl+ <eof>;
-
-//builtinTypes
-//    : BOOL
-//    | F16
-//    | BF16
-//    | F32
-//    | F64
-//    | I8
-//    | I16
-//    | INT
-//    | I64
-//    | I128
-//    | WORD
-//    | U8
-//    | CHAR
-//    | U16
-//    | U32
-//    | RUNE
-//    | U64
-//    | U128
-//    | UWORD;
 
 moduleDecl: MODULE namespace decl+;
 namespace: RTID | namespace SLASH RTID;
 
 decl: ctDecl | rtDecl | funcDecl | structDecl | extendDecl | enumDecl | unionDecl | interfaceDecl | faultDecl;
 
-ctDecl: ctids typeSig (EQUALS expr)?;
+ctDecl: ctids typeSig init;
 ctids: CTID | ctids COMMA CTID;
 
-//typeSig: ;
+typeSig: typeAtom typePostfix*;
+typeAtom: CTID | builtinType | tupleSig;
 
-rtDecl: rtids typeSig (EQUALS expr)?;
+builtinType: F16 | BF16 | F32 | F64 | I8 | I16 | INT | I64 | I128 | U8 | U16 | U32 | U64 | U128 | BOOL | CHAR | RUNE | WORD | UWORD;
+
+tupleSig: OPAREN tupleElems? CPAREN;
+tupleElems
+    : typeSig (COMMA typeSig)*
+    | typeSig (COMMA typeSig)* COMMA
+    | typeSig (COMMA typeSig)* COMMA typeSig ELLIPSES
+    | typeSig (COMMA typeSig)* COMMA typeSig ELLIPSES COMMA;
+
+typePostfix: tupleSig | typeSuffix | BANG;
+
+typeSuffix: OBRACK CBRACK | ALIAS OBRACK CBRACK | STAR | ALIAS STAR | QMARK | OBRACK expr CBRACK;
+
+init: COLON expr | EQUALS expr | /* empty */;
+
+rtDecl: rtids typeSig init;
 rtids: RTID | rtids COMMA RTID;
 
-funcDecl: contracts typeSig BANG? RTID ctParams? funcParams attributes body FIN;
+funcDecl: contracts typeSig RTID ctParams OPAREN funcParams? CPAREN attributes body FIN;
 
-contracts: (OPAREN_STAR STAR_CPAREN)*;
+contracts: (OPAREN_PCENT PCENT_CPAREN)*;
 
-ctParams: OBRACK params CBRACK;
-params: param (COMMA param)* COMMA?;
-param: ctids typeSig (COLON expr)?;
+ctParams: OBRACK params CBRACK | /* empty */;
 
-funcParams: OPAREN (RTID STAR? (COMMA fields)? | fields)? CPAREN;
-fields: field (COMMA field)* COMMA?;
-field: rtids typeSig (COLON expr)?;
+params: param (COMMA param)* | param (COMMA param)* COMMA;
+param: ctids typeSig init;
+
+funcParams: fields | RTID | RTID STAR | RTID fields | RTID STAR fields;
+
+fields: field (COMMA field)* | field (COMMA field)* COMMA;
+field: rtids typeSig init;
 
 attributes: (INLINE | LINKABLE | LINKED | NAKED | NORETURN)*;
 
 body: stmt*;
 
-structDecl: STRUCT CTID ctParams? OBRACE fields? funcDecl* implBlock* CBRACE;
+structDecl: STRUCT CTID ctParams OBRACE fields? funcDecl* implBlock* CBRACE;
 
 implBlock: IMPL ctids COLON funcDecl*;
 
 extendDecl: EXTEND extensibles OBRACE funcDecl* implBlock* CBRACE;
-extensibles: (builtinTypes | ctids) | extensibles COMMA (builtinTypes | ctids);
+extensibles: typeSig | extensibles COMMA typeSig;
 
 /*
 ///////////////////////////////////////////////////////////////////////////////////////////////////

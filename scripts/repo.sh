@@ -26,4 +26,4 @@ find . \( -path ./vendor -o -name '.[!.]*' \) -prune -o \
             -exec clang-format -i --style file:.clang-format {} + \
     \) \)
 
-git add .; git --no-pager diff --stat HEAD; git reset >/dev/null
+#git add .; git --no-pager diff --stat HEAD; git reset >/dev/null
