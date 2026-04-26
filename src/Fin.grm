@@ -66,41 +66,51 @@ ctids: CTID | ctids COMMA CTID;
 typeSig: typeAtom typePostfix*;
 typeAtom: CTID | builtinType | tupleSig;
 
-builtinType: F16 | BF16 | F32 | F64 | I8 | I16 | INT | I64 | I128 | U8 | U16 | U32 | U64 | U128 | BOOL | CHAR | RUNE | WORD | UWORD;
+builtinType
+    : F16 | BF16 | F32 | F64
+    | I8 | I16 | INT | I64 | I128
+    | U8 | U16 | U32 | U64 | U128
+    | BOOL | CHAR | RUNE | WORD | UWORD;
 
-tupleSig: OPAREN tupleElems? CPAREN;
+tupleSig: OPAREN tupleElems CPAREN;
 tupleElems
-    : typeSig (COMMA typeSig)*
-    | typeSig (COMMA typeSig)* COMMA
-    | typeSig (COMMA typeSig)* COMMA typeSig ELLIPSES
-    | typeSig (COMMA typeSig)* COMMA typeSig ELLIPSES COMMA;
+    : /* empty */
+    | typeSigs
+    | typeSigs COMMA
+    | typeSigs COMMA typeSig ELLIPSES
+    | typeSigs COMMA typeSig ELLIPSES COMMA;
+typeSigs: typeSig | typeSigs COMMA typeSig;
 
 typePostfix: tupleSig | typeSuffix | BANG;
 
 typeSuffix: OBRACK CBRACK | ALIAS OBRACK CBRACK | STAR | ALIAS STAR | QMARK | OBRACK expr CBRACK;
 
-init: COLON expr | EQUALS expr | /* empty */;
+init: /* empty */ | COLON expr | EQUALS expr;
 
 rtDecl: rtids typeSig init;
 rtids: RTID | rtids COMMA RTID;
 
 funcDecl: contracts typeSig RTID ctParams OPAREN funcParams? CPAREN attributes body FIN;
 
-contracts: (OPAREN_PCENT PCENT_CPAREN)*;
+contracts: /* empty */ | contracts OPAREN_PCENT PCENT_CPAREN;
 
-ctParams: OBRACK params CBRACK | /* empty */;
-
+ctParams: /* empty */ | OBRACK params CBRACK;
 params: param (COMMA param)* | param (COMMA param)* COMMA;
 param: ctids typeSig init;
 
 funcParams: fields | RTID | RTID STAR | RTID fields | RTID STAR fields;
-
 fields: field (COMMA field)* | field (COMMA field)* COMMA;
 field: rtids typeSig init;
 
-attributes: (INLINE | LINKABLE | LINKED | NAKED | NORETURN)*;
+attributes
+    : /* empty */
+    | attributes NAKED
+    | attributes INLINE
+    | attributes LINKED
+    | attributes LINKABLE
+    | attributes NORETURN;
 
-body: stmt*;
+body: /* empty */ | body stmt;
 
 structDecl: STRUCT CTID ctParams OBRACE fields? funcDecl* implBlock* CBRACE;
 
