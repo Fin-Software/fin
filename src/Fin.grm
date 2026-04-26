@@ -32,6 +32,7 @@ COMMA               ',';
 CPAREN              ')';
 CTID <ctid> => lookup();
 ELLIPSES          '...';
+ENUM             'enum';
 EQUALS              '=';
 EXTEND         'extend';
 FIN                ';;';
@@ -47,6 +48,7 @@ OBRACK              '[';
 OPAREN              '(';
 OPAREN_PCENT       '(%';
 PCENT_CPAREN       '%)';
+POUND               '#';
 RTID <rtid> => lookup();
 SLASH               '/';
 STAR                '*';
@@ -58,7 +60,7 @@ srcFile: moduleDecl+ <eof>;
 moduleDecl: MODULE namespace decl+;
 namespace: RTID | namespace SLASH RTID;
 
-decl: ctDecl | rtDecl | funcDecl | structDecl | extendDecl | enumDecl | unionDecl | interfaceDecl | faultDecl;
+decl: ctDecl | rtDecl | funcDecl | structDecl | extendDecl | enumDecl | interfaceDecl | faultDecl;
 
 ctDecl: ctids typeSig init;
 ctids: CTID | ctids COMMA CTID;
@@ -81,18 +83,24 @@ tupleElems
     | typeSigs COMMA typeSig ELLIPSES COMMA;
 typeSigs: typeSig | typeSigs COMMA typeSig;
 
-typePostfix: tupleSig | typeSuffix | BANG;
+typePostfix: tupleSig pointerSuffix | typeSuffix | BANG;
 
-typeSuffix: OBRACK CBRACK | ALIAS OBRACK CBRACK | STAR | ALIAS STAR | QMARK | OBRACK expr CBRACK;
+typeSuffix: sliceSuffix | pointerSuffix | arraySuffix | optionalSuffix;
+sliceSuffix: OBRACK CBRACK | ALIAS OBRACK CBRACK;
+pointerSuffix: STAR | ALIAS STAR;
+arraySuffix: OBRACK expr CBRACK;
+optionalSuffix: QMARK;
 
 init: /* empty */ | COLON expr | EQUALS expr;
 
 rtDecl: rtids typeSig init;
 rtids: RTID | rtids COMMA RTID;
 
-funcDecl: contracts typeSig RTID ctParams OPAREN funcParams? CPAREN attributes body FIN;
+funcDecl: contracts typeSig macroOp RTID ctParams OPAREN funcParams? CPAREN attributes body FIN;
 
-contracts: /* empty */ | contracts OPAREN_PCENT PCENT_CPAREN;
+contracts: /* empty */ | contracts OPAREN_PCENT PCENT_CPAREN;  // Incomplete.
+
+macroOp: /* empty */ | POUND;
 
 ctParams: /* empty */ | OBRACK params CBRACK;
 params: param (COMMA param)* | param (COMMA param)* COMMA;
@@ -118,6 +126,8 @@ implBlock: IMPL ctids COLON funcDecl*;
 
 extendDecl: EXTEND extensibles OBRACE funcDecl* implBlock* CBRACE;
 extensibles: typeSig | extensibles COMMA typeSig;
+
+enumDecl: ENUM CTID OBRACE ctids CBRACE | ENUM CTID OBRACE ctids COMMA CBRACE;  // Incomplete.
 
 /*
 ///////////////////////////////////////////////////////////////////////////////////////////////////
