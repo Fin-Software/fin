@@ -55,6 +55,8 @@ STAR                '*';
 STRUCT         'struct';
 QMARK               '?';
 
+//    Sorted depth-first because I can't help myself.
+
 srcFile: moduleDecl+ <eof>;
 
 moduleDecl: MODULE namespace decl+;
@@ -74,16 +76,12 @@ builtinType
     | U8 | U16 | U32 | U64 | U128
     | BOOL | CHAR | RUNE | WORD | UWORD;
 
-tupleSig: OPAREN tupleElems CPAREN;
-tupleElems
-    : /* empty */
-    | typeSigs
-    | typeSigs COMMA
-    | typeSigs COMMA typeSig ELLIPSES
-    | typeSigs COMMA typeSig ELLIPSES COMMA;
+tupleSig: OPAREN typeTupleElems CPAREN;
+typeTupleElems: /* empty */ | typeSigs variadicSig;
 typeSigs: typeSig | typeSigs COMMA typeSig;
+variadicSig: /* empty */ | COMMA typeSig ELLIPSES COMMA?;
 
-typePostfix: tupleSig pointerSuffix | typeSuffix | BANG;
+typePostfix: tupleSig STAR | typeSuffix | BANG;
 
 typeSuffix: sliceSuffix | pointerSuffix | arraySuffix | optionalSuffix;
 sliceSuffix: OBRACK CBRACK | ALIAS OBRACK CBRACK;
@@ -103,20 +101,15 @@ contracts: /* empty */ | contracts OPAREN_PCENT PCENT_CPAREN;  // Incomplete.
 macroOp: /* empty */ | POUND;
 
 ctParams: /* empty */ | OBRACK params CBRACK;
-params: param (COMMA param)* | param (COMMA param)* COMMA;
+params: param (COMMA param)* COMMA?;
 param: ctids typeSig init;
 
 funcParams: fields | RTID | RTID STAR | RTID fields | RTID STAR fields;
-fields: field (COMMA field)* | field (COMMA field)* COMMA;
+fields: field (COMMA field)* COMMA?;
 field: rtids typeSig init;
 
-attributes
-    : /* empty */
-    | attributes NAKED
-    | attributes INLINE
-    | attributes LINKED
-    | attributes LINKABLE
-    | attributes NORETURN;
+attributes: /* empty */ | attributes attribute;
+attribute: NAKED | INLINE | LINKED | LINKABLE | NORETURN;
 
 body: /* empty */ | body stmt;
 
@@ -127,7 +120,10 @@ implBlock: IMPL ctids COLON funcDecl*;
 extendDecl: EXTEND extensibles OBRACE funcDecl* implBlock* CBRACE;
 extensibles: typeSig | extensibles COMMA typeSig;
 
-enumDecl: ENUM CTID OBRACE ctids CBRACE | ENUM CTID OBRACE ctids COMMA CBRACE;  // Incomplete.
+enumDecl: ENUM CTID OBRACE ctids tuple COMMA? CBRACE;  // Incomplete.
+tuple: OPAREN values CPAREN;
+values: value | values COMMA value;
+value: ;
 
 /*
 ///////////////////////////////////////////////////////////////////////////////////////////////////

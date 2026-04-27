@@ -100,30 +100,30 @@ class Fin_ParserTables {
 
   public:
     static char* term_symb[56];  // Terminal symbols of the grammar.
-    static char* head_symb[48];  // Nonterminal symbols of the grammar.
+    static char* head_symb[54];  // Nonterminal symbols of the grammar.
     static char* tact_name[1];   // Terminal action names found in the grammar.
-    static uchar head_numb[118]; // Head symbol number for a production.
-    static uchar f_tail[119];    // First tail in a production.
-    static char tail[208];       // Tail symbol number.
+    static uchar head_numb[121]; // Head symbol number for a production.
+    static uchar f_tail[122];    // First tail in a production.
+    static char tail[199];       // Tail symbol number.
     static char arga[56];        // Arguments for terminal actions.
 
   private:
-    static uchar Bm[92];  // Boolean matrix.
-    static uchar Br[76];  // Boolean matrix row.
+    static uchar Bm[78];  // Boolean matrix.
+    static uchar Br[79];  // Boolean matrix row.
     static uchar Bc[56];  // Boolean matrix column.
     static uchar Bf[56];  // Boolean matrix filter/mask.
-    static char Tm[112];  // Terminal transition matrix.
-    static uchar Tr[76];  // Terminal transition matrix row.
+    static char Tm[97];   // Terminal transition matrix.
+    static uchar Tr[79];  // Terminal transition matrix row.
     static uchar Tc[56];  // Terminal transition matrix column.
-    static char Nm[123];  // Nonterminal transition matrix.
-    static uchar Nr[76];  // Nonterminal transition matrix row.
-    static uchar Nc[118]; // Nonterminal transition matrix column.
+    static char Nm[149];  // Nonterminal transition matrix.
+    static uchar Nr[79];  // Nonterminal transition matrix row.
+    static uchar Nc[121]; // Nonterminal transition matrix column.
     static uchar Rm[67];  // Reduction matrix.
-    static char Rr[76];   // Reduction matrix row.
+    static char Rr[79];   // Reduction matrix row.
     static uchar Rc[56];  // Reduction matrix column.
-    static char PL[118];  // Production length minus one.
+    static char PL[121];  // Production length minus one.
 
-    static uchar nd_fterm[77];  // ND: first terminal in the list.
+    static uchar nd_fterm[80];  // ND: first terminal in the list.
     static uchar nd_term[3];    // ND: terminal list.
     static uchar nd_faction[4]; // ND: first action in the list.
     static char nd_action[6];   // ND: action list.
