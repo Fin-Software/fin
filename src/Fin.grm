@@ -121,9 +121,10 @@ extendDecl: EXTEND extensibles OBRACE funcDecl* implBlock* CBRACE;
 extensibles: typeSig | extensibles COMMA typeSig;
 
 enumDecl: ENUM CTID OBRACE ctids tuple COMMA? CBRACE;  // Incomplete.
-tuple: OPAREN values CPAREN;
-values: value | values COMMA value;
-value: ;
+tuple: OPAREN tupleElems CPAREN;
+tupleElems: /* empty */ | exprs COMMA?;
+exprs: expr | exprs COMMA expr;
+//expr: ;
 
 /*
 ///////////////////////////////////////////////////////////////////////////////////////////////////

@@ -15,7 +15,7 @@ opt='-pipe -O3 -flto=thin -mllvm -polly -mllvm -polly-vectorizer=stripmine -fno-
 
 cd src/lrstar; ln ../Fin.grm Fin.grm; ln ../Fin.lgr Fin.lgr
 
-printf '\033[1;33m'; { ../../.build/lrstar Fin.grm /crr /csr /wk /k=2 /o; echo
+printf '\033[1;33m'; { ../../.build/lrstar Fin.grm /crr /csr /wk /k=2 /o /m; echo
   ../../.build/dfa Fin.lgr /crr /csr /sto /m; } || true; printf '\033[0m\n'
 
 rm -f -- *.grm *.lgr *.lex *grammar.txt *log.txt make.bat memory.txt; cd ../..
@@ -25,5 +25,7 @@ find . \( -path ./vendor -o -name '.[!.]*' \) -prune -o \
         \( -name '*.c' -o -name '*.cpp' -o -name '*.h' -o -name '*.hpp' \) \
             -exec clang-format -i --style file:.clang-format {} + \
     \) \)
+    
+clang $opt -w -lc++ .build/lp.o src/lrstar/*
 
 #git add .; git --no-pager diff --stat HEAD; git reset >/dev/null
