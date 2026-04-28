@@ -3,8 +3,8 @@
 //                                                                           //
 
 #include "Fin_Parser.h"
-#include "../../code/parser.cpp"
 #include "Fin_ParserTables.hpp"
+#include "../../code/parser.cpp"
 
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////

@@ -2,10 +2,10 @@
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
 
-#include "../../code/lexer.cpp"
-#include "../../code/lexer.h"
 #include "Fin_LexerTables.h"
+#include "../../code/lexer.h"
 #include "Fin_LexerTables.hpp"
+#include "../../code/lexer.cpp"
 
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
