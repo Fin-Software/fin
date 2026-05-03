@@ -1,7 +1,8 @@
 ColumnLimit: 120
 IndentWidth: 4
 InsertNewlineAtEOF: true
-SortIncludes: CaseInsensitive
+SortIncludes:
+    Enabled: false
 ReflowComments: Never
 UseTab: Never
 ---

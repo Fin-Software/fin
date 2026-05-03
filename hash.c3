@@ -90,14 +90,14 @@ module hash;
 import direntries, std::io, std::thread, std::crypto::sha3, std::encoding::base64;
 
 const HASH_LEN = 32;
-struct ReaderArgs { BufChan ch; String wd; }
+struct ReaderArgs { BufChan* ch; String wd; }
 faultdef MISSING_WORKING_DIR_ARG, TOO_MANY_ARGS;
-alias BufChan = channel::BufferedChannel{char[]};
+alias BufChan = BufferedChannel{char[]};
 
 fn int treeReader(void* arg) {
 	@pool_init(mem, 1<<10) {
 
-	BufChan ch = (BufChan)((ReaderArgs*)arg).ch;
+	BufChan* ch = (BufChan*)((ReaderArgs*)arg).ch;
 	String wd = (String)((ReaderArgs*)arg).wd;
 	DirEntries de @noinit;
 	de.init(wd, true, mem)!!;
@@ -135,7 +135,7 @@ fn int treeReader(void* arg) {
 }
 
 fn int sha3Hasher(void* arg) {
-	BufChan ch = (BufChan)arg;
+	BufChan* ch = (BufChan*)arg;
 	Sha3{HASH_LEN*8} state;
 	state.init();
 
@@ -157,8 +157,7 @@ fn int main(String[] args) {
 	}
 	String wd = path::normalize(args[1])!!;
 
-	BufChan ch;
-	ch.init(mem, 16)!!;
+	BufChan* ch = channel::create_buffered(mem, 16)!!;
 	ReaderArgs ra = {ch, wd};
 
 	Thread readert, hashert;
@@ -167,6 +166,6 @@ fn int main(String[] args) {
 
 	readert.join()!!;
 	hashert.join()!!;
-	ch.destroy()!!;
+	ch.destroy();
 	return 0;
 }
