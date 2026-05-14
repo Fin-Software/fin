@@ -13,7 +13,7 @@ I16               'i16';
 INT               'int';
 I64               'i64';
 I128             'i128';
-WORD             'word';
+REG               'reg';
 U8                 'u8';
 CHAR             'char';
 U16               'u16';
@@ -21,7 +21,7 @@ U32               'u32';
 RUNE             'rune';
 U64               'u64';
 U128             'u128';
-UWORD           'uword';
+UREG             'ureg';
 
 ALIAS           'alias';
 BANG                '!';
@@ -74,7 +74,7 @@ builtinType
     : F16 | BF16 | F32 | F64
     | I8 | I16 | INT | I64 | I128
     | U8 | U16 | U32 | U64 | U128
-    | BOOL | CHAR | RUNE | WORD | UWORD;
+    | BOOL | CHAR | RUNE | REG | UREG;
 
 tupleSig: OPAREN typeTupleElems CPAREN;
 typeTupleElems: /* empty */ | typeSigs variadicSig;

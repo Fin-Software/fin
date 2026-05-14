@@ -42,8 +42,8 @@ settings() {
         windows/x64)   triple=x86_64-windows-msvc ;;
         *) help 1 "$(printf 'target %s unsupported' "$target" )" ;;
     esac
-    [ ${target%/*} = darwin ] && gc=-dead_strip || gc=--gc-sections
     case ${target%/*} in darwin) lld=ld64.lld ;; android|linux) lld=ld.lld ;; windows) lld=lld-link ;; esac
+    [ ${target%/*} = darwin ] && gc=-dead_strip || gc=--gc-sections
 }
 
 libs() {
@@ -54,36 +54,42 @@ libs() {
         c3c compile-only hash.c3 -O0 -g0 --single-module=yes --emit-llvm --no-obj --llvm-out /tmp/fin
         clang -fuse-ld="$(command -v $lld)" $_flags -Wl,$gc /tmp/fin/*.ll -o .build/hash
     }
-    [ "$(.build/hash vendor)" = '3j8Qjuv+lRuTkMC/0HC7bEz8MYXlzVcj7AArZ8HGbF8=' ]
+    [ "$(.build/hash vendor)" = '0niZ8ZayS6I6O4SXaE2vwpSmhZuNP4GLWjgWEQKRoRg=' ]  # CODE REVIEW POISON
     target=${target%/*}-${target#*/}; $install .build/$target/build
-    
+
     set -- -Wno-dev -G Ninja \
         -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_AR="$(command -v llvm-ar)" \
         -DCMAKE_LINKER="$(command -v $lld)" \
+        -DCMAKE_EXE_LINKER_FLAGS_RELEASE=-O3 \
         -DCMAKE_C_COMPILER="$(command -v clang)" \
         -DCMAKE_CXX_COMPILER="$(command -v clang++)" \
-        -DCMAKE_EXE_LINKER_FLAGS_RELEASE=-O3 \
-        -DCMAKE_CXX_FLAGS_RELEASE="$_flags" \
-        -DCMAKE_C_FLAGS_RELEASE="$_flags" \
-        -DCMAKE_OBJCOPY=false \
-        -DCMAKE_RANLIB=false \
-        -DCMAKE_NM=false
+        -DCMAKE_C_FLAGS_RELEASE="$(printf '%s ' $_flags)" \
+        -DCMAKE_CXX_FLAGS_RELEASE="$(printf '%s ' $_flags)" \
+        -DCMAKE_OBJCOPY=false -DCMAKE_RANLIB=false -DCMAKE_NM=false
 
-    buildzstd=.build/$target/build/zstd prefixzstd=.build/$target/install/zstd
-    
+    buildzlib=.build/$target/build/zlib zlib=.build/$target/install/zlib
+    $install $buildzlib; cmake -S vendor/zlib-* -B $buildzlib "$@" \
+        -DZLIB_BUILD_TESTING=OFF \
+        -DZLIB_BUILD_SHARED=OFF \
+        -DZLIB_BUILD_STATIC=ON \
+        -DCMAKE_INSTALL_PREFIX=$zlib; echo
+
+    rm -rf $zlib; ninja -C $buildzlib libz.a; echo
+
+    $install .build/$target/prefix; mv .build/$target/install/zlib/include #kaboom
+
+    buildzstd=.build/$target/build/zstd; zstd=.build/$target/install/zstd
     $install $buildzstd; cmake -S vendor/zstd-*/build/cmake -B $buildzstd "$@" \
         -DZSTD_MULTITHREAD_SUPPORT=ON \
         -DZSTD_LEGACY_SUPPORT=OFF \
         -DZSTD_BUILD_PROGRAMS=OFF \
         -DZSTD_BUILD_SHARED=OFF \
-        -DCMAKE_INSTALL_PREFIX=$prefixzstd; echo
-    
-    rm -rf $prefixzstd; ninja -C $buildzstd libzstd.a
-    ninja -C $buildzstd install >/dev/null; echo
-    
-    buildllvm=.build/$target/build/llvm prefixllvm=.build/$target/install/llvm
-    
+        -DCMAKE_INSTALL_PREFIX=$zstd; echo
+
+    rm -rf $zstd; ninja -C $buildzstd libzstd.a; ninja -C $buildzstd install >/dev/null; echo
+
+    buildllvm=.build/$target/build/llvm llvm=.build/$target/llvm
     $install $buildllvm; cmake -S vendor/llvm-*/llvm -B $buildllvm "$@" \
         -DLLVM_OPTIMIZED_TABLEGEN=ON \
         -DLLVM_UNREACHABLE_OPTIMIZE=ON \
@@ -104,7 +110,7 @@ libs() {
         -DLLVM_ENABLE_OCAMLDOC=OFF \
         -DLLVM_ENABLE_PLUGINS=OFF \
         -DLLVM_ENABLE_Z3_SOLVER=OFF \
-        -DLLVM_ENABLE_ZLIB=OFF \
+        -DLLVM_ENABLE_ZLIB=ON \
         -DLLVM_ENABLE_ZSTD=ON \
         -DLLVM_INCLUDE_DOCS=OFF \
         -DLLVM_INCLUDE_TESTS=OFF \
@@ -117,10 +123,10 @@ libs() {
         -DLLVM_ENABLE_PROJECTS="clang;lld;polly" \
         -DLLVM_ENABLE_RUNTIMES="compiler-rt;openmp" \
         -DLLVM_TARGETS_TO_BUILD="X86;AArch64;ARM;RISCV;WebAssembly;LoongArch" \
-        -DCMAKE_PREFIX_PATH=$prefixzstd \
-        -DCMAKE_INSTALL_PREFIX=$prefixllvm; echo
-    
-    rm -rf $prefixllvm; ninja -C $buildllvm \
+        -DCMAKE_PREFIX_PATH=$codecs \
+        -DCMAKE_INSTALL_PREFIX=$llvm; echo
+
+    rm -rf $llvm; ninja -C $buildllvm \
         install-clangDriver \
         install-lldCOFF \
         install-lldCommon \
@@ -131,7 +137,7 @@ libs() {
         install-LLVMOrcJIT \
         install-Polly
     ninja -C $buildllvm install-llvm-headers install-clang-headers install-lld-headers >/dev/null; echo
-    
+
     #{
     #	cd $prefixllvm/include/lld; $install COFF ELF MachO wasm; cd ../../../..
     #	for dir in COFF ELF MachO wasm; do ln $buildllvm/tools/lld/$dir/Options.inc $prefixllvm/include/lld/$dir; done
@@ -151,8 +157,6 @@ libs() {
     #wait
 }
 
-build() {
-    true
-}
+build() { true; }
 
 settings "$@"; libs; build

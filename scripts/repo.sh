@@ -27,19 +27,37 @@ find . \( -path ./vendor -o -name '.[!.]*' \) -prune -o \
 
 ln -sf vendor/lrstar-master/code code
 clang++ -O0 -w -lc++ -include sys/stat.h -o .build/finlp src/lrstar/*.cpp
-time awk '{
-    out = ""; n = length($0); i = 1
-    while (i <= n) {
-        s1 = substr($0, i, 1); s2 = substr($0, i, 2); s3 = substr($0, i, 3)
-        if (depth == 0 && s2 == "##")
-            { out = out sprintf("%*s", n - i + 1, ""); break }
-        if (depth == 0 && s3 == "<><")
-            { depth++; out = out "   "; i += 3; continue }
-        if (depth > 0 && s3 == "><>")
-            { depth--; out = out "   "; i += 3; continue }
-        out = out (depth > 0 ? (s1 == "\t" ? "\t" : " ") : s1); i++
-    }; print out
-}' research/finfile.fn >research/finfile.wo.fn
+time mawk '
+function whiteoutnontab(s, out, i, j, n) {
+    n = length(s); for (i = 1; i <= n;) {
+        if (substr(s, i, 1) == "\t") {
+            out = out "\t"; i++
+        } else {
+            j = i; while (j <= n && substr(s, j, 1) != "\t") j++
+            out = out sprintf("%*s", j-i, ""); i = j
+        }
+    }; return out
+}
+{
+    while (length($0)) {
+        if (!depth) {
+            sl = index($0, "##"); mlopen = index($0, "<><")
+            if (!sl && !mlopen) { printf "%s", $0; break }
+            if (sl && (!mlopen || sl <= mlopen)) {
+                printf "%s%*s", substr($0, 1, sl-1), length($0)-sl+1, ""
+                break
+            }
+            printf "%s   ", substr($0, 1, mlopen-1)
+            depth++; $0 = substr($0, mlopen+3)
+        } else {
+            mlclose = index($0, "><>")
+            if (!mlclose) { printf "%s", whiteoutnontab($0); break }
+            printf "%s   ", whiteoutnontab(substr($0, 1, mlclose-1))
+            depth--; $0 = substr($0, mlclose+3)
+        }
+    }; printf "\n"
+}
+' research/finfile.fn >research/finfile.wo.fn
 [ $(wc -c <research/finfile.fn) = $(wc -c <research/finfile.wo.fn) ]
 .build/finlp research/finfile.wo.fn || true
 rm code research/finfile.wo.fn lrstar.txt 2>/dev/null || true
