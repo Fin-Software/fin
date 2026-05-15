@@ -32,13 +32,10 @@ function spaces(n, gap) {
     if ((gap = n-length(SPACES)) > 0) SPACES = SPACES sprintf("%*s", gap, "")
     return substr(SPACES, 1, n)
 }
-function whiteoutnontab(s, out, parts, n, i, len) {
+function whiteoutnontab(s, out, parts, n, i) {
     n = split(s, parts, "\t")
-    for (i = 1; i <= n; i++) {
-        if (len = length(parts[i])) out = out spaces(len)
-        if (i < n) out = out "\t"
-    }
-    return out
+    for (i = 1; i < n; i++) out = out spaces(length(parts[i])) "\t"
+    return out spaces(length(parts[n]))
 }
 {
     while (length($0)) {
