@@ -49,10 +49,15 @@ function whiteoutnontab(s, out, parts, n, i) {
             printf "%s   ", substr($0, 1, mlopen-1)
             depth++; $0 = substr($0, mlopen+3)
         } else {
-            mlclose = index($0, "><>")
-            if (!mlclose) { printf "%s", whiteoutnontab($0); break }
-            printf "%s   ", whiteoutnontab(substr($0, 1, mlclose-1))
-            depth--; $0 = substr($0, mlclose+3)
+            mlopen = index($0, "<><"); mlclose = index($0, "><>")
+            if (!mlopen && !mlclose) { printf "%s", whiteoutnontab($0); break }
+            if (mlopen && (!mlclose || mlopen < mlclose)) {
+                printf "%s   ", whiteoutnontab(substr($0, 1, mlopen-1))
+                depth++; $0 = substr($0, mlopen+3)
+            } else {
+                printf "%s   ", whiteoutnontab(substr($0, 1, mlclose-1))
+                depth--; $0 = substr($0, mlclose+3)
+            }
         }
     }; printf "\n"
 }
