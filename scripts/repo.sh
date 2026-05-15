@@ -28,15 +28,17 @@ find . \( -path ./vendor -o -name '.[!.]*' \) -prune -o \
 ln -sf vendor/lrstar-master/code code
 clang++ -O0 -w -lc++ -include sys/stat.h -o .build/finlp src/lrstar/*.cpp
 time mawk '
-function whiteoutnontab(s, out, i, j, n) {
-    n = length(s); for (i = 1; i <= n;) {
-        if (substr(s, i, 1) == "\t") {
-            out = out "\t"; i++
-        } else {
-            j = i; while (j <= n && substr(s, j, 1) != "\t") j++
-            out = out sprintf("%*s", j-i, ""); i = j
-        }
-    }; return out
+function spaces(n, gap) {
+    if ((gap = n-length(SPACES)) > 0) SPACES = SPACES sprintf("%*s", gap, "")
+    return substr(SPACES, 1, n)
+}
+function whiteoutnontab(s, out, parts, n, i, len) {
+    n = split(s, parts, "\t")
+    for (i = 1; i <= n; i++) {
+        if (len = length(parts[i])) out = out spaces(len)
+        if (i < n) out = out "\t"
+    }
+    return out
 }
 {
     while (length($0)) {
@@ -44,7 +46,7 @@ function whiteoutnontab(s, out, i, j, n) {
             sl = index($0, "##"); mlopen = index($0, "<><")
             if (!sl && !mlopen) { printf "%s", $0; break }
             if (sl && (!mlopen || sl <= mlopen)) {
-                printf "%s%*s", substr($0, 1, sl-1), length($0)-sl+1, ""
+                printf "%s%s", substr($0, 1, sl-1), spaces(length($0)-sl+1)
                 break
             }
             printf "%s   ", substr($0, 1, mlopen-1)
