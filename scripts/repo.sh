@@ -25,7 +25,7 @@ find . \( -path ./vendor -o -name '.[!.]*' \) -prune -o \
             -exec clang-format -i {} + \
     \) \)
 
-ln -sf vendor/lrstar-master/code code
+rm code 2>/dev/null || true; ln -s vendor/lrstar-master/code code
 clang++ -O0 -w -lc++ -include sys/stat.h -o .build/finlp src/lrstar/*.cpp
 time mawk '
 function spaces(n, gap) {

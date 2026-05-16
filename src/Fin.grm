@@ -24,6 +24,12 @@ U128             'u128';
 UREG             'ureg';
 
 ALIAS           'alias';
+ATINLINE      '@inline';
+ATLINKABLE  '@linkable';
+ATLINKED      '@linked';
+ATNAKED        '@naked';
+ATNORETURN  '@noreturn';
+ATPRIV          '@priv';
 BANG                '!';
 CBRACE              '}';
 CBRACK              ']';
@@ -35,14 +41,11 @@ ELLIPSES          '...';
 ENUM             'enum';
 EQUALS              '=';
 EXTEND         'extend';
+FAULT           'fault';
 FIN                ';;';
 IMPL             'impl';
-INLINE         'inline';
-LINKABLE     'linkable';
-LINKED         'linked';
+INTERFACE   'interface';
 MODULE         'module';
-NAKED           'naked';
-NORETURN     'noreturn';
 OBRACE              '{';
 OBRACK              '[';
 OPAREN              '(';
@@ -54,8 +57,17 @@ SLASH               '/';
 STAR                '*';
 STRUCT         'struct';
 QMARK               '?';
+UNDERSCORE          '_';
 
 //    Sorted depth-first because I can't help myself.
+
+//expr: ;
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
+//stmt: ;
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 
 srcFile: moduleDecl+ <eof>;
 
@@ -86,7 +98,7 @@ typePostfix: tupleSig STAR | typeSuffix | BANG;
 typeSuffix: sliceSuffix | pointerSuffix | arraySuffix | optionalSuffix;
 sliceSuffix: OBRACK CBRACK | ALIAS OBRACK CBRACK;
 pointerSuffix: STAR | ALIAS STAR;
-arraySuffix: OBRACK expr CBRACK;
+arraySuffix: OBRACK (expr | UNDERSCORE) CBRACK;
 optionalSuffix: QMARK;
 
 init: /* empty */ | COLON expr | EQUALS expr;
@@ -109,7 +121,7 @@ fields: field (COMMA field)* COMMA?;
 field: rtids typeSig init;
 
 attributes: /* empty */ | attributes attribute;
-attribute: NAKED | INLINE | LINKED | LINKABLE | NORETURN;
+attribute: ATPRIV | ATNAKED | ATINLINE | ATLINKED | ATLINKABLE | ATNORETURN;
 
 body: /* empty */ | body stmt;
 
@@ -117,14 +129,16 @@ structDecl: STRUCT CTID ctParams OBRACE fields? funcDecl* implBlock* CBRACE;
 
 implBlock: IMPL ctids COLON funcDecl*;
 
-extendDecl: EXTEND extensibles OBRACE funcDecl* implBlock* CBRACE;
-extensibles: typeSig | extensibles COMMA typeSig;
+extendDecl: EXTEND typeSigs OBRACE funcDecl* implBlock* CBRACE;
 
 enumDecl: ENUM CTID OBRACE ctids tuple COMMA? CBRACE;  // Incomplete.
 tuple: OPAREN tupleElems CPAREN;
 tupleElems: /* empty */ | exprs COMMA?;
 exprs: expr | exprs COMMA expr;
-//expr: ;
+
+interfaceDecl: INTERFACE CTID (COLON ctids)? OBRACE CBRACE;  // Incomplete.
+
+faultDecl: FAULT ctids FIN;
 
 /*
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -147,7 +161,7 @@ exprs: expr | exprs COMMA expr;
 
     attrs: attr+;
 
-    attr: PUB | INLINE | FAST | BARE;
+    attr: PUB | ATINLINE | FAST | BARE;
 
     // Parameters: receiver comes first if present `rd*` `buf u8[]` `len int` `T int: 4`
     paramList: param | param COMMA paramList;

@@ -3,6 +3,11 @@
 ## Contributors responsible for this file:
 ## @p7r0x7 <maxibonnette@pm.me>
 
+module main
+
+u8 main(args char[][]) return 0 ;;
+
+###################################################################################################
 module std/constraints
 
 interface Scalar {}
@@ -11,10 +16,10 @@ interface Integer: Scalar {}
 interface SignedInt: Integer {}
 interface UnsignedInt: Integer {}
 
-extend bool                                       { impl Scalar: }
-extend f16, bf16, f32, f64                        { impl Float: }
-extend i8, i16, int, i64, i128, word              { impl SignedInt: }
-extend u8, char, u16, u32, rune, u64, u128, uword { impl UnsignedInt: }
+extend bool                                      { impl Scalar: }
+extend f16, bf16, f32, f64                       { impl Float: }
+extend i8, i16, int, i64, i128, reg              { impl SignedInt: }
+extend u8, char, u16, u32, rune, u64, u128, ureg { impl UnsignedInt: }
 
 ###################################################################################################
 module std/env
@@ -223,8 +228,3 @@ impl Writer:
     (% @assert bw.end == 0 %)
     void! init(bw*; inner Writer) bw.inner = inner ;;
 }
-
-###################################################################################################
-module main
-
-u8 main(args char[][]) return 0 ;;
