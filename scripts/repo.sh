@@ -14,10 +14,8 @@ opt='-pipe -O3 -mllvm -polly -mllvm -polly-vectorizer=stripmine -fno-omit-frame-
 [ -f .build/dfa ] || clang++ $opt -w -lc++ -o .build/dfa vendor/lrstar-master/source_dfa/*.cpp & wait
 
 cd src/lrstar; ln ../Fin.grm Fin.grm; ln ../Fin.lgr Fin.lgr
-
-printf '\033[1;33m'; { ../../.build/lrstar Fin.grm /crr /csr /wk /k=2 /o /m; echo
-    ../../.build/dfa Fin.lgr /crr /csr /sto /m; } || true; printf '\033[0m\n'
-
+printf '\033[1;33m'; { ../../.build/lrstar Fin.grm /crr /csr /wk /k=2 /o /m
+    echo; ../../.build/dfa Fin.lgr /crr /csr /sto /m; } || true
 rm -f -- *.grm *.lgr *.lex *grammar.txt *log.txt make.bat memory.txt; cd ../..
 find . \( -path ./vendor -o -name '.[!.]*' \) -prune -o \
     \( ! -type d \( \
@@ -26,8 +24,8 @@ find . \( -path ./vendor -o -name '.[!.]*' \) -prune -o \
     \) \)
 
 rm code 2>/dev/null || true; ln -s vendor/lrstar-master/code code
-clang++ -O0 -w -lc++ -include sys/stat.h -o .build/finlp src/lrstar/*.cpp
-time mawk '
+clang++ -O1 -w -lc++ -include sys/stat.h -o .build/finlp src/lrstar/*.cpp
+mawk '
 function spaces(n, gap) {
     if ((gap = n-length(SPACES)) > 0) SPACES = SPACES sprintf("%*s", gap, "")
     return substr(SPACES, 1, n)
@@ -63,7 +61,7 @@ function whiteoutnontab(s, out, parts, n, i) {
 }
 ' research/finfile.fn >research/finfile.wo.fn
 [ $(wc -c <research/finfile.fn) = $(wc -c <research/finfile.wo.fn) ]
-.build/finlp research/finfile.wo.fn || true
+.build/finlp research/finfile.wo.fn || true;  printf '\033[0m\n'
 rm code research/finfile.wo.fn lrstar.txt 2>/dev/null || true
 
 [ -n "$(git status --porcelain)" ] && git add .; git --no-pager diff --stat HEAD; git reset >/dev/null
