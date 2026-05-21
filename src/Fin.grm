@@ -3,25 +3,36 @@
 // Contributors responsible for this file:
 // @p7r0x7 <maxibonnette@pm.me>
 
+VOID             'void';
 BOOL             'bool';
-F16               'f16';
-BF16             'bf16';
-F32               'f32';
-F64               'f64';
-I8                 'i8';
-I16               'i16';
-INT               'int';
-I64               'i64';
-I128             'i128';
-REG               'reg';
-U8                 'u8';
-CHAR             'char';
-U16               'u16';
-U32               'u32';
-RUNE             'rune';
-U64               'u64';
-U128             'u128';
-UREG             'ureg';
+                          // literal suffix  1st arith promo
+HALF             'half';  // h               f
+BHALF           'bhalf';  // bh              f
+FLOAT           'float';  // f
+DOUBLE         'double';  // d
+SCHAR           'schar';  // sc              int
+SHORT           'short';  // s               int
+
+INT               'int';  // default literal type; "size" type
+
+LONG             'long';  // l
+XLONG           'xlong';  // xl
+REG               'reg';  // r
+CHAR             'char';  // c               u
+USHORT         'ushort';  // us              u
+UINT             'uint';  // u
+ULONG           'ulong';  // ul
+UXLONG         'uxlong';  // uxl
+UREG             'ureg';  // ur
+
+// 2nd disambiguating promo:
+//   Literals scale up from int.
+//   Bitwise never promotes.
+//   Signed wins if wider everywhere.
+//   Else cast required.
+
+// stdlib: String, String16, String32
+// Only u/reg varies by platform.
 
 ALIAS           'alias';
 ATINLINE      '@inline';
@@ -37,6 +48,7 @@ COLON               ':';
 COMMA               ',';
 CPAREN              ')';
 CTID <ctid> => lookup();
+DYN               'dyn';
 ELLIPSES          '...';
 ENUM             'enum';
 EQUALS              '=';
@@ -59,17 +71,19 @@ STRUCT         'struct';
 QMARK               '?';
 UNDERSCORE          '_';
 
-//    Sorted depth-first because I can't help myself.
+//    Sorted by category and depth-first because I can't help myself.
+
+srcFile: moduleDecl+ <eof>;
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 
 //expr: ;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-//stmt: ;
+stmt: ctDecl | rtDecl | structDecl | extendDecl | enumDecl;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-
-srcFile: moduleDecl+ <eof>;
 
 moduleDecl: MODULE namespace decl+;
 namespace: RTID | namespace SLASH RTID;
@@ -83,10 +97,10 @@ typeSig: typeAtom typePostfix*;
 typeAtom: CTID | builtinType | tupleSig;
 
 builtinType
-    : F16 | BF16 | F32 | F64
-    | I8 | I16 | INT | I64 | I128
-    | U8 | U16 | U32 | U64 | U128
-    | BOOL | CHAR | RUNE | REG | UREG;
+    : VOID  | BOOL   | REG   | UREG
+    | HALF  | BHALF  | FLOAT | DOUBLE
+    | SCHAR | SHORT  | INT   | LONG   | XLONG
+    | CHAR  | USHORT | UINT  | ULONG  | UXLONG;
 
 tupleSig: OPAREN typeTupleElems CPAREN;
 typeTupleElems: /* empty */ | typeSigs variadicSig;
@@ -136,313 +150,6 @@ tuple: OPAREN tupleElems CPAREN;
 tupleElems: /* empty */ | exprs COMMA?;
 exprs: expr | exprs COMMA expr;
 
-interfaceDecl: INTERFACE CTID (COLON ctids)? OBRACE CBRACE;  // Incomplete.
+interfaceDecl: DYN? INTERFACE CTID (COLON ctids)? OBRACE CBRACE;  // Incomplete.
 
 faultDecl: FAULT ctids FIN;
-
-/*
-///////////////////////////////////////////////////////////////////////////////////////////////////
-
-    // AI:
-
-    // Operator precedence (low → high):
-    // { OR } << { AND } << { EQ NEQ LT GT LTE GTE } << { PLUS HYPHEN PIPE CARET PLUS_PERCENT
-    // HYPHEN_PERCENT } << { STAR SLASH PERCENT AMP LSHIFT RSHIFT STAR_PERCENT LROTATE RROTATE } << { AS
-    // } << // highest binary { BANG QUESTION DOT_TYPE DOT_LEN DOT_SIZEOF DOT DOT_STAR DOT_AMP } << //
-    // postfix { TILDE HYPHEN (unary) } << // prefix
-
-    fieldDecl:
-        MUT? VOLATILE? THREADL? ids typeSig
-        | MUT? VOLATILE? THREADL? ids typeSig COLON expr ; // default value
-
-    // Routine declarations — return type leads, name follows params, attrs trail `u8 main(args
-    // char[][]) pub return 0 fin`
-    funcDecl: typeSig id LPAREN paramList? RPAREN attrs? body;
-
-    attrs: attr+;
-
-    attr: PUB | ATINLINE | FAST | BARE;
-
-    // Parameters: receiver comes first if present `rd*` `buf u8[]` `len int` `T int: 4`
-    paramList: param | param COMMA paramList;
-
-    param:
-        id STAR // mutable receiver: rd*
-        | id typeSig // typed param: buf u8[]
-        | id typeSig COLON expr ; // defaulted param / generic: LEN int: 4<<10
-
-    // Function body
-    body: stmtList RETURN expr FIN | stmtList FIN | stmtList;
-
-    stmtList:  | stmt stmtList;
-
-    //
-    // ── Struct and interface ─────────────────────────────────────────────────────
-    //
-    //
-
-    // `struct BufferedWriter[LEN int: 4<<10] { ... }`
-    structDecl:
-        STRUCT TYPEID genericParams? LBRACE structBody RBRACE;
-
-    genericParams: LBRACK genericParamList RBRACK;
-
-    genericParamList:
-        genericParam
-        | genericParam COMMA genericParamList;
-
-    genericParam:
-        constid typeSig COLON expr // T int: 4<<10
-        | constid typeSig;
-
-    structBody: structMember+;
-
-    structMember: fieldDecl | implBlock | funcDecl | valueDecl;
-
-    // `impl Writer, Reader: ... impl Other: ...`
-    implBlock: IMPL implTargetList COLON implMember+;
-
-    implTargetList: TYPEID | TYPEID COMMA implTargetList;
-
-    implMember: funcDecl;
-
-    // `interface Reader { needs int! ReadSome(...) ... }`
-    interfaceDecl:
-        INTERFACE TYPEID LBRACE interfaceMember+ RBRACE;
-
-    interfaceMember:
-        NEEDS typeSig id LPAREN paramList? RPAREN // required, no body
-        | funcDecl ; // default impl
-
-    //
-    // ── Types ────────────────────────────────────────────────────────────────────
-    //
-    // Types point right: int* pointer to int int*[4] array of 4 pointers to int int[4]* pointer to
-    // array of 4 ints int! failable int? optional (int, char) tuple type char[] slice char[]..
-    // variadic slice int (int) function type (return type leads)
-    //
-    //
-
-    typeSig: baseType typeSuffix*;
-
-    baseType:
-        id // primitive or named type
-        | TYPEID // PascalCase nominal type
-        | THIS // self type in interface/struct
-        | LPAREN typeList RPAREN // tuple type
-        | typeSig LPAREN typeList? RPAREN ; // function type
-
-    typeList: typeSig | typeSig COMMA typeList;
-
-    typeSuffix:
-        STAR // pointer
-        | LBRACK expr RBRACK // fixed array  [N]
-        | LBRACK RBRACK // slice        []
-        | DOTDOT // variadic     ..
-        | BANG // failable     !
-        | QUESTION ; // optional     ?
-
-    //
-    // ── Statements ───────────────────────────────────────────────────────────────
-    //
-    //
-
-    stmt:
-        valueDecl
-        | assignStmt
-        | call
-        | returnStmt
-        | ifStmt
-        | whileStmt
-        | forStmt
-        | whereStmt
-        | comptStmt
-        | deferStmt
-        | errdeferStmt
-        | doBlock
-        | unreachable;
-
-    assignStmt: expr assignOp expr;
-
-    assignOp:
-        EQUALS
-        | PLUS_EQ
-        | HYPHEN_EQ
-        | STAR_EQ
-        | SLASH_EQ
-        | PERCENT_EQ
-        | AMP_EQ
-        | PIPE_EQ
-        | CARET_EQ
-        | LSHIFT_EQ
-        | RSHIFT_EQ
-        | STAR_PCT_EQ
-        | PLUS_PCT_EQ
-        | HYPHEN_PCT_EQ
-        | LROTATE_EQ
-        | RROTATE_EQ;
-
-    // Call: juxtaposition — `rd.ReadAtLeast(buf, buf.len)` or `debug:Assert(...)`
-    call: expr argList;
-
-    argList: arg | arg COMMA argList;
-
-    arg: expr;
-
-    returnStmt: RETURN expr;
-
-    // `if cond stmt elseif cond stmt else stmt fin`
-    ifStmt: IF expr stmt elseifChain elsePart FIN;
-
-    elseifChain: | ELSEIF expr stmt elseifChain;
-
-    elsePart:  | ELSE stmt;
-
-    // `while (cond) body fin`
-    whileStmt: WHILE expr stmt FIN;
-
-    // `for (init; cond; post) body fin` — semicolons are whitespace, parser sees: FOR expr expr
-    // expr body FIN
-    forStmt: FOR expr expr expr stmt FIN;
-
-    whereStmt: WHERE expr COLON caseList FIN;
-
-    caseList: caseClause | caseClause caseList;
-
-    caseClause: expr stmt;
-
-    comptStmt: COMPT stmt;
-
-    deferStmt: DEFER stmt;
-    errdeferStmt: ERRDEFER stmt;
-
-    // `do ... fin`  — anonymous block, needed for multi-stmt defer etc.
-    doBlock: DO stmtList FIN;
-
-    unreachable: UNREACHABLE;
-
-    //
-    // ── Expressions ──────────────────────────────────────────────────────────────
-    //
-    // Flat binary grammar — precedence resolved by declarations above the grammar.
-    //
-    //
-
-    expr:
-        expr OR expr
-        | expr AND expr
-        | expr cmpOp expr
-        | expr addOp expr
-        | expr mulOp expr
-        | expr AS typeSig
-        | postExpr;
-
-    postExpr:
-        postExpr BANG // error propagate  x!
-        | postExpr QUESTION // optional unwrap  x?  (TBD)
-        | postExpr DOT id // member access    x.foo
-        | postExpr DOT_STAR // deref            x.*
-        | postExpr DOT_AMP // address-of       x.&
-        | postExpr DOT_TYPE // type of          x.type
-        | postExpr DOT_LEN // length           x.len
-        | postExpr DOT_SIZEOF // size             x.sizeof
-        | postExpr LBRACK expr RBRACK // index            x[i]
-        | postExpr LBRACK sliceExpr RBRACK // slice            x[a..b]
-        | preExpr;
-
-    sliceExpr:
-        expr DOTDOT
-        | expr DOTDOT expr
-        | DOTDOT expr
-        | DOTDOT;
-
-    preExpr:
-        TILDE preExpr // bitwise not / logical not
-        | HYPHEN preExpr // negate
-        | primary;
-
-    primary:
-        id
-        | TYPEID
-        | constid
-        | integer
-        | float
-        | rune
-        | string
-        | enumlit
-        | faultlit
-        | tupleExpr
-        | blockExpr
-        | structLit
-        | funcExpr
-        | ifExpr
-        | whereExpr
-        | comptExpr
-        | unreachable
-        | nsExpr;
-
-    // `utf8:EncodeRune` — namespace-qualified name
-    nsExpr: id COLON id;
-
-    tupleExpr: LPAREN exprList? RPAREN;
-    blockExpr: LPAREN stmtList expr RPAREN;
-    structLit: LBRACE fieldInitList? RBRACE;
-
-    exprList: expr | expr COMMA exprList;
-
-    fieldInitList: fieldInit | fieldInit COMMA fieldInitList;
-
-    fieldInit:
-        id EQUALS expr
-        | expr ; // positional
-
-    ifExpr: IF expr expr elseifExprChain elseExpr;
-
-    elseifExprChain:
-
-        | ELSEIF expr expr elseifExprChain;
-
-    elseExpr:  | ELSE expr;
-
-    whereExpr: WHERE expr COLON caseExprList FIN;
-
-    caseExprList: caseExprClause | caseExprClause caseExprList;
-
-    caseExprClause: expr expr;
-
-    comptExpr: COMPT expr;
-
-    //
-    // ── Binary operator groups (for precedence declarations) ────────────────────
-    //
-    //
-
-    cmpOp: EQ | NEQ | LT | GT | LTE | GTE;
-
-    addOp:
-        PLUS
-        | HYPHEN
-        | PIPE
-        | CARET
-        | PLUS_PERCENT
-        | HYPHEN_PERCENT;
-
-    mulOp:
-        STAR
-        | SLASH
-        | PERCENT
-        | AMP
-        | LSHIFT
-        | RSHIFT
-        | LROTATE
-        | RROTATE
-        | STAR_PERCENT;
-
-    //
-    // ── String forms ─────────────────────────────────────────────────────────────
-    //
-    //
-
-    string: dqstring | bsstring | btstring;
-
-*/

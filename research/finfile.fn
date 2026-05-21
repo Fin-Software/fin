@@ -5,7 +5,12 @@
 
 module main
 
-u8 main(args char[][]) return 0 ;;
+char main(args String[]) @noreturn
+    ok bool = program(args)
+    if (!ok) NotOK#!! ;;
+;;
+
+bool program(args String[]) return true ;;
 
 ###################################################################################################
 module std/constraints
@@ -16,10 +21,14 @@ interface Integer: Scalar {}
 interface SignedInt: Integer {}
 interface UnsignedInt: Integer {}
 
-extend bool                                      { impl Scalar: }
-extend f16, bf16, f32, f64                       { impl Float: }
-extend i8, i16, int, i64, i128, reg              { impl SignedInt: }
-extend u8, char, u16, u32, rune, u64, u128, ureg { impl UnsignedInt: }
+extend bool                                    { impl Scalar: }
+extend half, bhalf, float, double              { impl Float: }
+extend schar, short, int, long, xlong, reg     { impl SignedInt: }
+extend char, ushort, uint, ulong, uxlong, ureg { impl UnsignedInt: }
+
+alias String: char[]      ## UTF-8
+alias String16: ushort[]  ## WTF-16
+alias String32: uint[]    ## UTF-32
 
 ###################################################################################################
 module std/env
@@ -42,7 +51,7 @@ enum Mode { Debug, Jit, Safe, Fast, Tiny }
 ###################################################################################################
 module std/encoding/utf8
 
-runeLen u8[256] @priv = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+runeLen char[256] @priv = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
                           1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
                           1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
                           1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
@@ -59,19 +68,19 @@ runeLen u8[256] @priv = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
                           3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
                           4, 4, 4, 4, 4, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, }
 
-int! encodeRune(dst u8[], r rune) ;;
+int! encodeRune(dst char[], r uint) ;;
 
 ###################################################################################################
 module std/mem
 
-u8 alias[] sliceToBytesZC[T any](slice T alias[]) @inline
+char alias[] sliceToBytesZC[T any](slice T alias[]) @inline
     if (slice.len == 0) return {} ;;
-    return ((u8 alias*)&slice[0])[..slice[0].sizeof*slice.len]
+    return ((char alias*)&slice[0])[..slice[0].sizeof*slice.len]
 ;;
 
-u8 alias[] toBytesZC[T any](memory T alias*) @inline
+char alias[] toBytesZC[T any](memory T alias*) @inline
     size int = (*memory).sizeof; if (size == 0) return {} ;;
-    return ((u8 alias*)memory)[..size]
+    return ((char alias*)memory)[..size]
 ;;
 
 ###################################################################################################
@@ -113,28 +122,30 @@ interface OutStream {
 }
 
 interface Reader: InStream {
-    needs int! readSome(rd*; buf u8[])
+    needs int! readSome(rd*; buf char[])
 
-    void! read(rd*; buf u8[]) @inline rd.readAtLeast(buf, buf.len)! ;;
+    void! read(rd*; buf char[]) @inline rd.readAtLeast(buf, buf.len)! ;;
 
     (% @assert buf.len >= len %)
-    int! readAtLeast(rd*; buf u8[], len int)
-        r int; while (r < len; r += n)
-            n int = rd.readSome(buf[r..])!; if (n == 0) return UnexpectedEOF# ;;
+    int! readAtLeast(rd*; buf char[], len int)
+        r int; while (r < len)
+            n int = rd.readSome(buf[r..])!;
+            if (n == 0) return UnexpectedEOF# ;;
+            r += n
         ;;
         return r
     ;;
 }
 interface Writer: OutStream {
-    needs int! writeSome(wr*; bytes u8[])
+    needs int! writeSome(wr*; bytes char[])
 
-    void! write(wr*; bytes u8[])
+    void! write(wr*; bytes char[])
         w int; while (w < bytes.len) w += wr.writeSome(bytes[w..])! ;;
     ;;
 
     void! writeChar(wr*; c char) @inline wr.writeSome({c}[..])! ;;
 
-    int! writeRune(wr*; r rune)
+    int! writeRune(wr*; r uint)
         if (r < 128) wr.writeChar(r)!; return 1 ;;
         buf char[4]; n int = utf8:encodeRune(buf[..], r)!
         wr.write(buf[..n])!; return n
@@ -145,12 +156,12 @@ interface Writer: OutStream {
 
 <><
 struct BufferedReader[RDT Reader, LEN int: 4<<10] {
-    buf u8[LEN], inner RDT, start, end int: 0,
+    buf char[LEN], inner RDT, start, end int: 0,
 
 impl Reader:
-    void! read(br*; buf u8[]) @inline br.readSome(buf)! ;;
+    void! read(br*; buf char[]) @inline br.readSome(buf)! ;;
 
-    int! readSome(br*; buf u8[])
+    int! readSome(br*; buf char[])
         if (buf.len == 0) return 0 ;; avail int = br.end - br.start
         if (avail > 0)
             n := min(buf.len, avail)
@@ -171,7 +182,7 @@ impl Reader:
         return n
     ;;
 
-    u8[]! peek(br*; want int)
+    char[]! peek(br*; want int)
         avail int = br.end - br.start
         if (avail >= want) return br.buf[br.start..br.end] ;;
         if (br.start > 0)
@@ -193,12 +204,12 @@ impl Reader:
 ><>
 
 struct BufferedWriter[LEN int: 4<<10] {
-    buf u8[LEN], inner Writer, end int: 0,
+    buf char[LEN], inner Writer, end int: 0,
 
 impl Writer:
-    void! write(bw*; bytes u8[]) @inline bw.writeSome(bytes)! ;;
+    void! write(bw*; bytes char[]) @inline bw.writeSome(bytes)! ;;
 
-    int! writeSome(bw*; bytes u8[])
+    int! writeSome(bw*; bytes char[])
         if (bytes.len == 0) return 0 ;; end int = bw.end; cap int = LEN - end
 
         if (bytes.len >= cap)
@@ -228,3 +239,161 @@ impl Writer:
     (% @assert bw.end == 0 %)
     void! init(bw*; inner Writer) bw.inner = inner ;;
 }
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
+void x()
+    while (i int; true)
+        defer i *= 2 ;;
+        if (i&1)
+            defer i += 1 ;;
+            i /= 3
+        else
+            i += 2
+        ;;
+    ;;
+;;
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+## Imperfect:
+
+module std/hash/sha1
+
+import std/mem
+import std/hash/hmac
+
+BLOCK_BYTES int : 64
+HASH_BYTES  int : 20
+
+struct Sha1 {
+    state  u32[5],
+    count  u32[2],
+    buffer char[BLOCK_BYTES],
+}
+
+u32 #schedule(block u32[16] alias*, i int)
+    block[i & 15] = (block[(i+13) & 15] ^ block[(i+8) & 15]
+                   ^ block[(i+2)  & 15] ^ block[i & 15]) <<% 1
+    return block[i & 15]
+;;
+
+u32 #schedule0(block u32[16] alias*, i int)
+    block[i] = (block[i] <<% 24 & 0xFF00FF00) | (block[i] <<% 8 & 0x00FF00FF)
+    return block[i]
+;;
+
+void #r1(v u32, ref u32*, x u32, y u32, z u32*, w u32)
+    last u32 = *ref
+    *z   += ((last & (x ^ y)) ^ y) + w + 0x5A827999 + v <<% 5
+    *ref  = last <<% 30
+;;
+
+void #r2(v u32, ref u32*, x u32, y u32, z u32*, w u32)
+    last u32 = *ref
+    *z   += (last ^ x ^ y) + w + 0x6ED9EBA1 + v <<% 5
+    *ref  = last <<% 30
+;;
+
+void #r3(v u32, ref u32*, x u32, y u32, z u32*, w u32)
+    last u32 = *ref
+    *z   += (((last | x) & y) | (last & x)) + w + 0x8F1BBCDC + v <<% 5
+    *ref  = last <<% 30
+;;
+
+void #r4(v u32, ref u32*, x u32, y u32, z u32*, w u32)
+    last u32 = *ref
+    *z   += (last ^ x ^ y) + w + 0xCA62C1D6 + v <<% 5
+    *ref  = last <<% 30
+;;
+
+void sha1Transform(state u32[5]*, buffer char alias[])
+    block u32[16] alias* = (u32[16] alias*)&buffer[0]
+    a, b, c, d, e u32 = state[0], state[1], state[2], state[3], state[4]
+
+    while (i int; i < 15) defer i += 5 ;;
+        #r1(a, &b, c, d, &e, #schedule0(block, i  ))
+        #r1(e, &a, b, c, &d, #schedule0(block, i+1))
+        #r1(d, &e, a, b, &c, #schedule0(block, i+2))
+        #r1(c, &d, e, a, &b, #schedule0(block, i+3))
+        #r1(b, &c, d, e, &a, #schedule0(block, i+4))
+    ;;
+    #r1(a, &b, c, d, &e, #schedule0(block, 15))
+    #r1(e, &a, b, c, &d, #schedule( block, 16))
+    #r1(d, &e, a, b, &c, #schedule( block, 17))
+    #r1(c, &d, e, a, &b, #schedule( block, 18))
+    #r1(b, &c, d, e, &a, #schedule( block, 19))
+
+    while (i int = 20; i < 40) defer i += 5 ;;
+        #r2(a, &b, c, d, &e, #schedule(block, i  ))
+        #r2(e, &a, b, c, &d, #schedule(block, i+1))
+        #r2(d, &e, a, b, &c, #schedule(block, i+2))
+        #r2(c, &d, e, a, &b, #schedule(block, i+3))
+        #r2(b, &c, d, e, &a, #schedule(block, i+4))
+    ;;
+    while (i int = 40; i < 60) defer i += 5 ;;
+        #r3(a, &b, c, d, &e, #schedule(block, i  ))
+        #r3(e, &a, b, c, &d, #schedule(block, i+1))
+        #r3(d, &e, a, b, &c, #schedule(block, i+2))
+        #r3(c, &d, e, a, &b, #schedule(block, i+3))
+        #r3(b, &c, d, e, &a, #schedule(block, i+4))
+    ;;
+    while (i int = 60; i < 80) defer i += 5 ;;
+        #r4(a, &b, c, d, &e, #schedule(block, i  ))
+        #r4(e, &a, b, c, &d, #schedule(block, i+1))
+        #r4(d, &e, a, b, &c, #schedule(block, i+2))
+        #r4(c, &d, e, a, &b, #schedule(block, i+3))
+        #r4(b, &c, d, e, &a, #schedule(block, i+4))
+    ;;
+
+    state[0] += a; state[1] += b; state[2] += c; state[3] += d; state[4] += e
+;;
+
+void Sha1.init(sha1*)
+    sha1.state = { 0x67452301, 0xEFCDAB89, 0x98BADCFE, 0x10325476, 0xC3D2E1F0 }
+    sha1.count = { 0, 0 }
+;;
+
+void! Sha1.update(sha1*; data char[])
+    j, len u32 = sha1.count[0], u32(data.len)
+    sha1.count[0] += len << 3
+    if (sha1.count[0] < j) sha1.count[1] += 1 ;;
+    sha1.count[1] += len >> 29
+    j = (j >> 3) & 63
+
+    if (j + len > 63)
+        i u32 = 64 - j
+        mem:copy(sha1.buffer[j..j+i], data[..i])
+        sha1Transform(&sha1.state, sha1.buffer[..])
+        while (i + 63 < len)
+            sha1Transform(&sha1.state, data[i..])
+            i += 64
+        ;;
+        j = 0
+        mem:copy(sha1.buffer[..len-i], data[i..])
+    else
+        mem:copy(sha1.buffer[j..j+(len-i)], data[i..])
+    ;;
+;;
+
+char[HASH_BYTES]! Sha1.final(sha1*)
+    finalcount char[8]
+    while (k int; k < 8) defer k += 1 ;;
+        idx int = k >= 4 ? 0 : 1
+        finalcount[k] = char((sha1.count[idx] >> ((3 - (k & 3)) * 8)) & 0xFF)
+    ;;
+
+    sha1.update({ 0x80 }[..])!
+    while ((sha1.count[0] & 504) != 448) sha1.update({ 0 }[..])! ;;
+    sha1.update(finalcount[..])!
+
+    digest char[HASH_BYTES]
+    while (k int; k < HASH_BYTES) defer k += 1 ;;
+        digest[k] = char((sha1.state[k >> 2] >> ((3 - (k & 3)) * 8)) & 0xFF)
+    ;;
+    return digest
+;;
+
+char[HASH_BYTES]! hash(data char[])
+    sha1 Sha1; sha1.init()
+    sha1.update(data)!
+    return sha1.final()!
+;;
