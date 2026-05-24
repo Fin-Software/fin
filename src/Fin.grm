@@ -5,7 +5,7 @@
 
 VOID             'void';
 BOOL             'bool';
-                          // literal suffix  1st arith promo
+                          // literal suffix  1st promo applies to arithmetic operands only.
 HALF             'half';  // h               f
 BHALF           'bhalf';  // bh              f
 FLOAT           'float';  // f
@@ -25,14 +25,9 @@ ULONG           'ulong';  // ul
 UXLONG         'uxlong';  // uxl
 UREG             'ureg';  // ur
 
-// 2nd disambiguating promo:
-//   Literals scale up from int.
-//   Bitwise never promotes.
-//   Signed wins if wider everywhere.
-//   Else cast required.
-
-// stdlib: String, String16, String32
-// Only u/reg varies by platform.
+// 2nd promo excepting shifts and rotations:
+//   Wider wins, but must be signed for mixed-signedness arithmetic. Else cast required.
+// stdlib: String, String16, String32. Only u/reg varies by platform.
 
 ALIAS           'alias';
 ATINLINE      '@inline';
@@ -68,10 +63,11 @@ RTID <rtid> => lookup();
 SLASH               '/';
 STAR                '*';
 STRUCT         'struct';
+TYPE             'type';
 QMARK               '?';
 UNDERSCORE          '_';
 
-//    Sorted by category and depth-first because I can't help myself.
+//    Sorted by category and depth-first because I can't help myself: Exprs, Stmts, Decls.
 
 srcFile: moduleDecl+ <eof>;
 
@@ -81,14 +77,14 @@ srcFile: moduleDecl+ <eof>;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-stmt: ctDecl | rtDecl | structDecl | extendDecl | enumDecl;
+stmt: ctDecl | rtDecl | typeDecl | structDecl | extendDecl | enumDecl;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 moduleDecl: MODULE namespace decl+;
 namespace: RTID | namespace SLASH RTID;
 
-decl: ctDecl | rtDecl | funcDecl | structDecl | extendDecl | enumDecl | interfaceDecl | faultDecl;
+decl: ctDecl | rtDecl | typeDecl | funcDecl | structDecl | extendDecl | enumDecl | interfaceDecl | faultDecl;
 
 ctDecl: ctids typeSig init;
 ctids: CTID | ctids COMMA CTID;
@@ -120,6 +116,8 @@ init: /* empty */ | COLON expr | EQUALS expr;
 rtDecl: rtids typeSig init;
 rtids: RTID | rtids COMMA RTID;
 
+typeDecl: (TYPE | ALIAS) CTID EQUALS typeSig;
+
 funcDecl: contracts typeSig macroOp RTID ctParams OPAREN funcParams? CPAREN attributes body FIN;
 
 contracts: /* empty */ | contracts OPAREN_PCENT PCENT_CPAREN;  // Incomplete.
@@ -145,7 +143,10 @@ implBlock: IMPL ctids COLON funcDecl*;
 
 extendDecl: EXTEND typeSigs OBRACE funcDecl* implBlock* CBRACE;
 
-enumDecl: ENUM CTID OBRACE ctids tuple COMMA? CBRACE;  // Incomplete.
+enumDecl: ENUM CTID OBRACE enumVariants CBRACE;
+enumVariants: enumVariant (COMMA enumVariant)* COMMA?;
+enumVariant: CTID | CTID tuple;
+
 tuple: OPAREN tupleElems CPAREN;
 tupleElems: /* empty */ | exprs COMMA?;
 exprs: expr | exprs COMMA expr;

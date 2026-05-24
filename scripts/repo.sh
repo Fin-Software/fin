@@ -57,10 +57,10 @@ function whiteoutnontab(s, out, parts, n, i) {
                 depth--; $0 = substr($0, mlclose+3)
             }
         }
-    }; printf "\n"
+    }; printf "\n"  # Always ends files with a newline
 }
 ' research/finfile.fn >research/finfile.wo.fn
-[ $(wc -c <research/finfile.fn) = $(wc -c <research/finfile.wo.fn) ]
+sz1=$(wc -c <research/finfile.fn) sz2=$(wc -c <research/finfile.wo.fn); [ $sz1 -eq $sz2 ] || [ $sz1 -eq $((sz2 - 1)) ]
 .build/finlp research/finfile.wo.fn || true;  printf '\033[0m\n'
 rm code research/finfile.wo.fn lrstar.txt 2>/dev/null || true
 
