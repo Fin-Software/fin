@@ -32,7 +32,7 @@ UREG             'ureg';  // ur
 // 2nd promo excepting shifts and rotations:
 //    Higher rank wins where unconstrained by the following, else cast required:
 //    Arithmetic: Winners must be float in mixed-domain or signed in mixed-signedness.
-//    Bitwise: Winners must share domain and rank or signedness with loser.
+//    Bitwise: Winners must share domain and signedness with loser.
 //
 // Rankings:
 //    half < bhalf < float < double
