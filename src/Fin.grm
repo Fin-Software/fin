@@ -4,30 +4,40 @@
 // @p7r0x7 <maxibonnette@pm.me>
 
 VOID             'void';
-BOOL             'bool';
-                          // literal suffix  1st promo applies to arithmetic operands only.
-HALF             'half';  // h               f
-BHALF           'bhalf';  // bh              f
+BOOL             'bool';  // literal suffix
+HALF             'half';  // h
+BHALF           'bhalf';  // bh
 FLOAT           'float';  // f
 DOUBLE         'double';  // d
-SCHAR           'schar';  // sc              int
-SHORT           'short';  // s               int
+SCHAR           'schar';  // sc
+SHORT           'short';  // s
 
 INT               'int';  // default literal type; "size" type
 
 LONG             'long';  // l
 XLONG           'xlong';  // xl
 REG               'reg';  // r
-CHAR             'char';  // c               u
-USHORT         'ushort';  // us              u
+CHAR             'char';  // c
+USHORT         'ushort';  // us
 UINT             'uint';  // u
 ULONG           'ulong';  // ul
 UXLONG         'uxlong';  // uxl
 UREG             'ureg';  // ur
 
-// 2nd promo excepting shifts and rotations:
-//   Wider wins, but must be signed for mixed-signedness arithmetic. Else cast required.
 // stdlib: String, String16, String32. Only u/reg varies by platform.
+
+// 1st promo excepting bitwise:
+//    Small floats become float; small ints become u/int or become float in mixed-domain.
+//
+// 2nd promo excepting shifts and rotations:
+//    Higher rank wins where unconstrained by the following, else cast required:
+//    Arithmetic: Winners must be float in mixed-domain or signed in mixed-signedness.
+//    Bitwise: Winners must share domain and rank or signedness with loser.
+//
+// Rankings:
+//    half < bhalf < float < double
+//    schar < short < int < long < xlong
+//    char < ushort < uint < ulong < uxlong
 
 ALIAS           'alias';
 ATINLINE      '@inline';
