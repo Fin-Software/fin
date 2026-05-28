@@ -3,26 +3,24 @@
 // Contributors responsible for this file:
 // @p7r0x7 <maxibonnette@pm.me>
 
-VOID             'void';
-BOOL             'bool';  // literal suffix
-HALF             'half';  // h
-BHALF           'bhalf';  // bh
-FLOAT           'float';  // f
-DOUBLE         'double';  // d
-SCHAR           'schar';  // sc
-SHORT           'short';  // s
-
-INT               'int';  // default literal type; "size" type
-
-LONG             'long';  // l
-XLONG           'xlong';  // xl
-REG               'reg';  // r
-CHAR             'char';  // c
-USHORT         'ushort';  // us
-UINT             'uint';  // u
-ULONG           'ulong';  // ul
-UXLONG         'uxlong';  // uxl
-UREG             'ureg';  // ur
+VOID                   'void';
+BOOL                   'bool';
+HALF                   'half';  // h
+BHALF                 'bhalf';  // bh
+FLOAT                 'float';  // f
+DOUBLE               'double';  // d
+SCHAR                 'schar';  // sc
+SHORT                 'short';  // s
+INT                     'int';  // "size" & default literal type
+LONG                   'long';  // l
+XLONG                 'xlong';  // xl
+REG                     'reg';  // r
+CHAR                   'char';  // c
+USHORT               'ushort';  // us
+UINT                   'uint';  // u
+ULONG                 'ulong';  // ul
+UXLONG               'uxlong';  // uxl
+UREG                   'ureg';  // ur
 
 // stdlib: String, String16, String32. Only u/reg varies by platform.
 
@@ -39,43 +37,65 @@ UREG             'ureg';  // ur
 //    schar < short < int < long < xlong
 //    char < ushort < uint < ulong < uxlong
 
-ALIAS           'alias';
-ATINLINE      '@inline';
-ATLINKABLE  '@linkable';
-ATLINKED      '@linked';
-ATNAKED        '@naked';
-ATNORETURN  '@noreturn';
-ATPRIV          '@priv';
-BANG                '!';
-CBRACE              '}';
-CBRACK              ']';
-COLON               ':';
-COMMA               ',';
-CPAREN              ')';
-CTID <ctid> => lookup();
-DYN               'dyn';
-ELLIPSES          '...';
-ENUM             'enum';
-EQUALS              '=';
-EXTEND         'extend';
-FAULT           'fault';
-FIN                ';;';
-IMPL             'impl';
-INTERFACE   'interface';
-MODULE         'module';
-OBRACE              '{';
-OBRACK              '[';
-OPAREN              '(';
-OPAREN_PCENT       '(%';
-PCENT_CPAREN       '%)';
-POUND               '#';
-RTID <rtid> => lookup();
-SLASH               '/';
-STAR                '*';
-STRUCT         'struct';
-TYPE             'type';
-QMARK               '?';
-UNDERSCORE          '_';
+ALIAS                 'alias';
+AMP                       '&';
+AND                     'and';
+ATCNAME              '@cname';
+ATEXPORT            '@export';
+ATEXTERN            '@extern';
+ATINLINE            '@inline';
+ATNAKED              '@naked';
+ATNORETURN        '@noreturn';
+ATPRIV                '@priv';
+BANG                      '!';
+BANG_BANG                '!!';
+BANG_EQUALS              '!=';
+CARROT                    '^';
+CBRACE                    '}';
+CBRACK                    ']';
+COLON                     ':';
+COMMA                     ',';
+CPAREN                    ')';
+CTID       <ctid> => lookup();
+DOT                       '.';
+DOT_DOT                  '..';
+DYN                     'dyn';
+ELLIPSES                '...';
+ENUM                   'enum';
+EQUALS                    '=';
+EQUALS_EQUALS            '==';
+EXTEND               'extend';
+FAULT                 'fault';
+FIN                      ';;';
+GREATERT                  '>';
+GREATERT_EQUALS          '>=';
+GREATERT_GREATERT        '>>';
+GREATERT_GREATERT_PCENT '>>%';
+IMPL                   'impl';
+INTERFACE         'interface';
+LESST                     '<';
+LESST_EQUALS             '<=';
+LESST_LESST              '<<';
+LESST_LESST_PCENT       '<<%';
+MINUS                     '-';
+MODULE               'module';
+OBRACE                    '{';
+OBRACK                    '[';
+OPAREN                    '(';
+OPAREN_PCENT             '(%';
+OR                       'or';
+PCENT                     '%';
+PCENT_CPAREN             '%)';
+PIPE                      '|';
+PLUS                      '+';
+POUND                     '#';
+QMARK                     '?';
+RTID       <rtid> => lookup();
+SLASH                     '/';
+STAR                      '*';
+STRUCT               'struct';
+TYPE                   'type';
+USCORE                    '_';
 
 //    Sorted by category and depth-first because I can't help myself: Exprs, Stmts, Decls.
 
@@ -83,7 +103,32 @@ srcFile: moduleDecl+ <eof>;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-//expr: ;
+expr: prefixOp | postfixOp | binaryOp | literal;
+
+prefixOp: castOp | dereferenceOp | notOp;
+castOp: OPAREN typeSig CPAREN expr;
+dereferenceOp: STAR expr;
+notOp: BANG expr;
+
+postfixOp: sliceOp | namespaceOp | accessOp | indexOp | panicOp | rethrowOp | callOp;
+//sliceOp: expr OBRACK expr? DOT_DOT expr? CBRACK;
+namespaceOp: expr COLON (CTID | RTID);
+accessOp: expr DOT (CTID | RTID);
+indexOp: expr OBRACK expr CBRACK;
+panicOp: expr BANG_BANG;
+rethrowOp: expr BANG;
+callOp: expr tuple;
+
+// + - * / % ^ & | << >> <<% >>% and or == != < <= >=
+binaryOp: expr binaryOperator expr;
+binaryOperator
+    : OR
+    | AND
+    | EQUALS_EQUALS | BANG_EQUALS
+    | LESST | LESST_EQUALS | GREATERT | GREATERT_EQUALS
+    | PLUS | MINUS | PIPE | CARROT
+    | AMP | STAR | SLASH | PCENT
+    | LESST_LESST | GREATERT_GREATERT | LESST_LESST_PCENT | GREATERT_GREATERT_PCENT;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -115,10 +160,10 @@ variadicSig: /* empty */ | COMMA typeSig ELLIPSES COMMA?;
 
 typePostfix: tupleSig STAR | typeSuffix | BANG;
 
-typeSuffix: sliceSuffix | pointerSuffix | arraySuffix | optionalSuffix;
+typeSuffix: sliceSuffix | arraySuffix | pointerSuffix | optionalSuffix;
 sliceSuffix: OBRACK CBRACK | ALIAS OBRACK CBRACK;
+arraySuffix: OBRACK (expr | USCORE) CBRACK;
 pointerSuffix: STAR | ALIAS STAR;
-arraySuffix: OBRACK (expr | UNDERSCORE) CBRACK;
 optionalSuffix: QMARK;
 
 init: /* empty */ | COLON expr | EQUALS expr;
@@ -143,7 +188,7 @@ fields: field (COMMA field)* COMMA?;
 field: rtids typeSig init;
 
 attributes: /* empty */ | attributes attribute;
-attribute: ATPRIV | ATNAKED | ATINLINE | ATLINKED | ATLINKABLE | ATNORETURN;
+attribute: ATPRIV | ATNAKED | ATINLINE | ATEXTERN | ATEXPORT | ATCNAME | ATNORETURN;
 
 body: /* empty */ | body stmt;
 
