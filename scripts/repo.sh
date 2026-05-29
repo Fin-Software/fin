@@ -9,20 +9,35 @@
 
 set -eu; umask 0022; install -dm 0755 src/lrstar .build
 
+# Build LRSTAR
 opt='-pipe -O3 -mllvm -polly -mllvm -polly-vectorizer=stripmine -fno-omit-frame-pointer'
 [ -f .build/lrstar ] || clang++ $opt -w -lc++ -o .build/lrstar vendor/lrstar-master/source_lrstar/*.cpp &
 [ -f .build/dfa ] || clang++ $opt -w -lc++ -o .build/dfa vendor/lrstar-master/source_dfa/*.cpp & wait
 
+# Run LRSTAR
 cd src/lrstar; ln ../Fin.grm Fin.grm; ln ../Fin.lgr Fin.lgr
 printf '\033[1;33m'; { ../../.build/lrstar Fin.grm /crr /csr /wk /k=2 /o /m
     echo; ../../.build/dfa Fin.lgr /crr /csr /sto /m; } || true
 rm -f -- *.grm *.lgr *.lex *grammar.txt *log.txt make.bat memory.txt; cd ../..
-find . \( -path ./vendor -o -name '.[!.]*' \) -prune -o \
-    \( ! -type d \( \
-        \( -name '*.c' -o -name '*.cpp' -o -name '*.h' -o -name '*.hpp' \) \
-            -exec clang-format -i {} + \
-    \) \)
 
+# Normalize repo
+find . \( -path ./vendor -o -path '*/.*' \) -prune -o \
+    \( \
+        -type f \
+        \( -name '*.c' -o -name '*.cpp' -o -name '*.h' -o -name '*.hpp' \) \
+        -exec clang-format -i {} + \
+    \) -o \
+    \( \
+        -type f \
+        -exec sh -c '
+        set -e; file -b --mime "$1" | grep -q text || exit 0
+        expand -t 4 "$1" > "$1.tmp" && mv "$1.tmp" "$1"
+        [ -z "$(tail -c1 "$1")" ] || echo >>"$1"
+        ' sh {} \; \
+    \)
+chmod a+x scripts/*sh
+
+# Run Lexer+Parser
 rm code 2>/dev/null || true; ln -s vendor/lrstar-master/code code
 clang++ -O1 -w -lc++ -include sys/stat.h -o .build/finlp src/lrstar/*.cpp
 mawk '
@@ -64,4 +79,5 @@ sz1=$(wc -c <research/finfile.fn) sz2=$(wc -c <research/finfile.wo.fn); [ $sz1 -
 .build/finlp research/finfile.wo.fn || true;  printf '\033[0m\n'
 rm code research/finfile.wo.fn lrstar.txt 2>/dev/null || true
 
-[ -n "$(git status --porcelain)" ] && git add .; git --no-pager diff --stat HEAD; git reset >/dev/null
+# Print git status
+(GIT_INDEX_FILE=.git/index.tmp; export GIT_INDEX_FILE; git read-tree HEAD; git add .; git --no-pager diff --stat HEAD)

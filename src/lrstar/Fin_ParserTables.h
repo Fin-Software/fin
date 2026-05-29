@@ -56,61 +56,62 @@ enum termcon {
     ALIAS = 20,
     AMP = 21,
     AND = 22,
-    ATEXPORT = 23,
-    ATEXTERN = 24,
-    ATINLINE = 25,
-    ATNAKED = 26,
-    ATNORETURN = 27,
-    ATPRIV = 28,
-    BANG = 29,
-    BANG_BANG = 30,
-    BANG_EQUALS = 31,
-    CARROT = 32,
-    CBRACE = 33,
-    CBRACK = 34,
-    COLON = 35,
-    COMMA = 36,
-    CPAREN = 37,
-    CTID = 38,
-    DOT = 39,
-    DOT_DOT = 40,
-    DYN = 41,
-    ELLIPSES = 42,
-    ENUM = 43,
-    EQUALS = 44,
-    EQUALS_EQUALS = 45,
-    EXTEND = 46,
-    FAULT = 47,
-    FIN = 48,
-    GREATERT = 49,
-    GREATERT_EQUALS = 50,
-    GREATERT_GREATERT = 51,
-    GREATERT_GREATERT_PCENT = 52,
-    IMPL = 53,
-    INTERFACE = 54,
-    LESST = 55,
-    LESST_EQUALS = 56,
-    LESST_LESST = 57,
-    LESST_LESST_PCENT = 58,
-    MINUS = 59,
-    MODULE = 60,
-    OBRACE = 61,
-    OBRACK = 62,
-    OPAREN = 63,
-    OPAREN_PCENT = 64,
-    OR = 65,
-    PCENT = 66,
-    PCENT_CPAREN = 67,
-    PIPE = 68,
-    PLUS = 69,
-    POUND = 70,
-    QMARK = 71,
-    RTID = 72,
-    SLASH = 73,
-    STAR = 74,
-    STRUCT = 75,
-    TYPE = 76,
-    USCORE = 77
+    ATCNAME = 23,
+    ATEXPORT = 24,
+    ATEXTERN = 25,
+    ATINLINE = 26,
+    ATNAKED = 27,
+    ATNORETURN = 28,
+    ATPRIV = 29,
+    BANG = 30,
+    BANG_BANG = 31,
+    BANG_EQUALS = 32,
+    CARROT = 33,
+    CBRACE = 34,
+    CBRACK = 35,
+    COLON = 36,
+    COMMA = 37,
+    CPAREN = 38,
+    CTID = 39,
+    DOT = 40,
+    DOT_DOT = 41,
+    DYN = 42,
+    ELLIPSES = 43,
+    ENUM = 44,
+    EQUALS = 45,
+    EQUALS_EQUALS = 46,
+    EXTEND = 47,
+    FAULT = 48,
+    FIN = 49,
+    GREATERT = 50,
+    GREATERT_EQUALS = 51,
+    GREATERT_GREATERT = 52,
+    GREATERT_GREATERT_PCENT = 53,
+    IMPL = 54,
+    INTERFACE = 55,
+    LESST = 56,
+    LESST_EQUALS = 57,
+    LESST_LESST = 58,
+    LESST_LESST_PCENT = 59,
+    MINUS = 60,
+    MODULE = 61,
+    OBRACE = 62,
+    OBRACK = 63,
+    OPAREN = 64,
+    OPAREN_PCENT = 65,
+    OR = 66,
+    PCENT = 67,
+    PCENT_CPAREN = 68,
+    PIPE = 69,
+    PLUS = 70,
+    POUND = 71,
+    QMARK = 72,
+    RTID = 73,
+    SLASH = 74,
+    STAR = 75,
+    STRUCT = 76,
+    TYPE = 77,
+    USCORE = 78
 };
 
 typedef unsigned int uint;
@@ -125,36 +126,36 @@ class Fin_ParserTables {
     friend class Fin_Parser;
 
   public:
-    static char* term_symb[80];  // Terminal symbols of the grammar.
+    static char* term_symb[81];  // Terminal symbols of the grammar.
     static char* head_symb[81];  // Nonterminal symbols of the grammar.
     static char* tact_name[1];   // Terminal action names found in the grammar.
-    static uchar head_numb[191]; // Head symbol number for a production.
-    static ushort f_tail[192];   // First tail in a production.
-    static char tail[296];       // Tail symbol number.
-    static char arga[80];        // Arguments for terminal actions.
+    static uchar head_numb[192]; // Head symbol number for a production.
+    static ushort f_tail[193];   // First tail in a production.
+    static char tail[297];       // Tail symbol number.
+    static char arga[81];        // Arguments for terminal actions.
 
   private:
     static uchar Bm[119]; // Boolean matrix.
     static uchar Br[113]; // Boolean matrix row.
-    static uchar Bc[80];  // Boolean matrix column.
-    static uchar Bf[80];  // Boolean matrix filter/mask.
+    static uchar Bc[81];  // Boolean matrix column.
+    static uchar Bf[81];  // Boolean matrix filter/mask.
     static short Tm[222]; // Terminal transition matrix.
     static uchar Tr[113]; // Terminal transition matrix row.
-    static uchar Tc[80];  // Terminal transition matrix column.
+    static uchar Tc[81];  // Terminal transition matrix column.
     static short Nm[179]; // Nonterminal transition matrix.
     static uchar Nr[113]; // Nonterminal transition matrix row.
-    static uchar Nc[191]; // Nonterminal transition matrix column.
+    static uchar Nc[192]; // Nonterminal transition matrix column.
     static uchar Rm[166]; // Reduction matrix.
     static short Rr[113]; // Reduction matrix row.
-    static uchar Rc[80];  // Reduction matrix column.
-    static char PL[191];  // Production length minus one.
+    static uchar Rc[81];  // Reduction matrix column.
+    static char PL[192];  // Production length minus one.
 
     static uchar nd_fterm[114];   // ND: first terminal in the list.
     static uchar nd_term[110];    // ND: terminal list.
     static uchar nd_faction[111]; // ND: first action in the list.
     static short nd_action[220];  // ND: action list.
 
-    static char tact_numb[80]; // Terminal action numbers.
+    static char tact_numb[81]; // Terminal action numbers.
 
     static void (*init_func[2])();      // Init action function pointers.
     static int (*tact_func[1])(int& t); // Terminal action function pointers.
