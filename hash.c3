@@ -6,19 +6,19 @@ import std::sort, std::io::file, std::io::path, std::collections::list;
 
 const PATH_MAX = 512;
 
-struct Entry @private { String name; bool is_dir; }
+struct Entry @private { Path name; bool is_dir; }
 
-struct DirEntry { String base; String name; bool is_dir; }
+struct DirEntry { Path base; Path name; bool is_dir; }
 
-struct DirFrame @private { List{Entry} entries; String base; int id; }
+struct DirFrame @private { List{Entry} entries; Path base; int id; }
 
 struct DirEntries { Allocator alloc; List{DirFrame} stack; bool include_hidden; }
 
-fn void? DirEntries.init(&de, String path, bool include_hidden, Allocator ally) {
+fn void? DirEntries.init(&de, Path path, bool include_hidden, Allocator ally) {
 	de.alloc = ally;
 	(void)de.stack.init(ally, 0);
 	de.include_hidden = include_hidden;
-	de.push_dir(path.len ? path : ".")!;
+	de.push_dir(path.len ? path : (Path)".")!;
 }
 fn DirEntry? DirEntries.next(&de) {
 	while (de.stack.len()) {
@@ -32,7 +32,7 @@ fn DirEntry? DirEntries.next(&de) {
 		DirEntry ret = { .base = top.base, .name = e.name, .is_dir = e.is_dir };
 		if (e.is_dir) {
 			@sfba(PATH_MAX, de.alloc; Allocator tmp)
-				{ de.push_dir(join_a_path(tmp, top.base, e.name))!; };
+				{ de.push_dir(join_paths(tmp, top.base, e.name))!; };
 		}
 		return ret;
 	}
@@ -40,17 +40,16 @@ fn DirEntry? DirEntries.next(&de) {
 }
 fn void? DirEntries.traverse(&de, DirFrame* frame) {
 	@sfba(PATH_MAX*2, de.alloc; Allocator tmp) {
-		PathList list = path::ls(tmp, { frame.base, path::DEFAULT_ENV, tmp })!;
-		foreach (&path : list) {
-			String str = path.str_view();
-			if (!de.include_hidden && str[0] == '.') continue;
-			bool is_dir = file::is_dir(join_a_path(tmp, frame.base, str));
-			frame.entries.push({ .name = str.copy(de.alloc), .is_dir = is_dir });
+		PathList list = path::ls(tmp, frame.base)!;
+		foreach (&path : list) { 
+			if (!de.include_hidden && (char)path.[0] == '.') continue;
+			bool is_dir = file::is_dir(join_paths(tmp, frame.base, (Path)*path));
+			frame.entries.push({ .name = path.copy(de.alloc), .is_dir = is_dir });
 		}
 	};
 	if (frame.entries.len() > 1) sort::quicksort(&frame.entries, &entry_cmp);
 }
-fn void? DirEntries.push_dir(&de, String path) {
+fn void? DirEntries.push_dir(&de, Path path) {
 	DirFrame frame @noinit;
 	frame.id = 0;
 	frame.base = path.copy(de.alloc);
@@ -74,23 +73,17 @@ macro void @sfba(usz $size, Allocator fb; @body(Allocator sfba)) {
 	defer ally.free();
 	@body(&ally);
 }
-fn String join_a_path(Allocator ally, String base, String name) {
-	sz len = base.len + 1 + name.len;
-	char* buf = alloc::malloc(ally, len);
-	mem::copy(buf, base.ptr, base.len);
-	buf[base.len] = path::PREFERRED_SEPARATOR;
-	mem::copy(buf + base.len + 1, name.ptr, name.len);
-	return (String)buf[:len];
+macro Path join_paths(Allocator ally, ...) {
+	return (Path)string::join(ally, {...$vaarg}, {path::PREFERRED_SEPARATOR});
 }
-fn sz entry_cmp(Entry* a, Entry* b) @private => a.name.compare_to(b.name);
+fn sz entry_cmp(Entry* a, Entry* b) @inline @private => a.name.compare_to(b.name);
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-
+////////////////////////////////////////////////////////////////////////////////////////////////////
 module hash;
 import direntries, std::io, std::thread, std::crypto::sha3, std::encoding::base64;
 
 const HASH_LEN = 32;
-struct ReaderArgs { BufChan* ch; String wd; }
+struct ReaderArgs { BufChan* ch; Path wd; }
 faultdef MISSING_WORKING_DIR_ARG, TOO_MANY_ARGS;
 alias BufChan = BufferedChannel{char[]};
 
@@ -98,31 +91,33 @@ fn int treeReader(void* arg) {
 	@pool_init(mem, 1<<10) {
 
 	BufChan* ch = (BufChan*)((ReaderArgs*)arg).ch;
-	String wd = (String)((ReaderArgs*)arg).wd;
+	Path wd = (Path)((ReaderArgs*)arg).wd;
 	DirEntries de @noinit;
 	de.init(wd, true, mem)!!;
 	defer de.deinit();
 
 	while (try entry = de.next()) {
-		String base = entry.base.len > wd.len ? entry.base[wd.len+1..] : "";
-		sz off = base.len + (base.len ? 1 : 0);
-		char[] path = alloc::malloc(mem, off+entry.name.len)[:off+entry.name.len];
-
-		if (base.len) { mem::copy(path, base, base.len); path[base.len] = '/'; }
-		mem::copy(path[off..], entry.name, entry.name.len);
+		Path base = entry.base.len > wd.len ? entry.base[wd.len+1..] : (Path)"";
+		Path hashed;
+		if (base.len) {
+			hashed = entry.is_dir ? direntries::join_paths(mem, base, entry.name, "")
+				: direntries::join_paths(mem, base, entry.name);
+		} else {
+			hashed = entry.is_dir ? direntries::join_paths(mem, entry.name, "")
+				: entry.name.copy(mem);
+		}
 		$if env::WIN32:
-			foreach (i, c : path) if (c == '\\') path[i] = '/';
+			foreach (i, c : hashed) if (c == '\\') hashed[i] = '/';
 		$endif
-		ch.push(path)!!;
-		if (entry.is_dir) continue;
-
+		ch.push(hashed)!!; if (entry.is_dir) continue;
+			
 		File file;
 		direntries::@sfba(direntries::PATH_MAX, mem; Allocator tmp)
-			{ file = file::open(direntries::join_a_path(tmp, entry.base, entry.name), "r")!!; };
+			{ file = file::open(direntries::join_paths(tmp, entry.base, entry.name), "r")!!; };
 		defer (void)file.close();
 
-		for (long size = file.size()!!, int n @noinit; size; size -= n) {
-			n = (int)min(size, 64<<10);
+		for (sz size = file.size()!!, sz n @noinit; size; size -= n) {
+			n = min(size, 64<<10);
 			char[] slice = alloc::malloc(mem, n)[:n];
 			io::read_all(&file, slice)!!;
 			ch.push(slice)!!;
@@ -155,7 +150,7 @@ fn int main(String[] args) {
 		case 2: break;
 		default: TOO_MANY_ARGS~!!;
 	}
-	String wd = path::normalize(args[1])!!;
+	Path wd = (Path)path::normalize(args[1])!!;
 
 	BufChan* ch = channel::create_buffered(mem, 16)!!;
 	ReaderArgs ra = {ch, wd};
