@@ -42,59 +42,52 @@ settings() {
         windows/x64)   triple=x86_64-windows-msvc ;;
         *) help 1 "$(printf 'target %s unsupported' "$target" )" ;;
     esac
-    case ${target%/*} in darwin) lld=ld64.lld ;; android|linux) lld=ld.lld ;; windows) lld=lld-link ;; esac
     [ ${target%/*} = darwin ] && gc=-dead_strip || gc=--gc-sections
 }
 
 libs() {
     _flags='-pipe -Wno-unused-command-line-argument -fno-omit-frame-pointer
-        -O3 -flto=thin -mllvm -polly -mllvm -polly-vectorizer=stripmine'
+        -O3 -fuse-ld=lld -flto=thin -mllvm -polly -mllvm -polly-vectorizer=stripmine'
 
     [ -f .build/hash ] || {
         c3c compile-only hash.c3 -O0 -g0 --single-module=yes --emit-llvm --no-obj --llvm-out /tmp/fin
-        clang -fuse-ld="$(command -v $lld)" $_flags -Wl,$gc /tmp/fin/*.ll -o .build/hash
+        clang $_flags -Wl,$gc /tmp/fin/*.ll -o .build/hash
     }
     [ "$(.build/hash vendor)" = 'F4A5KDNBEClzDoGXZ9NCq8irGBVrwwZJQYQl5pR/f7w=' ]  # CODE REVIEW POISON
+    libcpp=$(clang -print-resource-dir); libcpp="-isystem ${libcpp%/lib/clang/*}/include/c++/v1"
     target=${target%/*}-${target#*/}; $install .build/$target/build
+    prefix=.build/$target/prefix; $install $prefix
 
     set -- -Wno-dev -G Ninja \
         -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_C_COMPILER_TARGET=$triple \
+        -DCMAKE_CXX_COMPILER_TARGET=$triple \
         -DCMAKE_AR="$(command -v llvm-ar)" \
-        -DCMAKE_LINKER="$(command -v $lld)" \
-        -DCMAKE_EXE_LINKER_FLAGS_RELEASE=-O3 \
         -DCMAKE_C_COMPILER="$(command -v clang)" \
         -DCMAKE_CXX_COMPILER="$(command -v clang++)" \
         -DCMAKE_C_FLAGS_RELEASE="$(printf '%s ' $_flags)" \
-        -DCMAKE_CXX_FLAGS_RELEASE="$(printf '%s ' $_flags)" \
+        -DCMAKE_CXX_FLAGS_RELEASE="-nostdinc++ $libcpp $(printf '%s ' $_flags)" \
         -DCMAKE_OBJCOPY=false -DCMAKE_RANLIB=false -DCMAKE_NM=false
 
-    buildzlib=.build/$target/build/zlib zlib=.build/$target/install/zlib
-    $install $buildzlib; cmake -S vendor/zlib-* -B $buildzlib "$@" \
+    buildzstd=.build/$target/build/zstd; $install $buildzstd; cmake -S vendor/zstd-*/build/cmake -B $buildzstd "$@" \
+        -DZSTD_BUILD_SHARED=OFF \
+        -DZSTD_BUILD_PROGRAMS=OFF \
+        -DZSTD_LEGACY_SUPPORT=OFF \
+        -DZSTD_MULTITHREAD_SUPPORT=ON \
+        -DCMAKE_INSTALL_PREFIX=$prefix; echo
+
+    ninja -C $buildzstd install; echo
+
+    buildzlib=.build/$target/build/zlib; $install $buildzlib; cmake -S vendor/zlib-* -B $buildzlib "$@" \
         -DZLIB_COMPAT=ON \
         -DBUILD_TESTING=OFF \
         -DWITH_REDUCED_MEM=ON \
         -DBUILD_SHARED_LIBS=OFF \
-        -DSKIP_INSTALL_FILES=ON \
-        -DSKIP_INSTALL_LIBRARIES=ON \
-        -DCMAKE_INSTALL_PREFIX=$zlib; echo
+        -DCMAKE_INSTALL_PREFIX=$prefix; echo
 
-    rm -rf $zlib; ninja -C $buildzlib libz.a; echo
+    ninja -C $buildzlib install; echo
 
-    $install .build/$target/prefix; mv .build/$target/install/zlib/include #kaboom
-
-    buildzstd=.build/$target/build/zstd; zstd=.build/$target/install/zstd
-    $install $buildzstd; cmake -S vendor/zstd-*/build/cmake -B $buildzstd "$@" \
-        -DZSTD_MULTITHREAD_SUPPORT=ON \
-        -DZSTD_LEGACY_SUPPORT=OFF \
-        -DZSTD_BUILD_PROGRAMS=OFF \
-        -DZSTD_BUILD_SHARED=OFF \
-        -DCMAKE_INSTALL_PREFIX=$zstd; echo
-
-    rm -rf $zstd; ninja -C $buildzstd libzstd.a; ninja -C $buildzstd install >/dev/null; echo
-
-    buildllvm=.build/$target/build/llvm llvm=.build/$target/llvm
-    $install $buildllvm; cmake -S vendor/llvm-*/llvm -B $buildllvm "$@" \
+    buildllvm=.build/$target/build/llvm; $install $buildllvm; cmake -S vendor/llvm-*/llvm -B $buildllvm "$@" \
         -DLLVM_OPTIMIZED_TABLEGEN=ON \
         -DLLVM_UNREACHABLE_OPTIMIZE=ON \
         -DLLVM_ENABLE_ASSERTIONS=OFF \
@@ -124,23 +117,20 @@ libs() {
         -DCOMPILER_RT_BUILD_PROFILE=ON \
         -DCOMPILER_RT_BUILD_BUILTINS=ON \
         -DCOMPILER_RT_BUILD_SANITIZERS=ON \
+        -DZLIB_LIBRARY=$prefix/lib/libz.a \
+        -DZLIB_INCLUDE_DIR=$prefix/include \
+        -Dzstd_LIBRARY=$prefix/lib/libzstd.a \
+        -Dzstd_INCLUDE_DIR=$prefix/include \
         -DLLVM_ENABLE_PROJECTS="clang;lld;polly" \
         -DLLVM_ENABLE_RUNTIMES="compiler-rt;openmp" \
-        -DLLVM_TARGETS_TO_BUILD="X86;AArch64;ARM;RISCV;WebAssembly;LoongArch" \
-        -DCMAKE_PREFIX_PATH=$codecs \
-        -DCMAKE_INSTALL_PREFIX=$llvm; echo
+        -DLLVM_TARGETS_TO_BUILD="X86;AArch64;ARM;RISCV;WebAssembly" \
+        -DLLVM_DEFAULT_TARGET_TRIPLE=$triple \
+        -DCMAKE_INSTALL_PREFIX=$prefix; echo
 
-    rm -rf $llvm; ninja -C $buildllvm \
-        install-clangDriver \
-        install-lldCOFF \
-        install-lldCommon \
-        install-lldELF \
-        install-lldMachO \
-        install-lldWasm \
-        install-LLVMFrontendOpenMP \
-        install-LLVMOrcJIT \
-        install-Polly
-    ninja -C $buildllvm install-llvm-headers install-clang-headers install-lld-headers >/dev/null; echo
+    ninja -C $buildllvm $(printf 'install-%s ' \
+        clangDriver lldCOFF lldCommon lldELF lldMachO lldWasm LLVMFrontendOpenMP LLVMOrcJIT Polly)
+
+    ninja -C $buildllvm $(printf 'install-%s-headers ' llvm clang lld clang-resource) >/dev/null; echo
 
     #{
     #   cd $prefixllvm/include/lld; $install COFF ELF MachO wasm; cd ../../../..
