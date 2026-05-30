@@ -6,7 +6,7 @@
 # @p7r0x7 <maxibonnette@pm.me>
 
 supported='android/arm64 darwin/arm64 linux/arm64 linux/riscv64 linux/x64 windows/arm64 windows/x64'
-# fin also supports wasi/wasm and wasi/wasm64, but cannot be hosted on them
+# fin also supports wasi/wasm and wasi/wasm64, but won't be hostable on them
 
 help() {
     [ $# = 2 ] && printf 'error: %s\n\n' "$2" >&2
@@ -54,11 +54,12 @@ libs() {
         c3c compile-only hash.c3 -O0 -g0 --single-module=yes --emit-llvm --no-obj --llvm-out /tmp/fin
         clang -fuse-ld="$(command -v $lld)" $_flags -Wl,$gc /tmp/fin/*.ll -o .build/hash
     }
-    [ "$(.build/hash vendor)" = '0niZ8ZayS6I6O4SXaE2vwpSmhZuNP4GLWjgWEQKRoRg=' ]  # CODE REVIEW POISON
+    [ "$(.build/hash vendor)" = 'F4A5KDNBEClzDoGXZ9NCq8irGBVrwwZJQYQl5pR/f7w=' ]  # CODE REVIEW POISON
     target=${target%/*}-${target#*/}; $install .build/$target/build
 
     set -- -Wno-dev -G Ninja \
         -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_C_COMPILER_TARGET=$triple \
         -DCMAKE_AR="$(command -v llvm-ar)" \
         -DCMAKE_LINKER="$(command -v $lld)" \
         -DCMAKE_EXE_LINKER_FLAGS_RELEASE=-O3 \
@@ -70,9 +71,12 @@ libs() {
 
     buildzlib=.build/$target/build/zlib zlib=.build/$target/install/zlib
     $install $buildzlib; cmake -S vendor/zlib-* -B $buildzlib "$@" \
-        -DZLIB_BUILD_TESTING=OFF \
-        -DZLIB_BUILD_SHARED=OFF \
-        -DZLIB_BUILD_STATIC=ON \
+        -DZLIB_COMPAT=ON \
+        -DBUILD_TESTING=OFF \
+        -DWITH_REDUCED_MEM=ON \
+        -DBUILD_SHARED_LIBS=OFF \
+        -DSKIP_INSTALL_FILES=ON \
+        -DSKIP_INSTALL_LIBRARIES=ON \
         -DCMAKE_INSTALL_PREFIX=$zlib; echo
 
     rm -rf $zlib; ninja -C $buildzlib libz.a; echo
@@ -139,20 +143,20 @@ libs() {
     ninja -C $buildllvm install-llvm-headers install-clang-headers install-lld-headers >/dev/null; echo
 
     #{
-    #	cd $prefixllvm/include/lld; $install COFF ELF MachO wasm; cd ../../../..
-    #	for dir in COFF ELF MachO wasm; do ln $buildllvm/tools/lld/$dir/Options.inc $prefixllvm/include/lld/$dir; done
-    #	ln $buildllvm/tools/lld/include/lld/Common/Version.inc $prefixllvm/include/lld/Common
-    #	rm -rf .build/include .build/libzstd.a; mv $prefixllvm/include .build/include; mv $prefixzstd/include .build/include/zstd
-    #	mv $prefixzstd/lib/libzstd.a .build; rm -rf $prefixzstd &
+    #   cd $prefixllvm/include/lld; $install COFF ELF MachO wasm; cd ../../../..
+    #   for dir in COFF ELF MachO wasm; do ln $buildllvm/tools/lld/$dir/Options.inc $prefixllvm/include/lld/$dir; done
+    #   ln $buildllvm/tools/lld/include/lld/Common/Version.inc $prefixllvm/include/lld/Common
+    #   rm -rf .build/include .build/libzstd.a; mv $prefixllvm/include .build/include; mv $prefixzstd/include .build/include/zstd
+    #   mv $prefixzstd/lib/libzstd.a .build; rm -rf $prefixzstd &
     #} &
     #{
-    #	cd $prefixllvm/lib
-    #	for lib in *.a; do { dir=${lib%%.a}; $install $dir; cd $dir; llvm-ar -x ../$lib; } & done; wait; rm -- *.a
-    #	for dir in $(echo * | LC_ALL=C sort); do { du -csh $(echo $dir/* | LC_ALL=C sort); echo; } done
-    #	set -- $(echo */* | LC_ALL=C sort); [ -e ../../libLLVM.a ] && rm ../../libLLVM.a
-    #	llvm-ar rcs ../../libLLVM.a "$@"; rm -rf ../../installllvm &
-    #	printf -- '--------------------------------------------------------\n %s    objects archived   %s    total bytes\n' \
-    #		$# "$(wc -c < ../../libLLVM.a)"
+    #   cd $prefixllvm/lib
+    #   for lib in *.a; do { dir=${lib%%.a}; $install $dir; cd $dir; llvm-ar -x ../$lib; } & done; wait; rm -- *.a
+    #   for dir in $(echo * | LC_ALL=C sort); do { du -csh $(echo $dir/* | LC_ALL=C sort); echo; } done
+    #   set -- $(echo */* | LC_ALL=C sort); [ -e ../../libLLVM.a ] && rm ../../libLLVM.a
+    #   llvm-ar rcs ../../libLLVM.a "$@"; rm -rf ../../installllvm &
+    #   printf -- '--------------------------------------------------------\n %s    objects archived   %s    total bytes\n' \
+    #       $# "$(wc -c < ../../libLLVM.a)"
     #} &
     #wait
 }

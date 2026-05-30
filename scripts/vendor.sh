@@ -26,9 +26,9 @@ get() {
 set -eu; umask 0022; $rm $vend; $install $srcs $vend vendor; cd vendor
 
 deps='clang cmake compiler-rt lld llvm openmp polly runtimes third-party'
-semv=22.1.3 base=llvm-project-$semv.src.tar.xz url=github.com/llvm/llvm-project/releases/download/llvmorg-$semv/$base
+semv=22.1.6 base=llvm-project-$semv.src.tar.xz url=github.com/llvm/llvm-project/releases/download/llvmorg-$semv/$base
 (
-    get d548e9a3cf60faf343bec465ebce4d0b9875e9de8ffe46697e7c1bb22088b194; set -f
+    get e7394bf7cc5dd1a85317e67f0fc405039ddf12afd4ce4bcd0496b311244d587c; set -f
         szip e -so $srcs/$base | szip x -o$vend -si -ttar $($print '-x!*/%s ' */bindings */docs */www */examples \
         */test */unittests llvm/benchmarks polly/lib/External/isl/test_inputs) $($print '-xr!%s ' Maintainers.*  \
         CREDITS.* *.png *.bmp .*) $($print '*/%s ' $deps) >/dev/null
@@ -37,7 +37,7 @@ semv=22.1.3 base=llvm-project-$semv.src.tar.xz url=github.com/llvm/llvm-project/
     $sed '/# Use libtool instead of ar/{N;N;N;N;d;}' llvm-$semv/llvm/CMakeLists.txt; set +f
 ) &
 
-semv=master base=LRSTAR-$semv.tar.gz url=github.com/p7r0x7/LRSTAR/archive/${base#*-}
+semv=master base=LRSTAR-$semv.tar.gz url=github.com/p7r0x7/LRSTAR/archive/refs/heads/$semv.tar.gz
 (
     get 59a221f233c12c1cee1559068270798a3008aacd5ccd3f1f38f65c32fc85df9d; set -f
         szip e -so $srcs/$base | szip x -o$vend -si -ttar $($print '-i!*/*/*.%s ' h hpp cpp txt grm lgr) \
@@ -52,14 +52,14 @@ semv=1.5.7 base=zstd-$semv.tar.zst url=github.com/facebook/zstd/releases/downloa
         *.png .*) >/dev/null; set +f
 ) &
 
-semv=1.3.2 base=zlib-$semv.tar.xz url=github.com/madler/zlib/releases/download/v$semv/$base
+semv=2.3.3 base=zlib-ng-$semv.tar.gz url=github.com/zlib-ng/zlib-ng/archive/refs/tags/$semv.tar.gz
 (
-    get d60ffcfad05908d1efb932177340d2c80c9db123cf9eadff5657945f214a2214; set -f
-        szip e -so $srcs/$base | szip x -o$vend -si -ttar >/dev/null  # 7zip refused to cooperate
+    get f8da44bd94927257defce151f942751cd2bddd668edff3ee91208dd3e30896cd; set -f
+        szip e -so $srcs/$base | szip x -o$vend -si -ttar >/dev/null
 
-        cd $vend/zlib-$semv; echo 'set(_ ${CMAKE_CXX_COMPILER} ${CMAKE_CXX_FLAGS_RELEASE})' >>CMakeLists.txt
-        $find . -maxdepth 1 -mindepth 1 ! \( -name *.c -o -name *.h -o -name *in -o -name \
-        CMakeLists.txt -o -name LICENSE -o -name README \) -exec $rm {} +; set +f
+        cd $vend/zlib-ng-$semv; echo 'set(_ ${CMAKE_CXX_COMPILER} ${CMAKE_CXX_FLAGS_RELEASE})' >>CMakeLists.txt
+        $find . -maxdepth 1 -mindepth 1 ! \( -name *.c -o -name *.h* -o -name *in -o -name *.md -o -name cmake \
+        -o -name arch -o -name configure -o -name CMakeLists.txt \) -exec $rm {} +; set +f
 ) &
 
 wait; _guard='s|^[[:space:]]*add_subdirectory[[:space:]]*\(([^)]+)\)|if(EXISTS '
