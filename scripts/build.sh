@@ -6,7 +6,7 @@
 # @p7r0x7 <maxibonnette@pm.me>
 
 supported='android/arm64 darwin/arm64 linux/arm64 linux/riscv64 linux/x64 windows/arm64 windows/x64'
-# fin also supports wasi/wasm and wasi/wasm64, but won't be hostable on them
+# fin also supports wasi/wasm and wasi/wasm64, but won't be made hostable on them
 
 help() {
     [ $# = 2 ] && printf 'error: %s\n\n' "$2" >&2
@@ -18,7 +18,7 @@ help() {
 }
 
 settings() {
-    set -eu; umask 0022; tabs -4; install='install -dm 0755'; $install .build
+    set -eu; umask 0022; install='install -dm 0755'; $install .build
     for _arg in "$@"; do case "$_arg" in -h|--help) help 0 ;; esac; done
     case $# in
     0)
@@ -38,35 +38,38 @@ settings() {
         linux/arm64)   triple=aarch64-linux-gnu ;;
         linux/riscv64) triple=riscv64-linux-gnu ;;
         linux/x64)     triple=x86_64-linux-gnu ;;
-        windows/arm64) triple=aarch64-windows-msvc ;;
-        windows/x64)   triple=x86_64-windows-msvc ;;
+        windows/arm64) triple=aarch64-pc-windows-msvc ;;
+        windows/x64)   triple=x86_64-pc-windows-msvc ;;
         *) help 1 "$(printf 'target %s unsupported' "$target" )" ;;
     esac
+    [ ${target%/*} = windows ] && stdlib= || stdlib=-stdlib=libc++
     [ ${target%/*} = darwin ] && gc=-dead_strip || gc=--gc-sections
 }
 
 libs() {
+    target=${target%/*}-${target#*/}; prefix=.build/$target/prefix
     _flags='-pipe -Wno-unused-command-line-argument -fno-omit-frame-pointer
         -O3 -fuse-ld=lld -flto=thin -mllvm -polly -mllvm -polly-vectorizer=stripmine'
 
     [ -f .build/hash ] || {
-        c3c compile-only hash.c3 -O0 -g0 --single-module=yes --emit-llvm --no-obj --llvm-out /tmp/fin
-        clang $_flags -Wl,$gc /tmp/fin/*.ll -o .build/hash
+        c3c compile-only hash.c3 -O0 -g0 --no-obj --emit-llvm --llvm-out .build/build/hash
+        clang $_flags -Wl,$gc .build/build/hash/* -o .build/hash; rm -rf .build/build/hash
     }
+    [ -f .build/$target/checksum ] && [ "$(.build/hash $prefix)" = "$(cat .build/$target/checksum)" ] && return 0
     [ "$(.build/hash vendor)" = 'F4A5KDNBEClzDoGXZ9NCq8irGBVrwwZJQYQl5pR/f7w=' ]  # CODE REVIEW POISON
-    libcpp=$(clang -print-resource-dir); libcpp="-isystem ${libcpp%/lib/clang/*}/include/c++/v1"
-    target=${target%/*}-${target#*/}; $install .build/$target/build
-    prefix=.build/$target/prefix; $install $prefix
+    rm -rf "$prefix"; $install .build/$target/build $prefix
 
+    start=$(date +%s)
     set -- -Wno-dev -G Ninja \
+        -DCMAKE_OSX_SYSROOT="" \
         -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_C_COMPILER_TARGET=$triple \
-        -DCMAKE_CXX_COMPILER_TARGET=$triple \
         -DCMAKE_AR="$(command -v llvm-ar)" \
+        -DCMAKE_CXX_COMPILER_TARGET=$triple \
         -DCMAKE_C_COMPILER="$(command -v clang)" \
         -DCMAKE_CXX_COMPILER="$(command -v clang++)" \
         -DCMAKE_C_FLAGS_RELEASE="$(printf '%s ' $_flags)" \
-        -DCMAKE_CXX_FLAGS_RELEASE="-nostdinc++ $libcpp $(printf '%s ' $_flags)" \
+        -DCMAKE_CXX_FLAGS_RELEASE="$stdlib $(printf '%s ' $_flags)" \
         -DCMAKE_OBJCOPY=false -DCMAKE_RANLIB=false -DCMAKE_NM=false
 
     buildzstd=.build/$target/build/zstd; $install $buildzstd; cmake -S vendor/zstd-*/build/cmake -B $buildzstd "$@" \
@@ -139,16 +142,13 @@ libs() {
     #   rm -rf .build/include .build/libzstd.a; mv $prefixllvm/include .build/include; mv $prefixzstd/include .build/include/zstd
     #   mv $prefixzstd/lib/libzstd.a .build; rm -rf $prefixzstd &
     #} &
-    #{
-    #   cd $prefixllvm/lib
-    #   for lib in *.a; do { dir=${lib%%.a}; $install $dir; cd $dir; llvm-ar -x ../$lib; } & done; wait; rm -- *.a
-    #   for dir in $(echo * | LC_ALL=C sort); do { du -csh $(echo $dir/* | LC_ALL=C sort); echo; } done
-    #   set -- $(echo */* | LC_ALL=C sort); [ -e ../../libLLVM.a ] && rm ../../libLLVM.a
-    #   llvm-ar rcs ../../libLLVM.a "$@"; rm -rf ../../installllvm &
-    #   printf -- '--------------------------------------------------------\n %s    objects archived   %s    total bytes\n' \
-    #       $# "$(wc -c < ../../libLLVM.a)"
-    #} &
-    #wait
+    elapsed=$(($(date +%s) - start))
+
+    .build/hash $prefix >.build/$target/checksum
+    find .build/$target/build \( -name '*.o' -o -name '*.a' -o -name '*.lib' \) -delete &
+    count=$(find "$prefix/lib" \( -name '*.a' -o -name '*.lib' \) -exec llvm-ar t {} \; | grep -c '\.o$')
+    bar=----------------------------------------------------------------------------------------------------
+    printf -- '%s\n    %d objects compiled for %s in %dm%ds\n\n' $bar $count $target $((elapsed / 60)) $((elapsed % 60))
 }
 
 build() { true; }

@@ -136,6 +136,7 @@ fn int sha3Hasher(void* arg) {
 
     while (try buf = ch.pop()) { state.update(buf[..]); alloc::free(mem, buf); }
     char[HASH_LEN] digest @noinit;
+    state.update(digest[:0]);
     state.final(digest[..]);
 
     char[(HASH_LEN+2)/3*4 + 1] encoded = { [encoded.len-1] = '\n' };
