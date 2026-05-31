@@ -52,8 +52,8 @@ libs() {
         -O3 -fuse-ld=lld -flto=thin -mllvm -polly -mllvm -polly-vectorizer=stripmine'
 
     [ -f .build/hash ] || {
-        c3c compile-only hash.c3 -O0 -g0 --no-obj --emit-llvm --llvm-out .build/build/hash
-        clang $_flags -Wl,$gc .build/build/hash/* -o .build/hash; rm -rf .build/build/hash
+        c3c compile-only hash.c3 -O0 -g0 --single-module=yes --no-obj --emit-llvm --llvm-out .build/build/hash
+        clang $_flags -Wl,$gc .build/build/hash/* -o .build/hash; rm -rf .build/build; echo
     }
     [ -f .build/$target/checksum ] && [ "$(.build/hash $prefix)" = "$(cat .build/$target/checksum)" ] && return 0
     [ "$(.build/hash vendor)" = 'F4A5KDNBEClzDoGXZ9NCq8irGBVrwwZJQYQl5pR/f7w=' ]  # CODE REVIEW POISON
@@ -79,7 +79,7 @@ libs() {
         -DZSTD_MULTITHREAD_SUPPORT=ON \
         -DCMAKE_INSTALL_PREFIX=$prefix; echo
 
-    ninja -C $buildzstd install; echo
+    ninja -C $buildzstd; ninja -C $buildzstd install >/dev/null; echo
 
     buildzlib=.build/$target/build/zlib; $install $buildzlib; cmake -S vendor/zlib-* -B $buildzlib "$@" \
         -DZLIB_COMPAT=ON \
@@ -88,7 +88,7 @@ libs() {
         -DBUILD_SHARED_LIBS=OFF \
         -DCMAKE_INSTALL_PREFIX=$prefix; echo
 
-    ninja -C $buildzlib install; echo
+    ninja -C $buildzlib; ninja -C $buildzlib install >/dev/null; echo
 
     buildllvm=.build/$target/build/llvm; $install $buildllvm; cmake -S vendor/llvm-*/llvm -B $buildllvm "$@" \
         -DLLVM_OPTIMIZED_TABLEGEN=ON \
@@ -130,18 +130,14 @@ libs() {
         -DLLVM_DEFAULT_TARGET_TRIPLE=$triple \
         -DCMAKE_INSTALL_PREFIX=$prefix; echo
 
-    ninja -C $buildllvm $(printf 'install-%s ' \
-        clangDriver lldCOFF lldCommon lldELF lldMachO lldWasm LLVMFrontendOpenMP LLVMOrcJIT Polly)
-
+    components='clangDriver lldCOFF lldCommon lldELF lldMachO lldWasm LLVMFrontendOpenMP LLVMOrcJIT Polly'
+    ninja -C $buildllvm $components
+    ninja -C $buildllvm $(printf 'install-%s ' $components) >/dev/null
     ninja -C $buildllvm $(printf 'install-%s-headers ' llvm clang lld clang-resource) >/dev/null; echo
 
-    #{
-    #   cd $prefixllvm/include/lld; $install COFF ELF MachO wasm; cd ../../../..
-    #   for dir in COFF ELF MachO wasm; do ln $buildllvm/tools/lld/$dir/Options.inc $prefixllvm/include/lld/$dir; done
-    #   ln $buildllvm/tools/lld/include/lld/Common/Version.inc $prefixllvm/include/lld/Common
-    #   rm -rf .build/include .build/libzstd.a; mv $prefixllvm/include .build/include; mv $prefixzstd/include .build/include/zstd
-    #   mv $prefixzstd/lib/libzstd.a .build; rm -rf $prefixzstd &
-    #} &
+    cd $prefix/include/lld; $install COFF ELF MachO wasm; cd ../../../../..
+    for dir in COFF ELF MachO wasm; do ln $buildllvm/tools/lld/$dir/Options.inc $prefix/include/lld/$dir; done
+    ln $buildllvm/tools/lld/include/lld/Common/Version.inc $prefix/include/lld/Common
     elapsed=$(($(date +%s) - start))
 
     .build/hash $prefix >.build/$target/checksum
