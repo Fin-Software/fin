@@ -2,4 +2,4 @@
 .localized
 
 /.build/
-/src/lrstar/*.txt
+/src/frontend/lrstar/*.txt
