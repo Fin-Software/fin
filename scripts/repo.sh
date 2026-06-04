@@ -38,7 +38,8 @@ find . \( -path ./vendor -o -path '*/.*' \) -prune -o \
 chmod a+x scripts/*sh
 
 # Run Lexer+Parser
-clang++ -O0 -w -lc++ -include sys/stat.h -Ivendor/lrstar-master -o .build/finlp src/frontend/lrstar/*.cpp
+rm -f src/code; ln -s ../vendor/lrstar-master/code src/code
+clang++ -O0 -w -lc++ -include sys/stat.h -o .build/finlp src/frontend/lrstar/*.cpp
 mawk '
 function spaces(n, gap) {
     if ((gap = n-length(SPACES)) > 0) SPACES = SPACES sprintf("%*s", gap, "")
@@ -76,7 +77,7 @@ function whiteoutnontab(s, out, parts, n, i) {
 ' research/finfile.fn >research/finfile.wo.fn
 sz1=$(wc -c <research/finfile.fn) sz2=$(wc -c <research/finfile.wo.fn); [ $sz1 -eq $sz2 ] || [ $sz1 -eq $((sz2 - 1)) ]
 .build/finlp research/finfile.wo.fn || true; printf '\033[0m\n'
-rm research/finfile.wo.fn lrstar.txt research/finfile.output.txt 2>/dev/null || true
+rm -f src/code research/finfile.wo.fn lrstar.txt research/finfile.output.txt
 
 # Print git status
 (GIT_INDEX_FILE=.git/index.tmp; export GIT_INDEX_FILE; git read-tree HEAD; git add .; git --no-pager diff --stat HEAD)

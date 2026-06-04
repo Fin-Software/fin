@@ -5,8 +5,11 @@
 # Contributors responsible for this file:
 # @p7r0x7 <maxibonnette@pm.me>
 
-supported='android/arm64 darwin/arm64 linux/arm64 linux/riscv64 linux/x64 windows/arm64 windows/x64'
+flags="-fuse-ld=lld -O3 -mllvm -polly -mllvm -polly-vectorizer=stripmine
+    -pipe -Wno-unused-command-line-argument -fno-rtti -fno-omit-frame-pointer"
 # fin also supports wasi/wasm and wasi/wasm64, but won't be made hostable on them
+supported='android/arm64 darwin/arm64 linux/arm64 linux/riscv64 linux/x64 windows/arm64 windows/x64'
+bar=----------------------------------------------------------------------------------------------------
 
 help() {
     [ $# = 2 ] && printf 'error: %s\n\n' "$2" >&2
@@ -44,22 +47,19 @@ settings() {
     esac
     [ ${target%/*} = windows ] && stdlib= || stdlib=-stdlib=libc++
     [ ${target%/*} = darwin ] && gc=-dead_strip || gc=--gc-sections
+    target=${target%/*}-${target#*/}
 }
 
 libs() {
-    target=${target%/*}-${target#*/}; prefix=.build/$target/prefix
-    _flags='-pipe -Wno-unused-command-line-argument -fno-omit-frame-pointer
-        -O3 -fuse-ld=lld -flto=thin -mllvm -polly -mllvm -polly-vectorizer=stripmine'
-
-    [ -f .build/hash ] || {
+    prefix=.build/$target/prefix; [ -f .build/hash ] || {
         c3c compile-only hash.c3 -O0 -g0 --single-module=yes --no-obj --emit-llvm --llvm-out .build/build/hash
-        clang $_flags -Wl,$gc .build/build/hash/* -o .build/hash; rm -rf .build/build; echo
+        clang $flags -Wl,$gc .build/build/hash/* -o .build/hash; rm -rf .build/build; echo
     }
     [ -f .build/$target/checksum ] && [ "$(.build/hash $prefix)" = "$(cat .build/$target/checksum)" ] && return 0
-    [ "$(.build/hash vendor)" = 'F4A5KDNBEClzDoGXZ9NCq8irGBVrwwZJQYQl5pR/f7w=' ]  # CODE REVIEW POISON
-    rm -rf "$prefix"; $install .build/$target/build $prefix
+    [ "$(.build/hash vendor)" = 'tNKRYTAh15DkzifGHmm4V98c+7J8V+lVQ1QFFIZKz8E=' ]  # CODE REVIEW POISON
+    rm -rf .build/$target/build/fin $prefix; $install .build/$target/build $prefix
 
-    start=$(date +%s)
+    _start=$(date +%s)
     set -- -Wno-dev -G Ninja \
         -DCMAKE_OSX_SYSROOT="" \
         -DCMAKE_BUILD_TYPE=Release \
@@ -68,8 +68,8 @@ libs() {
         -DCMAKE_CXX_COMPILER_TARGET=$triple \
         -DCMAKE_C_COMPILER="$(command -v clang)" \
         -DCMAKE_CXX_COMPILER="$(command -v clang++)" \
-        -DCMAKE_C_FLAGS_RELEASE="$(printf '%s ' $_flags)" \
-        -DCMAKE_CXX_FLAGS_RELEASE="$stdlib $(printf '%s ' $_flags)" \
+        -DCMAKE_C_FLAGS_RELEASE="$(printf '%s ' $flags)" \
+        -DCMAKE_CXX_FLAGS_RELEASE="$stdlib $(printf '%s ' $flags)" \
         -DCMAKE_OBJCOPY=false -DCMAKE_RANLIB=false -DCMAKE_NM=false
 
     buildzstd=.build/$target/build/zstd; $install $buildzstd; cmake -S vendor/zstd-*/build/cmake -B $buildzstd "$@" \
@@ -130,23 +130,46 @@ libs() {
         -DLLVM_DEFAULT_TARGET_TRIPLE=$triple \
         -DCMAKE_INSTALL_PREFIX=$prefix; echo
 
-    components='clangDriver lldCOFF lldCommon lldELF lldMachO lldWasm LLVMFrontendOpenMP LLVMOrcJIT Polly'
-    ninja -C $buildllvm $components
-    ninja -C $buildllvm $(printf 'install-%s ' $components) >/dev/null
-    ninja -C $buildllvm $(printf 'install-%s-headers ' llvm clang lld clang-resource) >/dev/null; echo
-
-    cd $prefix/include/lld; $install COFF ELF MachO wasm; cd ../../../../..
-    for dir in COFF ELF MachO wasm; do ln $buildllvm/tools/lld/$dir/Options.inc $prefix/include/lld/$dir; done
-    ln $buildllvm/tools/lld/include/lld/Common/Version.inc $prefix/include/lld/Common
-    elapsed=$(($(date +%s) - start))
+    components='clangFrontendTool lldCOFF lldCommon lldELF lldMachO lldWasm LLVMFrontendOpenMP LLVMOrcJIT Polly'
+    ninja -C $buildllvm $components; echo; $install $prefix/lib $prefix/include/lld/Common
+    {
+        ninja -C $buildllvm $(printf 'install-%s-headers ' clang clang-resource lld llvm) >/dev/null
+        cd $prefix/include/lld; $install COFF ELF MachO wasm
+        sed 's/{lld::MinGW, &lld::mingw::link}, //' Common/Driver.h >D.h; mv D.h Common/Driver.h; cd ../../../../..
+        for dir in COFF ELF MachO wasm; do ln $buildllvm/tools/lld/$dir/Options.inc $prefix/include/lld/$dir; done
+        ln $buildllvm/tools/lld/include/lld/Common/Version.inc $prefix/include/lld/Common
+    } &
+    cd $buildllvm/lib && {
+        echo 'create ../../../prefix/lib/libClangJIT.a'
+        for lib in *.a *.lib; do [ -f $lib ] && echo "addlib $lib"; done
+        printf 'save\nend\n'
+    } | llvm-ar -M &
+    wait; _elapsed=$(($(date +%s) - _start))
 
     .build/hash $prefix >.build/$target/checksum
-    find .build/$target/build \( -name '*.o' -o -name '*.a' -o -name '*.lib' \) -delete &
-    count=$(find "$prefix/lib" \( -name '*.a' -o -name '*.lib' \) -exec llvm-ar t {} \; | grep -c '\.o$')
-    bar=----------------------------------------------------------------------------------------------------
-    printf -- '%s\n    %d objects compiled for %s in %dm%ds\n\n' $bar $count $target $((elapsed / 60)) $((elapsed % 60))
+    #find .build/$target/build \( -name '*.o' -o -name '*.a' -o -name '*.lib' \) -delete &
+    _count=$(find $prefix/lib \( -name '*.a' -o -name '*.lib' \) -exec llvm-ar t {} \; | grep -c '\.o$')
+    printf '%s\n    %d objects compiled for %s in %dm%ds\n\n' $bar $_count $target $((_elapsed / 60)) $((_elapsed % 60))
 }
 
-build() { true; }
+build() {
+    root=$PWD out=$root/.build/$target
+    $install $out/build/fin; cd $out/build/fin
+    cxx="clang++ -c $flags $stdlib -I$out/prefix/include"
+    case $mode in safe) mode=-g0 ;; debug) mode=-g ;; esac
+    
+    c3c compile-only -O0 $mode --single-module=yes --no-obj --emit-llvm --llvm-out . \
+        $(find $root/src -name '*.c3') && $cxx fin.ll && rm fin.ll &
+    for src in $(find $root/src -name '*.cc'); do $cxx $src & done
+    for flavor in COFF ELF MachO wasm; do
+        [ -f lld_$flavor.o ] || $cxx -I$out/prefix/include/lld/$flavor \
+            $root/vendor/llvm-*/lld/$flavor/Driver.cpp -o lld_$flavor.o &
+    done
+    for src in $root/vendor/llvm-*/clang/tools/driver/*.cpp \
+        $root/vendor/llvm-*/lld/tools/lld/lld.cpp; do
+        obj=$(basename ${src%.cpp}.o); [ -f $obj ] || $cxx $src -o $obj &
+    done
+    wait; clang++ -Wl,$gc * $root/$prefix/lib/*.a -o $out/fin; echo
+}
 
 settings "$@"; libs; build
