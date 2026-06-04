@@ -169,7 +169,8 @@ build() {
         $root/vendor/llvm-*/lld/tools/lld/lld.cpp; do
         obj=$(basename ${src%.cpp}.o); [ -f $obj ] || $cxx $src -o $obj &
     done
-    wait; clang++ -Wl,$gc * $root/$prefix/lib/*.a -o $out/fin; echo
+    #wait; clang++ -fuse-ld=lld -Wl,$gc * $root/$prefix/lib/*.a -o $out/fin; echo
+    wait; clang++ -fuse-ld=lld -Wl,--lto-O0 * $root/$prefix/lib/*.a -o $out/fin; echo
 }
 
 settings "$@"; libs; build
