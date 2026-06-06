@@ -1,20 +1,18 @@
 module fin;
 import std::io;
 
-extern fn int fin_clang_main(char* real_exe, int argc, char** argv);
-extern fn int fin_lld_main(char* real_exe, int argc, char** argv);
+extern fn int fin_clang_main(char* prefix, int argc, char** argv);
+extern fn int fin_lld_main(char* prefix, int argc, char** argv);
 alias LLVMProgram = fn int (char*, int, char**);
 
-fn int dispatch(LLVMProgram program, String[][3] args) {
-    String argv0 = string::tjoin(args[0], " ");
-    int len = 1 + args[1].len + args[2].len;
+fn int dispatch(LLVMProgram program, String[] prefix, String[][] args) {
+    String pre = string::tjoin(prefix, " ");
+    int len; foreach (group : args) len += group.len;
     char** argv = mem::new_array(char*, len);
     defer mem::free(argv);
-
-    argv[0] = argv0.ptr; int i = 1;
-    foreach (arg : args[1]) argv[i++] = arg.ptr;
-    foreach (arg : args[2]) argv[i++] = arg.ptr;
-    return program(args[0][0].ptr, len, argv);
+    
+    int i; foreach (group : args) foreach (arg : group) argv[i++] = arg.ptr;
+    return program(pre.ptr, len, argv);
 }
 
 fn int main(String[] args) {
@@ -24,13 +22,13 @@ fn int main(String[] args) {
     }
     switch (args[1]) {
     case "cc":
-        dispatch(&fin_clang_main, { args[0:2], {}, args[2..] });
+        dispatch(&fin_clang_main, args[..1], { {args[0]}, args[2..] });
     case "cxx":
-        dispatch(&fin_clang_main, { args[0:2], {"-x", "c++"}, args[2..] });
+        dispatch(&fin_clang_main, args[..1], { {args[0], "-x", "c++"}, args[2..] });
     case "cl":
-        dispatch(&fin_clang_main, { args[0:2], {"--driver-mode=cl"}, args[2..] });
+        dispatch(&fin_clang_main, args[..1], { {args[0], "--driver-mode=cl"}, args[2..] });
     case "as":
-        dispatch(&fin_clang_main, { args[0:2], {"-cc1as"}, args[2..] });
+        dispatch(&fin_clang_main, args[..1], { {args[0], "-x", "assembler"}, args[2..] });
     case "ld":
         if (args.len < 3) {
             io::printfn("usage: %s ld <coff|elf|macho|wasm> [args...]", args[0]);
@@ -38,10 +36,13 @@ fn int main(String[] args) {
         }
         switch (args[2]) {
         case "coff":
+            dispatch(&fin_lld_main, args[..2], { {args[0], "-flavor", "link"}, args[3..] });
         case "elf":
+            dispatch(&fin_lld_main, args[..2], { {args[0], "-flavor", "gnu"}, args[3..] });
         case "macho":
+            dispatch(&fin_lld_main, args[..2], { {args[0], "-flavor", "darwin"}, args[3..] });
         case "wasm":
-            dispatch(&fin_lld_main, { args[0:3], {"--flavor", args[2]}, args[3..] });
+            dispatch(&fin_lld_main, args[..2], { {args[0], "-flavor", args[2]}, args[3..] });
         default:
             io::printfn("%s ld: error: flavor %s unavailable,"
                 " expected coff, elf, macho, or wasm.", args[0], args[2]);

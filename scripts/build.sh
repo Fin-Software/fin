@@ -37,7 +37,7 @@ settings() {
     esac
     case "$target" in
         android/arm64) triple=aarch64-linux-android ;;
-        darwin/arm64)  triple=aarch64-apple-macosx ;;
+        darwin/arm64)  triple=aarch64-apple-darwin ;;
         linux/arm64)   triple=aarch64-linux-gnu ;;
         linux/riscv64) triple=riscv64-linux-gnu ;;
         linux/x64)     triple=x86_64-linux-gnu ;;
@@ -91,6 +91,7 @@ libs() {
     ninja -C $buildzlib; ninja -C $buildzlib install >/dev/null; echo
 
     buildllvm=.build/$target/build/llvm; $install $buildllvm; cmake -S vendor/llvm-*/llvm -B $buildllvm "$@" \
+        -DCLANG_VENDOR="fin " \
         -DLLVM_OPTIMIZED_TABLEGEN=ON \
         -DLLVM_UNREACHABLE_OPTIMIZE=ON \
         -DLLVM_ENABLE_ASSERTIONS=OFF \
@@ -134,8 +135,8 @@ libs() {
     ninja -C $buildllvm $components; echo; $install $prefix/lib $prefix/include/lld/Common
     {
         ninja -C $buildllvm $(printf 'install-%s-headers ' clang clang-resource lld llvm) >/dev/null
-        cd $prefix/include/lld; $install COFF ELF MachO wasm
-        sed 's/{lld::MinGW, &lld::mingw::link}, //' Common/Driver.h >D.h; mv D.h Common/Driver.h; cd ../../../../..
+        rm -rf $prefix/../lib; $install $prefix/../lib; mv $prefix/lib/clang $prefix/../lib
+        cd $prefix/include/lld; $install COFF ELF MachO wasm; cd ../../../../..
         for dir in COFF ELF MachO wasm; do ln $buildllvm/tools/lld/$dir/Options.inc $prefix/include/lld/$dir; done
         ln $buildllvm/tools/lld/include/lld/Common/Version.inc $prefix/include/lld/Common
     } &
@@ -154,23 +155,19 @@ libs() {
 
 build() {
     root=$PWD out=$root/.build/$target
-    $install $out/build/fin; cd $out/build/fin
+    $install $out/build/fin $out/bin; cd $out/build/fin
     cxx="clang++ -c $flags $stdlib -I$out/prefix/include"
     case $mode in safe) mode=-g0 ;; debug) mode=-g ;; esac
     
     c3c compile-only -O0 $mode --single-module=yes --no-obj --emit-llvm --llvm-out . \
         $(find $root/src -name '*.c3') && $cxx fin.ll && rm fin.ll &
     for src in $(find $root/src -name '*.cc'); do $cxx $src & done
+    for src in cc1_main cc1as_main; do $cxx $root/vendor/llvm-*/clang/tools/driver/$src.cpp & done
     for flavor in COFF ELF MachO wasm; do
-        [ -f lld_$flavor.o ] || $cxx -I$out/prefix/include/lld/$flavor \
-            $root/vendor/llvm-*/lld/$flavor/Driver.cpp -o lld_$flavor.o &
+        $cxx -I$out/prefix/include/lld/$flavor $root/vendor/llvm-*/lld/$flavor/Driver.cpp -o lld_$flavor.o &
     done
-    for src in $root/vendor/llvm-*/clang/tools/driver/*.cpp \
-        $root/vendor/llvm-*/lld/tools/lld/lld.cpp; do
-        obj=$(basename ${src%.cpp}.o); [ -f $obj ] || $cxx $src -o $obj &
-    done
-    #wait; clang++ -fuse-ld=lld -Wl,$gc * $root/$prefix/lib/*.a -o $out/fin; echo
-    wait; clang++ -fuse-ld=lld -Wl,--lto-O0 * $root/$prefix/lib/*.a -o $out/fin; echo
+    wait; clang++ -fuse-ld=lld -Wl,$gc * $root/$prefix/lib/*.a -o $out/bin/fin; echo
+    #wait; clang++ -fuse-ld=lld -Wl,--lto-O0 * $root/$prefix/lib/*.a -o $out/bin/fin; echo
 }
 
 settings "$@"; libs; build
