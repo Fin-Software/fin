@@ -24,11 +24,11 @@ fn int main(String[] args) {
     case "cc":
         dispatch(&fin_clang_main, args[..1], { {args[0]}, args[2..] });
     case "cxx":
-        dispatch(&fin_clang_main, args[..1], { {args[0], "-x", "c++"}, args[2..] });
+        dispatch(&fin_clang_main, args[..1], { {args[0], "--driver-mode=g++"}, args[2..] });
     case "cl":
         dispatch(&fin_clang_main, args[..1], { {args[0], "--driver-mode=cl"}, args[2..] });
     case "as":
-        dispatch(&fin_clang_main, args[..1], { {args[0], "-x", "assembler"}, args[2..] });
+        dispatch(&fin_clang_main, args[..1], { {args[0], "-c", "-x", "assembler"}, args[2..] });
     case "ld":
         if (args.len < 3) {
             io::printfn("usage: %s ld <coff|elf|macho|wasm> [args...]", args[0]);

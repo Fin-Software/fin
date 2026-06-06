@@ -1,11 +1,16 @@
+#include "clang/Basic/DiagnosticOptions.h"
+#include "clang/Basic/Stack.h"
 #include "clang/Driver/Compilation.h"
 #include "clang/Driver/Driver.h"
+#include "clang/Frontend/ChainedDiagnosticConsumer.h"
+#include "clang/Frontend/SerializedDiagnosticPrinter.h"
 #include "clang/Frontend/TextDiagnosticPrinter.h"
-#include "clang/Basic/DiagnosticOptions.h"
+#include "llvm/Option/ArgList.h"
 #include "llvm/Support/Allocator.h"
+#include "llvm/Support/CommandLine.h"
 #include "llvm/Support/CrashRecoveryContext.h"
+#include "llvm/Support/Process.h"
 #include "llvm/Support/StringSaver.h"
-#include "llvm/Support/TargetSelect.h"
 #include "llvm/Support/VirtualFileSystem.h"
 #include "llvm/TargetParser/Host.h"
 
@@ -15,108 +20,115 @@ using namespace clang::driver;
 extern int cc1_main(llvm::ArrayRef<const char*> Argv, const char* Argv0, void* MainAddr);
 extern int cc1as_main(llvm::ArrayRef<const char*> Argv, const char* Argv0, void* MainAddr);
 
-extern "C" int fin_clang_main(char* prefix, int argc, char** argv) {
-    llvm::InitializeAllTargets();
-    llvm::InitializeAllTargetMCs();
-    llvm::InitializeAllAsmParsers();
-    llvm::InitializeAllAsmPrinters();
+static void getCLEnvVarOptions(std::string& EnvValue, llvm::StringSaver& Saver, SmallVectorImpl<const char*>& Opts) {
+    llvm::cl::TokenizeWindowsCommandLine(EnvValue, Saver, Opts);
+    for (const char* Opt: Opts)
+        if (char* NumberSignPtr = const_cast<char*>(::strchr(Opt, '#'))) *NumberSignPtr = '=';
+}
+
+extern "C" int fin_clang_main(char* Prefix, int Argc, char** Argv) {
+    noteBottomOfStack();
     auto VFS = llvm::vfs::getRealFileSystem();
 
-    DiagnosticOptions DiagOpts;
-    DiagOpts.ShowColors = llvm::errs().has_colors();
-    auto* DiagClient = new TextDiagnosticPrinter(llvm::errs(), DiagOpts);
-    DiagClient->setPrefix(prefix);
-    DiagnosticsEngine Diags(DiagnosticIDs::create(), DiagOpts, DiagClient);
+    auto DiagOpts = std::make_shared<DiagnosticOptions>();
+    DiagOpts->ShowColors = llvm::errs().has_colors();
+    DiagOpts->DiagnosticSuppressionMappingsFile.clear();
+    TextDiagnosticPrinter* DiagClient = new TextDiagnosticPrinter(llvm::errs(), *DiagOpts);
+    DiagClient->setPrefix(Prefix);
+    DiagnosticsEngine Diags(DiagnosticIDs::create(), *DiagOpts, DiagClient);
+    if (!DiagOpts->DiagnosticSerializationFile.empty()) {
+        auto SerializedConsumer =
+            clang::serialized_diags::create(DiagOpts->DiagnosticSerializationFile, *DiagOpts, /*MergeChildRecords=*/true);
+        Diags.setClient(new ChainedDiagnosticConsumer(Diags.takeClient(), std::move(SerializedConsumer)));
+    }
+    ProcessWarningOptions(Diags, *DiagOpts, *VFS, /*ReportDiags=*/false);
 
-    std::string ExePath = llvm::sys::fs::getMainExecutable(argv[0], (void*)(intptr_t)fin_clang_main);
-    Driver TheDriver(ExePath, llvm::sys::getDefaultTargetTriple(), Diags, prefix, VFS);
-    TheDriver.Name = prefix;
+    llvm::BumpPtrAllocator Alloc;
+    llvm::StringSaver Saver(Alloc);
 
-    auto CC1MainFn = [](llvm::SmallVectorImpl<const char*>& ArgV) -> int {
+    llvm::SmallVector<const char*, 256> Args(Argv, Argv + Argc);
+    llvm::StringRef LDExe;
+    llvm::StringRef LDArgs;
+
+    for (int i = 0; i < Argc; ++i) {
+        if (llvm::StringRef(Argv[i]) == "-ld-path" && i + 1 < Argc) {
+            llvm::StringRef Val(Argv[++i]);
+            auto Space = Val.find(' ');
+            if (Space == llvm::StringRef::npos) {
+                LDExe = Saver.save(Val);
+            } else {
+                LDExe = Saver.save(Val.slice(0, Space));
+                LDArgs = Saver.save(Val.substr(Space + 1));
+            }
+        } else {
+            Args.push_back(Argv[i]);
+        }
+    }
+
+    bool ClangCLMode = false;
+    for (const char* Arg : Args)
+        if (llvm::StringRef(Arg).starts_with("--driver-mode=cl")) ClangCLMode = true;
+    if (llvm::Error Err = expandResponseFiles(Args, ClangCLMode, Alloc, VFS.get())) {
+        llvm::errs() << toString(std::move(Err)) << '\n';
+        return 1;
+    }
+    if (ClangCLMode) {
+        std::optional<std::string> OptCL = llvm::sys::Process::GetEnv("CL");
+        if (OptCL) {
+            SmallVector<const char*, 8> PrependedOpts;
+            getCLEnvVarOptions(*OptCL, Saver, PrependedOpts);
+            Args.insert(Args.begin() + 1, PrependedOpts.begin(), PrependedOpts.end());
+        }
+        std::optional<std::string> Opt_CL_ = llvm::sys::Process::GetEnv("_CL_");
+        if (Opt_CL_) {
+            SmallVector<const char*, 8> AppendedOpts;
+            getCLEnvVarOptions(*Opt_CL_, Saver, AppendedOpts);
+            Args.append(AppendedOpts.begin(), AppendedOpts.end());
+        }
+    }
+
+    std::string ExePath = llvm::sys::fs::getMainExecutable(Argv[0], (void*)(intptr_t)fin_clang_main);
+    Driver TheDriver(ExePath, llvm::sys::getDefaultTargetTriple(), Diags, Prefix, VFS);
+    TheDriver.Name = Prefix;
+
+    auto CC1MainFn = [](llvm::SmallVectorImpl<const char*>& Argv) -> int {
         void* MainAddr = (void*)(intptr_t)fin_clang_main;
-        llvm::StringRef Tool = ArgV[1];
-        if (Tool == "-cc1") return cc1_main(llvm::ArrayRef(ArgV).slice(1), ArgV[0], MainAddr);
-        if (Tool == "-cc1as") return cc1as_main(llvm::ArrayRef(ArgV).slice(2), ArgV[0], MainAddr);
+        llvm::StringRef Tool = Argv[1];
+        if (Tool == "-cc1") return cc1_main(llvm::ArrayRef(Argv).slice(1), Argv[0], MainAddr);
+        if (Tool == "-cc1as") return cc1as_main(llvm::ArrayRef(Argv).slice(2), Argv[0], MainAddr);
         llvm::errs() << "fin: unknown cc1 tool: " << Tool << "\n";
         return 1;
     };
     TheDriver.CC1Main = CC1MainFn;
     llvm::CrashRecoveryContext::Enable();
 
-    // 1. Initialize the allocator and saver
-    llvm::BumpPtrAllocator Alloc;
-    llvm::StringSaver Saver(Alloc);
-
-    llvm::SmallVector<const char*, 64> Args;
-
-    // 2. We can just use StringRefs now because the Saver owns the memory
-    llvm::StringRef LDExe;
-    llvm::StringRef LDSubcmd;
-
-    for (int i = 0; i < argc; ++i) {
-        if (llvm::StringRef(argv[i]) == "-ld-path" && i + 1 < argc) {
-            llvm::StringRef Val(argv[++i]);
-            auto Space = Val.find(' ');
-            if (Space == llvm::StringRef::npos) {
-                // Saver.save() duplicates the string and ensures null-termination
-                LDExe = Saver.save(Val);
-            } else {
-                LDExe = Saver.save(Val.slice(0, Space));
-                LDSubcmd = Saver.save(Val.substr(Space + 1));
-            }
-        } else {
-            Args.push_back(argv[i]);
-        }
-    }
-
     std::unique_ptr<Compilation> C(TheDriver.BuildCompilation(Args));
     if (!C || C->containsError()) return 1;
 
-    // If the user didn't specify an -ld-path, set a default based on the target
     if (LDExe.empty()) {
-        // ExePath is the absolute path to this compiler binary
         LDExe = Saver.save(ExePath);
-
-        // Grab the fully resolved target triple from the compilation
         const llvm::Triple& T = C->getDefaultToolChain().getTriple();
-        llvm::StringRef Format = "elf"; // default fallback
-
+        llvm::StringRef Format = "elf";
         switch (T.getObjectFormat()) {
         case llvm::Triple::COFF: Format = "coff"; break;
         case llvm::Triple::MachO: Format = "macho"; break;
         case llvm::Triple::Wasm: Format = "wasm"; break;
-        case llvm::Triple::ELF:
-        default: Format = "elf"; break;
+        default: break;
         }
-
-        // Construct "ld <format>" and save it so the memory lives long enough
-        LDSubcmd = Saver.save((llvm::Twine("ld ") + Format).str());
+        LDArgs = Saver.save((llvm::Twine("ld ") + Format).str());
     }
 
-    if (!LDExe.empty()) {
-        for (auto& Job: C->getJobs()) {
-            if (auto* Cmd = llvm::dyn_cast<Command>(&Job)) {
-                if (llvm::isa<LinkJobAction>(Cmd->getSource())) {
-
-                    // 3. .data() is safe here because StringSaver guarantees null-termination
-                    Cmd->replaceExecutable(LDExe.data());
-
-                    if (!LDSubcmd.empty()) {
-                        llvm::opt::ArgStringList NewArgs;
-
-                        // Split the subcommand by spaces so "ld elf" becomes two arguments
-                        llvm::SmallVector<llvm::StringRef, 2> SubCmds;
-                        LDSubcmd.split(SubCmds, ' ', -1, false);
-                        for (auto Cmd: SubCmds) {
-                            // Safe because Saver.save() was used earlier,
-                            // but we need to ensure each split part is null-terminated
-                            // for execve. If splitting, it's safer to save the split strings.
-                            NewArgs.push_back(Saver.save(Cmd).data());
-                        }
-
-                        for (const char* A: Cmd->getArguments()) { NewArgs.push_back(A); }
-                        Cmd->replaceArguments(std::move(NewArgs));
-                    }
+    for (auto& Job: C->getJobs()) {
+        if (auto* Cmd = llvm::dyn_cast<Command>(&Job)) {
+            if (llvm::isa<LinkJobAction>(Cmd->getSource())) {
+                Cmd->replaceExecutable(LDExe.data());
+                if (!LDArgs.empty()) {
+                    llvm::opt::ArgStringList NewArgs;
+                    llvm::SmallVector<llvm::StringRef, 2> SubCmds;
+                    LDArgs.split(SubCmds, ' ', -1, false);
+                    for (auto Sub: SubCmds) NewArgs.push_back(Saver.save(Sub).data());
+                    for (const char* A: Cmd->getArguments()) NewArgs.push_back(A);
+                    Cmd->replaceArguments(std::move(NewArgs));
                 }
             }
         }
@@ -162,15 +174,18 @@ LLD_HAS_DRIVER(elf)
 LLD_HAS_DRIVER(macho)
 LLD_HAS_DRIVER(wasm)
 
-extern "C" int fin_lld_main(char* prefix, int argc, char** argv) {
-    llvm::SmallVector<const char*, 256> Args(argv, argv + argc);
-    Args[0] = prefix;
+extern "C" int fin_lld_main(char* Prefix, int Argc, char** Argv) {
+    llvm::SmallVector<const char*, 256> Args(Argv, Argv + Argc);
+    Args[0] = Prefix;
     llvm::ArrayRef<const char*> ArgsRef(Args.data(), Args.size());
-    lld::Result R = lld::lldMain(ArgsRef, llvm::outs(), llvm::errs(), {
-        {lld::WinLink, &lld::coff::link},
-        {lld::Gnu, &lld::elf::link},
-        {lld::Darwin, &lld::macho::link},
-        {lld::Wasm, &lld::wasm::link},
-    });
+    lld::Result R = lld::lldMain(
+        ArgsRef, llvm::outs(), llvm::errs(),
+        {
+            {lld::WinLink,  &lld::coff::link},
+            {    lld::Gnu,   &lld::elf::link},
+            { lld::Darwin, &lld::macho::link},
+            {   lld::Wasm,  &lld::wasm::link},
+    }
+    );
     return R.retCode;
 }

@@ -91,6 +91,7 @@ libs() {
     ninja -C $buildzlib; ninja -C $buildzlib install >/dev/null; echo
 
     buildllvm=.build/$target/build/llvm; $install $buildllvm; cmake -S vendor/llvm-*/llvm -B $buildllvm "$@" \
+        -DLLD_VENDOR="fin" \
         -DCLANG_VENDOR="fin " \
         -DLLVM_OPTIMIZED_TABLEGEN=ON \
         -DLLVM_UNREACHABLE_OPTIMIZE=ON \
