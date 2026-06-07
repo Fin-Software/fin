@@ -30,6 +30,7 @@ extern "C" int fin_clang_main(char* Prefix, int Argc, char** Argv) {
     noteBottomOfStack();
     auto VFS = llvm::vfs::getRealFileSystem();
 
+    //    Diagnostics
     auto DiagOpts = std::make_shared<DiagnosticOptions>();
     DiagOpts->ShowColors = llvm::errs().has_colors();
     DiagOpts->DiagnosticSuppressionMappingsFile.clear();
@@ -43,13 +44,13 @@ extern "C" int fin_clang_main(char* Prefix, int Argc, char** Argv) {
     }
     ProcessWarningOptions(Diags, *DiagOpts, *VFS, /*ReportDiags=*/false);
 
-    llvm::BumpPtrAllocator Alloc;
-    llvm::StringSaver Saver(Alloc);
+    llvm::BumpPtrAllocator Ally;
+    llvm::StringSaver Saver(Ally);
+    llvm::SmallVector<const char*, 256> DriverArgs;
+    DriverArgs.reserve(Argc);
 
-    llvm::SmallVector<const char*, 256> Args(Argv, Argv + Argc);
-    llvm::StringRef LDExe;
-    llvm::StringRef LDArgs;
-
+    //   Fill DriverArgs, handling special -ld-path parsing.
+    llvm::StringRef LDExe, LDArgs;
     for (int i = 0; i < Argc; ++i) {
         if (llvm::StringRef(Argv[i]) == "-ld-path" && i + 1 < Argc) {
             llvm::StringRef Val(Argv[++i]);
@@ -61,14 +62,15 @@ extern "C" int fin_clang_main(char* Prefix, int Argc, char** Argv) {
                 LDArgs = Saver.save(Val.substr(Space + 1));
             }
         } else {
-            Args.push_back(Argv[i]);
+            DriverArgs.push_back(Argv[i]);
         }
     }
 
+    //    Handle Windows Mode
     bool ClangCLMode = false;
-    for (const char* Arg : Args)
+    for (const char* Arg: DriverArgs)
         if (llvm::StringRef(Arg).starts_with("--driver-mode=cl")) ClangCLMode = true;
-    if (llvm::Error Err = expandResponseFiles(Args, ClangCLMode, Alloc, VFS.get())) {
+    if (llvm::Error Err = expandResponseFiles(DriverArgs, ClangCLMode, Ally, VFS.get())) {
         llvm::errs() << toString(std::move(Err)) << '\n';
         return 1;
     }
@@ -77,39 +79,28 @@ extern "C" int fin_clang_main(char* Prefix, int Argc, char** Argv) {
         if (OptCL) {
             SmallVector<const char*, 8> PrependedOpts;
             getCLEnvVarOptions(*OptCL, Saver, PrependedOpts);
-            Args.insert(Args.begin() + 1, PrependedOpts.begin(), PrependedOpts.end());
+            DriverArgs.insert(DriverArgs.begin() + 1, PrependedOpts.begin(), PrependedOpts.end());
         }
         std::optional<std::string> Opt_CL_ = llvm::sys::Process::GetEnv("_CL_");
         if (Opt_CL_) {
             SmallVector<const char*, 8> AppendedOpts;
             getCLEnvVarOptions(*Opt_CL_, Saver, AppendedOpts);
-            Args.append(AppendedOpts.begin(), AppendedOpts.end());
+            DriverArgs.append(AppendedOpts.begin(), AppendedOpts.end());
         }
     }
 
-    std::string ExePath = llvm::sys::fs::getMainExecutable(Argv[0], (void*)(intptr_t)fin_clang_main);
+    std::string ExePath = llvm::sys::fs::getMainExecutable(DriverArgs[0], (void*)(intptr_t)fin_clang_main);
     Driver TheDriver(ExePath, llvm::sys::getDefaultTargetTriple(), Diags, Prefix, VFS);
     TheDriver.Name = Prefix;
+    std::unique_ptr<Compilation> Compile(TheDriver.BuildCompilation(DriverArgs));
+    if (!Compile || Compile->containsError()) return 1;
 
-    auto CC1MainFn = [](llvm::SmallVectorImpl<const char*>& Argv) -> int {
-        void* MainAddr = (void*)(intptr_t)fin_clang_main;
-        llvm::StringRef Tool = Argv[1];
-        if (Tool == "-cc1") return cc1_main(llvm::ArrayRef(Argv).slice(1), Argv[0], MainAddr);
-        if (Tool == "-cc1as") return cc1as_main(llvm::ArrayRef(Argv).slice(2), Argv[0], MainAddr);
-        llvm::errs() << "fin: unknown cc1 tool: " << Tool << "\n";
-        return 1;
-    };
-    TheDriver.CC1Main = CC1MainFn;
-    llvm::CrashRecoveryContext::Enable();
-
-    std::unique_ptr<Compilation> C(TheDriver.BuildCompilation(Args));
-    if (!C || C->containsError()) return 1;
-
+    //    Fix ld jobs according to -ld-path, setting default
     if (LDExe.empty()) {
         LDExe = Saver.save(ExePath);
-        const llvm::Triple& T = C->getDefaultToolChain().getTriple();
+        const llvm::Triple& Triple = Compile->getDefaultToolChain().getTriple();
         llvm::StringRef Format = "elf";
-        switch (T.getObjectFormat()) {
+        switch (Triple.getObjectFormat()) {
         case llvm::Triple::COFF: Format = "coff"; break;
         case llvm::Triple::MachO: Format = "macho"; break;
         case llvm::Triple::Wasm: Format = "wasm"; break;
@@ -117,27 +108,27 @@ extern "C" int fin_clang_main(char* Prefix, int Argc, char** Argv) {
         }
         LDArgs = Saver.save((llvm::Twine("ld ") + Format).str());
     }
-
-    for (auto& Job: C->getJobs()) {
+    for (auto& Job: Compile->getJobs()) {
         if (auto* Cmd = llvm::dyn_cast<Command>(&Job)) {
             if (llvm::isa<LinkJobAction>(Cmd->getSource())) {
                 Cmd->replaceExecutable(LDExe.data());
                 if (!LDArgs.empty()) {
                     llvm::opt::ArgStringList NewArgs;
-                    llvm::SmallVector<llvm::StringRef, 2> SubCmds;
-                    LDArgs.split(SubCmds, ' ', -1, false);
-                    for (auto Sub: SubCmds) NewArgs.push_back(Saver.save(Sub).data());
-                    for (const char* A: Cmd->getArguments()) NewArgs.push_back(A);
+                    llvm::SmallVector<llvm::StringRef, 8> Split;
+                    LDArgs.split(Split, ' ', -1, false);
+                    for (auto Arg: Split) NewArgs.push_back(Saver.save(Arg).data());
+                    for (const char* Arg: Cmd->getArguments()) NewArgs.push_back(Arg);
                     Cmd->replaceArguments(std::move(NewArgs));
                 }
             }
         }
     }
 
+    //    Execute cc jobs in-process
     int Ret = 0;
     void* MainAddr = (void*)(intptr_t)fin_clang_main;
 
-    for (auto& Job: C->getJobs()) {
+    for (auto& Job: Compile->getJobs()) {
         auto* Cmd = llvm::dyn_cast<Command>(&Job);
         if (!Cmd) continue;
 
@@ -147,23 +138,32 @@ extern "C" int fin_clang_main(char* Prefix, int Argc, char** Argv) {
         if (isCC1) {
             llvm::SmallVector<const char*, 64> CC1Args;
             CC1Args.push_back(Cmd->getExecutable());
-            for (const char* A: Cmd->getArguments()) CC1Args.push_back(A);
+            for (const char* DriverArgs: Cmd->getArguments()) CC1Args.push_back(DriverArgs);
             llvm::StringRef Tool = CC1Args[1];
-            if (Tool == "-cc1")
+            if (Tool == "-cc1") {
+                if (llvm::is_contained(DriverArgs, llvm::StringRef("-v"))) {
+                    llvm::errs() << " (in-process)";
+                    for (const char* Arg: CC1Args) llvm::errs() << ' ' << Arg;
+                    llvm::errs() << '\n';
+                }
                 Ret = cc1_main(llvm::ArrayRef(CC1Args).slice(2), CC1Args[0], MainAddr);
-            else if (Tool == "-cc1as")
+            } else if (Tool == "-cc1as") {
+                if (llvm::is_contained(DriverArgs, llvm::StringRef("-v"))) {
+                    llvm::errs() << " (in-process)";
+                    for (const char* Arg: CC1Args) llvm::errs() << ' ' << Arg;
+                    llvm::errs() << '\n';
+                }
                 Ret = cc1as_main(llvm::ArrayRef(CC1Args).slice(2), CC1Args[0], MainAddr);
-            else {
-                llvm::errs() << "fin: unknown cc1 tool: " << Tool << "\n";
+            } else {
+                llvm::errs() << "unknown cc1 tool: " << Tool << "\n";
                 Ret = 1;
             }
         } else {
             const Command* FailingCmd = nullptr;
-            Ret = C->ExecuteCommand(*Cmd, FailingCmd);
+            Ret = Compile->ExecuteCommand(*Cmd, FailingCmd);
         }
         if (Ret) break;
     }
-
     return Ret;
 }
 
@@ -175,17 +175,13 @@ LLD_HAS_DRIVER(macho)
 LLD_HAS_DRIVER(wasm)
 
 extern "C" int fin_lld_main(char* Prefix, int Argc, char** Argv) {
-    llvm::SmallVector<const char*, 256> Args(Argv, Argv + Argc);
-    Args[0] = Prefix;
-    llvm::ArrayRef<const char*> ArgsRef(Args.data(), Args.size());
-    lld::Result R = lld::lldMain(
-        ArgsRef, llvm::outs(), llvm::errs(),
-        {
-            {lld::WinLink,  &lld::coff::link},
-            {    lld::Gnu,   &lld::elf::link},
-            { lld::Darwin, &lld::macho::link},
-            {   lld::Wasm,  &lld::wasm::link},
-    }
-    );
-    return R.retCode;
+    llvm::SmallVector<const char*, 256> DriverArgs(Argv, Argv + Argc);
+    DriverArgs[0] = Prefix;
+    lld::DriverDef Linkers[] = {
+        {lld::WinLink,  &lld::coff::link},
+        {    lld::Gnu,   &lld::elf::link},
+        { lld::Darwin, &lld::macho::link},
+        {   lld::Wasm,  &lld::wasm::link},
+    };
+    return lld::lldMain(DriverArgs, llvm::outs(), llvm::errs(), Linkers).retCode;
 }

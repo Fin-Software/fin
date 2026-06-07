@@ -7,7 +7,7 @@ ReflowComments: Never
 UseTab: Never
 ---
 Language: Cpp
-AlignAfterOpenBracket: BlockIndent
+AlignAfterOpenBracket: true
 AlignArrayOfStructures: Right
 AlignConsecutiveAssignments: None
 AlignConsecutiveBitFields: None
@@ -31,21 +31,24 @@ AllowShortFunctionsOnASingleLine: All
 AllowShortIfStatementsOnASingleLine: WithoutElse
 AllowShortLambdasOnASingleLine: All
 AllowShortLoopsOnASingleLine: true
-BinPackArguments: true
-BinPackParameters: true
+BinPackArguments: false
+BinPackParameters: false
+BreakAfterOpenBracketBracedList: true
 BreakAfterReturnType: None
-BreakBeforeBraces: Attach
 BreakBeforeBinaryOperators: NonAssignment
+BreakBeforeBraces: Attach
+BreakBeforeCloseBracketBracedList: true
 BreakInheritanceList: AfterColon
 BreakStringLiterals: true
+Cpp11BracedListStyle: true
 IndentPPDirectives: BeforeHash
 PenaltyExcessCharacter: 10
 PointerAlignment: Left
 ReferenceAlignment: Left
 SpaceAfterCStyleCast: false
 SpaceAfterLogicalNot: false
-SpaceAfterTemplateKeyword: false
 SpaceAfterOperatorKeyword: false
+SpaceAfterTemplateKeyword: false
 SpaceBeforeAssignmentOperators: true
 SpaceBeforeCaseColon: false
 SpaceBeforeCpp11BracedList: false
