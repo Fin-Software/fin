@@ -1,16 +1,16 @@
-#include "clang/Basic/DiagnosticOptions.h"
+// SPDX-License-Identifier: Apache-2.0
+// Copyright © 2026 The Fin Authors. All rights reserved.
+// Contributors responsible for this file:
+// @p7r0x7 <maxibonnette@pm.me>
+
 #include "clang/Basic/Stack.h"
 #include "clang/Driver/Compilation.h"
 #include "clang/Driver/Driver.h"
 #include "clang/Frontend/ChainedDiagnosticConsumer.h"
 #include "clang/Frontend/SerializedDiagnosticPrinter.h"
 #include "clang/Frontend/TextDiagnosticPrinter.h"
-#include "llvm/Option/ArgList.h"
-#include "llvm/Support/Allocator.h"
 #include "llvm/Support/CommandLine.h"
-#include "llvm/Support/CrashRecoveryContext.h"
 #include "llvm/Support/Process.h"
-#include "llvm/Support/StringSaver.h"
 #include "llvm/Support/VirtualFileSystem.h"
 #include "llvm/TargetParser/Host.h"
 
