@@ -5,8 +5,8 @@
 # Contributors responsible for this file:
 # @p7r0x7 <maxibonnette@pm.me>
 
-flags="-fuse-ld=lld -O3 -mllvm -polly -mllvm -polly-vectorizer=stripmine
-    -pipe -Wno-unused-command-line-argument -fno-rtti -fno-omit-frame-pointer"
+flags="-pipe -fuse-ld=lld -O3 -mllvm -polly -mllvm -polly-vectorizer=stripmine
+    -Wno-unused-command-line-argument -fno-omit-frame-pointer -fno-rtti -DNDEBUG"
 # fin also supports wasi/wasm and wasi/wasm64, but won't be made hostable on them
 supported='android/arm64 darwin/arm64 linux/arm64 linux/riscv64 linux/x64 windows/arm64 windows/x64'
 bar=----------------------------------------------------------------------------------------------------
@@ -67,9 +67,9 @@ libs() {
         -DCMAKE_AR="$(command -v llvm-ar)" \
         -DCMAKE_CXX_COMPILER_TARGET=$triple \
         -DCMAKE_C_COMPILER="$(command -v clang)" \
+        -DCMAKE_C_FLAGS="$(printf '%s ' $flags)" \
         -DCMAKE_CXX_COMPILER="$(command -v clang++)" \
-        -DCMAKE_C_FLAGS_RELEASE="$(printf '%s ' $flags)" \
-        -DCMAKE_CXX_FLAGS_RELEASE="$stdlib $(printf '%s ' $flags)" \
+        -DCMAKE_CXX_FLAGS="$stdlib $(printf '%s ' $flags)" \
         -DCMAKE_OBJCOPY=false -DCMAKE_RANLIB=false -DCMAKE_NM=false
 
     buildzstd=.build/$target/build/zstd; $install $buildzstd; cmake -S vendor/zstd-*/build/cmake -B $buildzstd "$@" \
@@ -161,7 +161,7 @@ build() {
     case $mode in safe) mode=-g0 ;; debug) mode=-g ;; esac
     
     c3c compile-only -O0 $mode --single-module=yes --no-obj --emit-llvm --llvm-out . \
-        $(find $root/src -name '*.c3') && $cxx fin.ll && rm fin.ll &
+        $(find $root/src -name '*.c3') && clang++ -c $flags -UNDEBUG fin.ll && rm fin.ll &
     for src in $(find $root/src -name '*.cc'); do $cxx $src & done
     for src in cc1_main cc1as_main; do $cxx $root/vendor/llvm-*/clang/tools/driver/$src.cpp & done
     for flavor in COFF ELF MachO wasm; do
