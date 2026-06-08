@@ -89,16 +89,27 @@ extern "C" int fin_clang_main(char* Prefix, int Argc, char** Argv) {
         }
     }
 
+    //    Get resources, possibly macOS sysroot, and build pipeline
     std::string ExePath = llvm::sys::fs::getMainExecutable(DriverArgs[0], (void*)(intptr_t)fin_clang_main);
     Driver TheDriver(ExePath, llvm::sys::getDefaultTargetTriple(), Diags, Prefix, VFS);
+    const llvm::Triple Triple(TheDriver.getTargetTriple());
     TheDriver.Name = Prefix;
+    if (Triple.isOSDarwin() && TheDriver.SysRoot.empty()) {
+        if (FILE* F = ::popen("/usr/bin/xcrun --show-sdk-path 2>/dev/null", "r")) {
+            char Buf[512];
+            if (::fgets(Buf, sizeof(Buf), F)) {
+                llvm::StringRef SR(Buf);
+                TheDriver.SysRoot = SR.rtrim("\n\r ").str();
+            }
+            ::pclose(F);
+        }
+    }
     std::unique_ptr<Compilation> Compile(TheDriver.BuildCompilation(DriverArgs));
     if (!Compile || Compile->containsError()) return 1;
 
     //    Fix ld jobs according to -ld-path, setting default
     if (LDExe.empty()) {
         LDExe = Saver.save(ExePath);
-        const llvm::Triple& Triple = Compile->getDefaultToolChain().getTriple();
         llvm::StringRef Format = "elf";
         switch (Triple.getObjectFormat()) {
         case llvm::Triple::COFF: Format = "coff"; break;
