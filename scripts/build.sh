@@ -90,6 +90,10 @@ libs() {
 
     ninja -C $buildzlib; ninja -C $buildzlib install >/dev/null; echo
 
+    mv $prefix/lib64 $prefix/lib 2>/dev/null || true
+    find $prefix/lib -name 'ZLIB' -exec mv {} $prefix/lib/libz.a \;
+    find $prefix/lib -name 'zstd' -exec mv {} $prefix/lib/libzstd.a \;
+
     buildllvm=.build/$target/build/llvm; $install $buildllvm; cmake -S vendor/llvm-*/llvm -B $buildllvm "$@" \
         -DLLD_VENDOR="fin" \
         -DCLANG_VENDOR="fin " \
