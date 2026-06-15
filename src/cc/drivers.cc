@@ -99,13 +99,19 @@ extern "C" int fin_clang_main(char* Prefix, int Argc, char** Argv) {
     Driver TheDriver(ExePath, llvm::sys::getDefaultTargetTriple(), Diags, Prefix, VFS);
     const llvm::Triple Triple(TheDriver.getTargetTriple());
     TheDriver.Name = Prefix;
+#ifdef __APPLE__
     if (Triple.isOSDarwin() && TheDriver.SysRoot.empty()) {
-        if (FILE* F = ::popen("/usr/bin/xcrun --show-sdk-path 2>/dev/null", "r")) {
-            char Buf[256];
-            if (::fgets(Buf, sizeof(Buf), F)) TheDriver.SysRoot = llvm::StringRef(Buf).rtrim().str();
-            ::pclose(F);
+        for (const char* SDK: {
+                 "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk",
+                 "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+             }) {
+            if (llvm::sys::fs::exists(SDK)) {
+                TheDriver.SysRoot = SDK;
+                break;
+            }
         }
     }
+#endif
     std::unique_ptr<Compilation> Compile(TheDriver.BuildCompilation(DriverArgs));
     if (!Compile || Compile->containsError()) return 1;
 
