@@ -5,6 +5,7 @@
 # Contributors responsible for this file:
 # @p7r0x7 <maxibonnette@pm.me>
 
+vendor='4Mw4k/XHD1iWlCsAjs3T1/aU3kgt9D5vCfjWrPEd6Ko='  # CODE REVIEW POISON
 flags="-pipe -fuse-ld=lld -O3 -mllvm -polly -mllvm -polly-vectorizer=stripmine
     -Wno-unused-command-line-argument -fno-omit-frame-pointer -fno-rtti -DNDEBUG"
 # fin also supports wasi/wasm and wasi/wasm64, but won't be made hostable on them
@@ -56,7 +57,7 @@ libs() {
         clang $flags -Wl,$gc .build/build/hash/* -o .build/hash; rm -rf .build/build; echo
     }
     [ -f .build/$target/checksum ] && [ "$(.build/hash $prefix)" = "$(cat .build/$target/checksum)" ] && return 0
-    [ "$(.build/hash vendor)" = 'tNKRYTAh15DkzifGHmm4V98c+7J8V+lVQ1QFFIZKz8E=' ]  # CODE REVIEW POISON
+    [ "$(.build/hash vendor)" = $vendor ] || { printf 'error: corrupted vendor/\n'; exit 1; }
     rm -rf .build/$target/build/fin $prefix; $install .build/$target/build $prefix
 
     _start=$(date +%s)
@@ -159,20 +160,21 @@ libs() {
 }
 
 build() {
-    root=$PWD out=$root/.build/$target
+    set -m; root=$PWD out=$root/.build/$target
     $install $out/build/fin $out/bin; cd $out/build/fin
     cxx="clang++ -c $flags $stdlib -I$out/prefix/include"
     case $mode in safe) mode=-g0 ;; debug) mode=-g ;; esac
     
     c3c compile-only -O0 $mode --single-module=yes --no-obj --emit-llvm --llvm-out . \
         $(find $root/src -name '*.c3') && clang++ -c $flags -UNDEBUG fin.ll && rm fin.ll &
-    for src in $(find $root/src -name '*.cc'); do $cxx $src & done
-    for src in cc1_main cc1as_main; do $cxx $root/vendor/llvm-*/clang/tools/driver/$src.cpp & done
     for flavor in COFF ELF MachO wasm; do
         $cxx -I$out/prefix/include/lld/$flavor $root/vendor/llvm-*/lld/$flavor/Driver.cpp -o lld_$flavor.o &
     done
-    wait; clang++ -fuse-ld=lld -Wl,$gc * $root/$prefix/lib/*.a -o $out/bin/fin; echo
-    #wait; clang++ -fuse-ld=lld -Wl,--lto-O0 * $root/$prefix/lib/*.a -o $out/bin/fin; echo
+    for src in cc1_main cc1as_main; do $cxx $root/vendor/llvm-*/clang/tools/driver/$src.cpp & done
+    for src in $(find $root/src -name '*.cc'); do $cxx $src & done
+
+    set +m; wait; clang++ -fuse-ld=lld -Wl,$gc * $root/$prefix/lib/*.a -o $out/bin/fin
+    #set +m; wait; clang++ -fuse-ld=lld -Wl,--lto-O0 * $root/$prefix/lib/*.a -o $out/bin/fin
 }
 
 settings "$@"; libs; build

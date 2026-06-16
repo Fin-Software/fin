@@ -26,9 +26,9 @@ get() {
 set -eu; umask 0022; $rm $vend; $install $srcs $vend vendor; cd vendor
 
 deps='clang cmake compiler-rt lld llvm openmp polly runtimes third-party'
-semv=22.1.7 base=llvm-project-$semv.src.tar.xz url=github.com/llvm/llvm-project/releases/download/llvmorg-$semv/$base
+semv=22.1.8 base=llvm-project-$semv.src.tar.xz url=github.com/llvm/llvm-project/releases/download/llvmorg-$semv/$base
 (
-    get 6007799510e57fc6132f0b0ec80e9b1c211a7c83bad863a53296ae5ea88863ea; set -f
+    get 62fd2d86c41d743d8355aa38de6b45a712b7919ab0d97de8d7a6e503ef83b2f2; set -f
         szip e -so $srcs/$base | szip x -o$vend -si -ttar $($print '-x!*/%s ' */bindings */docs */www */examples \
         */test */unittests llvm/benchmarks polly/lib/External/isl/test_inputs) $($print '-xr!%s ' Maintainers.*  \
         CREDITS.* *.png *.bmp .*) $($print '*/%s ' $deps) >/dev/null
