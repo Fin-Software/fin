@@ -5,7 +5,6 @@
 module fin::cli;
 
 alias ParsedCmd = int; // debug
-fn int invoke(ParsedCmd* t) => 0; // debug
 alias CommandFn = fn int (ParsedCmd*);
 struct Cmd
 {
@@ -60,6 +59,7 @@ macro Opt option(bool $inherited, String $name, String[] $aliases, String $defau
 }
 macro Val value(String $name, ParseFn $parser) => { .name = $name, .parser = $parser };
 
+
 struct CLParser
 {
     Allocator alloc;
@@ -87,6 +87,11 @@ const CLParser DEFAULT_CLI_PARSER = {
     .reverse_option_fill = false,
     .max_columns = 80,
 };
+
+fn void? CLParser.parse(&clp, Cmd* command, String[] args, CLPrintFns printers = DEFAULT_CLI_PRINTERS) {
+    
+}
+
 const CLPrintFns DEFAULT_CLI_PRINTERS = {
     .cmd_help = &default_cmd_help,
     .cmd_usage = &default_cmd_usage,
@@ -96,22 +101,70 @@ const CLPrintFns DEFAULT_CLI_PRINTERS = {
     .val_usage = &default_val_usage,
 };
 
+fn void? default_cmd_help(CLParser* parser, Cmd* cmd) {
 
-fn void? CLParser.parse(&clp, Cmd* command, String[] args, CLPrintFns printers = DEFAULT_CLI_PRINTERS) {
-    
 }
 
+fn void? default_cmd_usage(CLParser* parser, Cmd* cmd) {
+
+}
+
+fn void? default_opt_help(CLParser* parser, Opt* opt) {
+
+}
+
+fn void? default_opt_usage(CLParser* parser, Opt* opt) {
+
+}
+
+fn void? default_val_help(CLParser* parser, Val* val) {
+
+}
+
+fn void? default_val_usage(CLParser* parser, Val* val) {
+
+}
+
+faultdef UNSUPPORTED_BOOLEAN;
+
+fn void? pass_through(void* dst, String s) { *(String*)dst = s; }
+
+fn void? parse_float(void* dst, String s) { *(float*)dst = s.to_float()!; }
+
+fn void? parse_fouble(void* dst, String s) { *(double*)dst = s.to_double()!; }
+
+fn void? parse_int(void* dst, String s) <Type, BASE> { *(Type*)dst = s.to_integer{Type}(BASE)!; }
+
+fn void? parse_bool(void* dst, String s) {
+    foreach (t : (String[]){"1", "true", "t", "yes", "y"})
+        if (s.compare_to_ignore_case(t) == 0) { *(bool*)dst = true; return; }
+    foreach (f : (String[]){"0", "false", "f", "no", "n"})
+        if (s.compare_to_ignore_case(f) == 0) { *(bool*)dst = false; return; }
+    return UNSUPPORTED_BOOLEAN~;
+}
+
+
+fn int invoke_fin(ParsedCmd* pcmd) => 0;
+fn int invoke_cc(ParsedCmd* pcmd) => 0;
+fn int invoke_cxx(ParsedCmd* pcmd) => 0;
+fn int invoke_cl(ParsedCmd* pcmd) => 0;
+fn int invoke_as(ParsedCmd* pcmd) => 0;
+fn int invoke_ld(ParsedCmd* pcmd) => 0;
+fn int invoke_lsp(ParsedCmd* pcmd) => 0;
+fn int invoke_fmt(ParsedCmd* pcmd) => 0;
+fn int invoke_env(ParsedCmd* pcmd) => 0;
+
 const Cmd FIN_CLI = command(
-    "fin", "Just-in-Time or Ahead-of-Time compile and execute Fin programs.", &invoke,
+    "fin", "Just-in-Time or Ahead-of-Time compile and execute Fin programs.", &invoke_fin,
 {
-    command("cc", "Invoke the provided LLVM Clang driver in C mode.", &invoke),
-    command("cxx", "Invoke the provided LLVM Clang driver in C++ mode.", &invoke),
-    command("cl", "Invoke the provided LLVM Clang driver in MSVC mode.", &invoke),
-    command("as", "Invoke the provided LLVM Clang driver in assembler mode.", &invoke),
-    command("ld", "Invoke the provided LLVM linker.", &invoke),
-    command("lsp", "Invoke the language server or toggle its daemon.", &invoke),
-    command("fmt", "Format Fin source files.", &invoke),
-    command("env", "Print installation and environment variables.", &invoke),
+    command("cc", "Invoke the provided LLVM Clang driver in C mode.", &invoke_cc),
+    command("cxx", "Invoke the provided LLVM Clang driver in C++ mode.", &invoke_cxx),
+    command("cl", "Invoke the provided LLVM Clang driver in MSVC mode.", &invoke_cl),
+    command("as", "Invoke the provided LLVM Clang driver in assembler mode.", &invoke_as),
+    command("ld", "Invoke the provided LLVM linker.", &invoke_ld),
+    command("lsp", "Invoke the language server or toggle its daemon.", &invoke_lsp),
+    command("fmt", "Format Fin source files.", &invoke_fmt),
+    command("env", "Print installation and environment variables.", &invoke_env),
 }, {
     positional(false, "sources", {}, "", value("", &pass_through),
         "Paths to Fin source files or directories recursively containing them.", 32767
@@ -134,21 +187,3 @@ const Cmd FIN_CLI = command(
         "Emit ANSI escape sequences with terminal output when available."
     ),
 });
-
-faultdef UNSUPPORTED_BOOLEAN;
-
-fn void? pass_through(void* dst, String s) { *(String*)dst = s; }
-
-fn void? parse_float(void* dst, String s) { *(float*)dst = s.to_float()!; }
-
-fn void? parse_fouble(void* dst, String s) { *(double*)dst = s.to_double()!; }
-
-fn void? parse_int(void* dst, String s) <Type, BASE> { *(Type*)dst = s.to_integer{Type}(BASE)!; }
-
-fn void? parse_bool(void* dst, String s) {
-    foreach (t : (String[]){"1", "true", "t", "yes", "y"})
-        if (s.compare_to_ignore_case(t) == 0) { *(bool*)dst = true; return; }
-    foreach (f : (String[]){"0", "false", "f", "no", "n"})
-        if (s.compare_to_ignore_case(f) == 0) { *(bool*)dst = false; return; }
-    return UNSUPPORTED_BOOLEAN~;
-}
