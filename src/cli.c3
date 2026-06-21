@@ -5,6 +5,7 @@
 module fin::cli;
 
 alias ParsedCmd = int; // debug
+fn int invoke(ParsedCmd* t) => 0; // debug
 alias CommandFn = fn int (ParsedCmd*);
 struct Cmd
 {
@@ -21,43 +22,43 @@ struct Val @private
     String name; ParseFn parser;
 }
 
-macro Cmd command(String $name, String $desc, CommandFn cmd_fn, Cmd[] $subcmds = {}, Opt[] $opts = {})
+macro Cmd command(String $name, String $desc, CommandFn $cmd_fn, Cmd[] $subcmds = {}, Opt[] $opts = {})
 {
     return {
         .name = $name,
         .description = $desc,
-        .cmd_fn = cmd_fn,
+        .cmd_fn = $cmd_fn,
         .subcmds = $subcmds,
         .options = $opts
     };
 }
-macro Opt positional(bool $inherited, String $name, String[] $aliases, String default_val, Val $val, String $desc = "", short $max = 1)
+macro Opt positional(bool $inherited, String $name, String[] $aliases, String $default_val, Val $val, String $desc = "", short $max = 1)
 {
     return {
         .inherited = $inherited,
         .name = $name,
         .aliases = $aliases,
-        .default_val = default_val,
+        .default_val = $default_val,
         .value = $val,
         .description = $desc,
         .max_arity = $max,
         .kind = POSITIONAL,
     };
 }
-macro Opt option(bool $inherited, String $name, String[] $aliases, String default_val, Val $val, String $desc = "", short $max = 1)
+macro Opt option(bool $inherited, String $name, String[] $aliases, String $default_val, Val $val, String $desc = "", short $max = 1)
 {
     return {
         .inherited = $inherited,
         .name = $name,
         .aliases = $aliases,
-        .default_val = default_val,
+        .default_val = $default_val,             // Empty default_vals are treated as non-existent.
         .value = $val,
         .description = $desc,
-        .max_arity = $max,
+        .max_arity = $max,                       // Options with an arity of 1 may be overridden.
         .kind = $desc.len > 0 ? PLAIN : HIDDEN,  // Options with empty descriptions are hidden.
     };
 }
-macro Val value(String $name, ParseFn $parser, String $desc) => { .name = $name, .parser = $parser };
+macro Val value(String $name, ParseFn $parser) => { .name = $name, .parser = $parser };
 
 struct CLParser
 {
@@ -101,19 +102,19 @@ fn void? CLParser.parse(&clp, Cmd* command, String[] args, CLPrintFns printers =
 }
 
 const Cmd FIN_CLI = command(
-    "fin", "Just-in-Time or Ahead-of-Time compile and execute Fin programs.",
+    "fin", "Just-in-Time or Ahead-of-Time compile and execute Fin programs.", &invoke,
 {
-    command("cc", "Invoke the provided LLVM Clang driver in C mode."),
-    command("cxx", "Invoke the provided LLVM Clang driver in C++ mode."),
-    command("cl", "Invoke the provided LLVM Clang driver in MSVC mode."),
-    command("as", "Invoke the provided LLVM Clang driver in assembler mode."),
-    command("ld", "Invoke the provided LLVM linker."),
-    command("lsp", "Invoke the language server or toggle its daemon."),
-    command("fmt", "Format Fin source files."),
-    command("env", "Print installation and environment variables."),
+    command("cc", "Invoke the provided LLVM Clang driver in C mode.", &invoke),
+    command("cxx", "Invoke the provided LLVM Clang driver in C++ mode.", &invoke),
+    command("cl", "Invoke the provided LLVM Clang driver in MSVC mode.", &invoke),
+    command("as", "Invoke the provided LLVM Clang driver in assembler mode.", &invoke),
+    command("ld", "Invoke the provided LLVM linker.", &invoke),
+    command("lsp", "Invoke the language server or toggle its daemon.", &invoke),
+    command("fmt", "Format Fin source files.", &invoke),
+    command("env", "Print installation and environment variables.", &invoke),
 }, {
     positional(false, "sources", {}, "", value("", &pass_through),
-        "Paths to Fin source files or directories recursively containing them.", short::max
+        "Paths to Fin source files or directories recursively containing them.", 32767
     ),
 
     option(false, "version", {}, "false", value("", &parse_bool),
@@ -123,7 +124,7 @@ const Cmd FIN_CLI = command(
     option(true, "help", { "-help", "h" }, "false", value("", &parse_bool),
         "Print command help message and exit."
     ),
-    option(true, "verbose", {"v"}, "false", value("" &parse_bool),
+    option(true, "verbose", {"v"}, "false", value("", &parse_bool),
         "Increment command output verbosity.", 5
     ),
     option(true, "quiet", {"q"}, "false", value("", &parse_bool),
