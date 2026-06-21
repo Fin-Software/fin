@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Copyright © 2025 The Fin Authors. All rights reserved.
+// Copyright © 2026 The Fin Authors. All rights reserved.
 
 module direntries;
 import std::sort, std::io::file, std::io::path, std::collections::list;
